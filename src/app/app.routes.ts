@@ -18,6 +18,8 @@ import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { SignInComponent } from './pages/auth-pages/sign-in/sign-in.component';
 import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { CalenderComponent } from './pages/calender/calender.component';
+import { SocioListComponent } from './pages/socios/socio-list.component';
+import { SocioDetailComponent } from './pages/socios/socio-detail.component';
 
 export const routes: Routes = [
   {
@@ -101,6 +103,16 @@ export const routes: Routes = [
         path:'videos',
         component:VideosComponent,
         title:'Angular Videos Dashboard | TailAdmin - Angular Admin Dashboard Template'
+      },
+      {
+        path:'socios',
+        component:SocioListComponent,
+        title:'Listado de Socios | TailAdmin'
+      },
+      {
+        path: 'socios/:id',
+        component: SocioDetailComponent,
+        title: 'Detalle de Socio | TailAdmin'
       },
     ]
   },
