@@ -20,6 +20,7 @@ import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 import { SocioListComponent } from './pages/socios/socio-list.component';
 import { SocioDetailComponent } from './pages/socios/socio-detail.component';
+import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
 
 export const routes: Routes = [
   {
@@ -113,6 +114,11 @@ export const routes: Routes = [
         path: 'socios/:id',
         component: SocioDetailComponent,
         title: 'Detalle de Socio | TailAdmin'
+      },
+      {
+        path: 'pagos/registrar/:id',
+        component: RegistroPagoComponent,
+        title: 'Registrar Pago | TailAdmin'
       },
     ]
   },

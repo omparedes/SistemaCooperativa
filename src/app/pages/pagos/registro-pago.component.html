@@ -1,0 +1,161 @@
+<div class="bg-gray-100 p-6">
+  <div class="bg-white shadow-xl rounded-lg p-6 max-w-4xl mx-auto" [ngSwitch]="step">
+
+    <!-- Paso 1: Selección de deudas -->
+    <div *ngSwitchCase="1">
+      <h2 class="text-2xl font-semibold text-gray-800">Registrar Pago</h2>
+      <p class="text-gray-600">Socio: <span class="font-medium">{{ socio.nombres }} {{ socio.apellidos }}</span></p>
+      <p class="text-gray-600">DNI: <span class="font-medium">{{ socio.dni }}</span></p>
+
+      <h3 class="text-lg font-medium text-gray-700 mt-6 mb-4">Paso 1: Seleccionar Conceptos a Pagar</h3>
+
+      <div class="overflow-x-auto border rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left">
+                <input type="checkbox" (change)="seleccionarTodos($event)">
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Concepto</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Antigüedad</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let item of deudasPendientes">
+              <td class="px-6 py-4">
+                <input type="checkbox" [(ngModel)]="item.isChecked" (change)="actualizarSeleccion()">
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.concepto_nombre }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.periodo_mes }}/{{ item.periodo_anio }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.fecha_generacion | date:'dd/MM/yyyy' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-medium">{{ item.monto | currency:'S/' }}</td>
+            </tr>
+            <tr *ngIf="deudasPendientes.length === 0">
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">Este socio no tiene deudas pendientes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        <div>
+          <h4 class="font-medium text-gray-700">Tipo de Pago</h4>
+          <div class="mt-2 space-y-2">
+            <label class="flex items-center p-3 border rounded-lg cursor-pointer" [class.bg-blue-50]="tipoPago === 'Total'">
+              <input type="radio" [(ngModel)]="tipoPago" value="Total" (change)="cambiarTipoPago()" name="tipoPago" class="form-radio">
+              <span class="ml-3">
+                <strong class="text-gray-800">Pago Total (de seleccionados)</strong>
+                <p class="text-sm text-gray-500">Cubre el 100% de los items marcados.</p>
+              </span>
+            </label>
+            <label class="flex items-center p-3 border rounded-lg cursor-pointer" [class.bg-blue-50]="tipoPago === 'Parcial'">
+              <input type="radio" [(ngModel)]="tipoPago" value="Parcial" (change)="cambiarTipoPago()" name="tipoPago" class="form-radio">
+              <span class="ml-3">
+                <strong class="text-gray-800">Pago Parcial (A cuenta)</strong>
+                <p class="text-sm text-gray-500">Abona un monto específico. El sistema lo distribuirá a las deudas más antiguas.</p>
+              </span>
+            </label>
+          </div>
+
+          <div *ngIf="tipoPago === 'Parcial'" class="mt-4">
+            <label for="montoParcial" class="block text-sm font-medium text-gray-700">Monto Parcial a Pagar (S/)</label>
+            <input type="number" id="montoParcial" [(ngModel)]="montoParcial"
+                   placeholder="Ej: 120.00"
+                   class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-gray-800">Resumen del Pago</h3>
+          <div *ngIf="tipoPago === 'Total'" class="mt-4">
+            <p class="flex justify-between text-gray-700"><span>Total Seleccionado:</span> <span class="font-medium">{{ montoTotalSeleccionado | currency:'S/' }}</span></p>
+          </div>
+          <hr class="my-4">
+          <p class="flex justify-between text-2xl font-bold text-green-600">
+            <span>TOTAL A PAGAR:</span>
+            <span>{{ getMontoFinalAPagar() | currency:'S/' }}</span>
+          </p>
+          <button (click)="irPaso2()" [disabled]="getMontoFinalAPagar() <= 0"
+                  class="mt-6 w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            Siguiente (Vista Previa)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 2: Confirmar Pago -->
+    <div *ngSwitchCase="2">
+      <h2 class="text-2xl font-semibold text-gray-800">Paso 2: Confirmar Pago</h2>
+
+      <div class="mt-4 p-6 border rounded-lg divide-y divide-gray-200">
+        <div class="py-4">
+          <h3 class="text-lg font-medium text-gray-900">Socio</h3>
+          <p><strong>Nombre:</strong> {{ socio.nombres }} {{ socio.apellidos }}</p>
+          <p><strong>DNI:</strong> {{ socio.dni }}</p>
+          <p><strong>Fecha de Pago:</strong> {{ today | date:'dd/MM/yyyy' }}</p>
+        </div>
+
+        <div class="py-4">
+          <h3 class="text-lg font-medium text-gray-900">Detalles del Pago</h3>
+
+          <div *ngIf="tipoPago === 'Parcial'">
+            <p class="text-sm text-gray-600">Se registrará un PAGO PARCIAL. El sistema asignará este monto a las deudas más antiguas.</p>
+          </div>
+
+          <div *ngIf="tipoPago === 'Total'">
+            <p class="text-sm text-gray-600">Conceptos seleccionados para pago completo:</p>
+            <ul class="list-disc list-inside mt-2 text-gray-700">
+              <li *ngFor="let item of deudasPendientes" class="flex justify-between">
+                <span *ngIf="item.isChecked">{{ item.concepto_nombre }} ({{item.periodo_mes}}/{{item.periodo_anio}})</span>
+                <span *ngIf="item.isChecked" class="font-medium">{{ item.monto | currency:'S/' }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <hr class="my-4">
+          <p class="text-2xl font-bold flex justify-between text-green-600">
+            <span>TOTAL A PAGAR:</span>
+            <span>{{ getMontoFinalAPagar() | currency:'S/' }}</span>
+          </p>
+        </div>
+
+        <div class="py-4">
+          <label for="metodo_pago" class="block text-lg font-medium text-gray-900">Método de Pago</label>
+          <select [(ngModel)]="metodoPago" id="metodo_pago"
+                  class="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia / Yape / Plin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-between">
+        <button (click)="irPaso1()"
+                class="px-6 py-3 bg-gray-300 text-gray-800 font-medium rounded-lg hover:bg-gray-400">
+          &larr; Atrás (Modificar)
+        </button>
+        <button (click)="confirmarPago()"
+                class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700">
+          Confirmar y Registrar Pago
+        </button>
+      </div>
+    </div>
+
+    <!-- Paso 3: Éxito -->
+    <div *ngSwitchCase="3" class="text-center p-10">
+      <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h2 class="text-3xl font-semibold text-gray-800">¡Pago Realizado con Éxito!</h2>
+      <p class="text-gray-600 mt-2">El pago se ha registrado correctamente en el sistema.</p>
+
+      <button (click)="reiniciarFlujo()"
+              class="mt-8 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-md hover:bg-blue-700">
+        Registrar Nuevo Pago (Volver al inicio)
+      </button>
+    </div>
+
+  </div>
+</div>

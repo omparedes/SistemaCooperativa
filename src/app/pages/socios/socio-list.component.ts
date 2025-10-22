@@ -11,6 +11,8 @@ export interface Socio {
   nombres: string;
   apellidos: string;
   estado: Estado;
+  deuda_total: number;
+  estado_habilitado: 'Hábil' | 'Inhábil';
 }
 
 @Component({
@@ -24,11 +26,11 @@ export class SocioListComponent implements OnInit {
   terminoBusqueda: string = '';
 
   socios: Socio[] = [
-    { socio_id: 1, dni: '12345678', nombres: 'Juan', apellidos: 'Pérez', estado: 'Activo' },
-    { socio_id: 2, dni: '87654321', nombres: 'María', apellidos: 'Gómez', estado: 'Inactivo' },
-    { socio_id: 3, dni: '11223344', nombres: 'Carlos', apellidos: 'Ramírez', estado: 'Activo' },
-    { socio_id: 4, dni: '44332211', nombres: 'Ana', apellidos: 'López', estado: 'Activo' },
-    { socio_id: 5, dni: '55667788', nombres: 'Luis', apellidos: 'Torres', estado: 'Inactivo' },
+    { socio_id: 1, dni: '12345678', nombres: 'Juan', apellidos: 'Pérez', estado: 'Activo', deuda_total: 250.75, estado_habilitado: 'Inhábil' },
+    { socio_id: 2, dni: '87654321', nombres: 'María', apellidos: 'Gómez', estado: 'Inactivo', deuda_total: 0, estado_habilitado: 'Hábil' },
+    { socio_id: 3, dni: '11223344', nombres: 'Carlos', apellidos: 'Ramírez', estado: 'Activo', deuda_total: 75.0, estado_habilitado: 'Inhábil' },
+    { socio_id: 4, dni: '44332211', nombres: 'Ana', apellidos: 'López', estado: 'Activo', deuda_total: 0, estado_habilitado: 'Hábil' },
+    { socio_id: 5, dni: '55667788', nombres: 'Luis', apellidos: 'Torres', estado: 'Inactivo', deuda_total: 500.0, estado_habilitado: 'Inhábil' },
   ];
 
   sociosFiltrados: Socio[] = [];
