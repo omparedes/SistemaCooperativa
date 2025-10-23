@@ -8,6 +8,7 @@ interface Socio {
   dni: string;
   nombres: string;
   apellidos: string;
+  saldo_a_favor?: number;
 }
 
 interface MontoPorCobrar {
@@ -36,7 +37,9 @@ export class RegistroPagoComponent implements OnInit {
   tipoPago: 'Total' | 'Parcial' = 'Total';
   montoTotalSeleccionado: number = 0;
   montoParcial: number = 0;
-  metodoPago: 'Efectivo' | 'Transferencia' = 'Efectivo';
+  metodoPago: 'Efectivo' | 'Transferencia' | 'Saldo' | 'Saldo y Efectivo' = 'Efectivo';
+  usarSaldo: boolean = false;
+  saldoAplicado: number = 0;
 
   today: Date = new Date();
 
@@ -50,6 +53,7 @@ export class RegistroPagoComponent implements OnInit {
       dni: '00000000',
       nombres: 'Socio Ejemplo',
       apellidos: 'Apellido Ejemplo',
+      saldo_a_favor: 45.25,
     };
 
     // Mock deudas: different fecha_generacion to test ordering
@@ -83,7 +87,14 @@ export class RegistroPagoComponent implements OnInit {
   }
 
   getMontoFinalAPagar() {
-    return this.tipoPago === 'Total' ? this.montoTotalSeleccionado : this.montoParcial;
+    const base = this.tipoPago === 'Total' ? this.montoTotalSeleccionado : this.montoParcial;
+    if (this.usarSaldo && this.socio && this.socio.saldo_a_favor) {
+      const aplicar = Math.min(base, this.socio.saldo_a_favor);
+      this.saldoAplicado = aplicar;
+      return Math.max(0, base - aplicar);
+    }
+    this.saldoAplicado = 0;
+    return base;
   }
 
   irPaso2() {
@@ -107,11 +118,19 @@ export class RegistroPagoComponent implements OnInit {
   }
 
   confirmarPago() {
+    const montoFinal = this.getMontoFinalAPagar();
+    // Adjust metodoPago to reflect saldo usage
+    let metodo = this.metodoPago;
+    if (this.usarSaldo && this.saldoAplicado > 0) {
+      metodo = montoFinal === 0 ? 'Saldo' : 'Saldo y Efectivo';
+    }
+
     const pagoObj = {
       socio_id: this.socio.socio_id,
       tipo: this.tipoPago,
-      monto: this.getMontoFinalAPagar(),
-      metodo: this.metodoPago,
+      monto: montoFinal,
+      metodo: metodo,
+      saldo_aplicado: this.saldoAplicado,
       items_seleccionados: this.tipoPago === 'Total' ? this.deudasPendientes.filter(d => d.isChecked) : [],
     };
 

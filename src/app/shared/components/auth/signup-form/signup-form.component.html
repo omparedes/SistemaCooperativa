@@ -13,10 +13,10 @@
   <div>
     <div class="mb-5 sm:mb-8">
       <h1 class="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
-        Sign Up
+        Registrar
       </h1>
       <p class="text-sm text-gray-500 dark:text-gray-400">
-        Enter your email and password to sign up!
+        Ingresa tu correo y contraseña para registrarte
       </p>
     </div>
 
@@ -58,7 +58,7 @@
       </div>
       <div class="relative flex justify-center text-sm">
         <span class="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
-          Or
+          O
         </span>
       </div>
     </div>
@@ -69,14 +69,14 @@
           <!-- First Name -->
           <div class="sm:col-span-1">
             <app-label>
-              First Name<span class="text-error-500">*</span>
+              Nombre<span class="text-error-500">*</span>
             </app-label>
             <app-input-field type="text" [value]="fname" id="fname" name="fname" placeholder="Enter your first name" />
           </div>
           <!-- Last Name -->
           <div class="sm:col-span-1">
             <app-label>
-              Last Name<span class="text-error-500">*</span>
+              Apellidos<span class="text-error-500">*</span>
             </app-label>
             <app-input-field type="text" [value]="lname" id="lname" name="lname" placeholder="Enter your last name" />
           </div>
@@ -84,13 +84,13 @@
         <!-- Email -->
         <div>
           <app-label>
-            Email <span class="text-error-500">*</span>
+            Correo electrónico <span class="text-error-500">*</span>
           </app-label>
           <app-input-field type="email" [value]="email" id="email" name="email" placeholder="Enter your email" />
         </div>
         <!-- Password -->
         <div>
-          <app-label>Password <span class="text-error-500">*</span></app-label>
+          <app-label>Contraseña <span class="text-error-500">*</span></app-label>
           <div class="relative">
             <app-input-field [type]="showPassword ? 'text' : 'password'" placeholder="Enter your password"
               [value]="password" name="password" class="form-input" required />
@@ -117,21 +117,21 @@
         <div class="flex items-center gap-3">
           <app-checkbox className="w-5 h-5" [(checked)]="isChecked" />
           <p class="inline-block font-normal text-gray-500 dark:text-gray-400">
-            By creating an account means you agree to the
+            Al crear una cuenta aceptas los
             <span class="text-gray-800 dark:text-white/90">
-              Terms and Conditions,
+              Términos y Condiciones,
             </span>
-            and our
+            y nuestra
             <span class="text-gray-800 dark:text-white">
-              Privacy Policy
+              Política de Privacidad
             </span>
           </p>
         </div>
         <!-- Button -->
         <div>
-          <button
+            <button
             class="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-            Sign Up
+            Registrar
           </button>
         </div>
       </div>
@@ -139,9 +139,9 @@
 
     <div class="mt-5">
       <p class="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-        Don't have an account?
+        ¿No tienes una cuenta?
         <a routerLink="/signup" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-          Sign Up
+          Registrar
         </a>
       </p>
     </div>

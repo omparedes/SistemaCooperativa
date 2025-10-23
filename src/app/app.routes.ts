@@ -21,6 +21,12 @@ import { CalenderComponent } from './pages/calender/calender.component';
 import { SocioListComponent } from './pages/socios/socio-list.component';
 import { SocioDetailComponent } from './pages/socios/socio-detail.component';
 import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
+import { ReportesComponent } from './pages/reportes/reportes.component';
+import { GastoListComponent } from './pages/gastos/gasto-list.component';
+import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
+import { InventarioListComponent } from './pages/inventario/inventario-list.component';
+import { BancosComponent } from './pages/bancos/bancos.component';
+import { AuditoriaComponent } from './pages/auditoria/auditoria.component';
 
 export const routes: Routes = [
   {
@@ -111,6 +117,51 @@ export const routes: Routes = [
         title:'Listado de Socios | TailAdmin'
       },
       {
+        path: 'pagos/recaudacion-diaria',
+        component: RecaudacionDiariaComponent,
+        title: 'Recaudación Diaria | TailAdmin'
+      },
+      {
+        path: 'reportes',
+        component: ReportesComponent,
+        title: 'Reportes de Ingresos | TailAdmin'
+      },
+      {
+        path: 'reportes/gastos',
+        component: ReportesComponent,
+        title: 'Reportes de Gastos | TailAdmin'
+      },
+      {
+        path: 'reportes/inventario',
+        component: ReportesComponent,
+        title: 'Reporte de Almacén | TailAdmin'
+      },
+      {
+        path: 'reportes/inventario/bajo-stock',
+        component: ReportesComponent,
+        title: 'Reporte de Almacén - Bajo Stock | TailAdmin'
+      },
+      {
+        path: 'gastos',
+        component: GastoListComponent,
+        title: 'Gastos | TailAdmin'
+      },
+      {
+        path: 'inventario',
+        component: InventarioListComponent,
+        title: 'Inventario | TailAdmin'
+      },
+      {
+        path: 'bancos',
+        component: BancosComponent,
+        title: 'Bancos | TailAdmin'
+      },
+      {
+        path: 'auditoria',
+        component: AuditoriaComponent,
+        title: 'Auditoría | TailAdmin'
+      },
+      {
         path: 'socios/:id',
         component: SocioDetailComponent,
         title: 'Detalle de Socio | TailAdmin'
@@ -126,12 +177,12 @@ export const routes: Routes = [
   {
     path:'signin',
     component:SignInComponent,
-    title:'Angular Sign In Dashboard | TailAdmin - Angular Admin Dashboard Template'
+    title:'Iniciar sesión | TailAdmin'
   },
   {
     path:'signup',
     component:SignUpComponent,
-    title:'Angular Sign Up Dashboard | TailAdmin - Angular Admin Dashboard Template'
+    title:'Registrar | TailAdmin'
   },
   // error pages
   {

@@ -1,0 +1,110 @@
+<div class="p-6">
+  <h2 class="text-2xl font-semibold mb-4">Reportes de Ingresos</h2>
+
+  <!-- Filters -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <div class="flex flex-col md:flex-row md:items-end md:space-x-4">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700">Fecha inicio</label>
+        <input type="date" [(ngModel)]="startDate" class="mt-1 block w-full border rounded px-3 py-2" (change)="applyFilters()" />
+      </div>
+      <div class="flex-1 mt-3 md:mt-0">
+        <label class="block text-sm font-medium text-gray-700">Fecha fin</label>
+        <input type="date" [(ngModel)]="endDate" class="mt-1 block w-full border rounded px-3 py-2" (change)="applyFilters()" />
+      </div>
+      <div class="flex-1 mt-3 md:mt-0">
+        <label class="block text-sm font-medium text-gray-700">Conceptos</label>
+        <select multiple [(ngModel)]="selectedConcepts" class="mt-1 block w-full border rounded px-3 py-2" (change)="applyFilters()">
+          <option *ngFor="let c of availableConcepts" [value]="c">{{c}}</option>
+        </select>
+      </div>
+
+      <div class="mt-3 md:mt-0 flex items-center space-x-2">
+        <button class="px-3 py-2 bg-gray-100 rounded" (click)="quickRange('today')">Hoy</button>
+        <button class="px-3 py-2 bg-gray-100 rounded" (click)="quickRange('7days')">Últimos 7 días</button>
+        <button class="px-3 py-2 bg-gray-100 rounded" (click)="quickRange('month')">Mes Actual</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white p-4 rounded shadow">
+      <h3 class="text-sm text-gray-500">Resumen Total</h3>
+      <div class="text-2xl font-bold mt-2">S/ {{ totalRecaudado.toFixed(2) }}</div>
+      <div class="text-xs text-gray-400 mt-1">Período: {{ startDate || '—' }} a {{ endDate || '—' }}</div>
+    </div>
+
+    <div class="bg-white p-4 rounded shadow md:col-span-2">
+      <h3 class="text-sm text-gray-500">Desglose por Concepto</h3>
+      <div class="mt-3">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-600">
+              <th>Concepto</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of breakdownByConcept" class="border-t">
+              <td class="py-2">{{ b.concepto }}</td>
+              <td class="py-2 text-right">S/ {{ b.total.toFixed(2) }}</td>
+            </tr>
+            <tr *ngIf="breakdownByConcept.length === 0" class="border-t">
+              <td colspan="2" class="py-2 text-center text-gray-500">No hay pagos en el período seleccionado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart + Export -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <div class="flex justify-between items-center">
+      <h3 class="text-sm text-gray-500">Recaudación por día</h3>
+      <div class="space-x-2">
+        <button class="px-3 py-2 bg-blue-600 text-white rounded" (click)="exportToExcel()">Exportar a Excel</button>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div *ngIf="chartData.length > 0" class="w-full">
+  <apx-chart [series]="chartSeries" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis" [plotOptions]="chartOptions.plotOptions" [dataLabels]="chartOptions.dataLabels" [yaxis]="chartOptions.yaxis" [tooltip]="chartOptions.tooltip"></apx-chart>
+      </div>
+      <div *ngIf="chartData.length === 0" class="text-gray-500">No hay datos para graficar.</div>
+    </div>
+  </div>
+
+  <!-- Detail table -->
+  <div class="bg-white p-4 rounded shadow">
+    <h3 class="text-sm text-gray-500 mb-3">Detalle de Pagos</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-600 border-b">
+            <th>Pago ID</th>
+            <th>Socio</th>
+            <th>Concepto</th>
+            <th>Fecha</th>
+            <th class="text-right">Monto</th>
+            <th>Comprobante</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of pagosFiltrados" class="border-b">
+            <td class="py-2">{{ p.pago_id }}</td>
+            <td class="py-2">{{ p.socio_nombre }} ({{ p.socio_id }})</td>
+            <td class="py-2">{{ p.concepto }}</td>
+            <td class="py-2">{{ p.fecha_pago | date:'mediumDate' }}</td>
+            <td class="py-2 text-right">S/ {{ p.monto_total.toFixed(2) }}</td>
+            <td class="py-2">{{ p.comprobante }}</td>
+          </tr>
+          <tr *ngIf="pagosFiltrados.length === 0">
+            <td colspan="6" class="py-4 text-center text-gray-500">No se encontraron pagos.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

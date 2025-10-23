@@ -1,11 +1,32 @@
-<app-page-breadcrumb pageTitle="Profile" />
+<app-page-breadcrumb pageTitle="Usuario" />
 <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
   <h3 class="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-    Profile
+    Datos de Usuario
   </h3>
-  <div class="space-y-6">
-    <div><app-user-meta-card/></div>
-    <div><app-user-info-card/></div>
-    <div><app-user-address-card/></div>
+
+  <div class="flex items-center gap-6">
+    <div class="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">A</div>
+
+    <div>
+      <div class="text-lg font-semibold">Administrador</div>
+      <div class="text-sm text-gray-600">admin@cooperativa.local</div>
+      <div class="text-sm text-gray-600">Rol: Administrador</div>
+      <div class="mt-2 text-sm text-gray-600">Tel: +54 11 5555-0000</div>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="p-3 border rounded">
+      <div class="text-xs text-gray-500">Recaudación Hoy</div>
+      <div class="text-xl font-semibold">$ 12.450</div>
+    </div>
+    <div class="p-3 border rounded">
+      <div class="text-xs text-gray-500">Gastos Mes</div>
+      <div class="text-xl font-semibold">$ 3.200</div>
+    </div>
+    <div class="p-3 border rounded">
+      <div class="text-xs text-gray-500">Saldo Bancos</div>
+      <div class="text-xl font-semibold">$ 45.890</div>
+    </div>
   </div>
 </div>
