@@ -38,7 +38,7 @@ export const routes: Routes = [
         component: EcommerceComponent,
         pathMatch: 'full',
         title:
-          'Angular Ecommerce Dashboard | TailAdmin - Angular Admin Dashboard Template',
+          'Mercado Primero de Mayo - Sistema Interno de Gestión',
       },
       {
         path:'calendar',
