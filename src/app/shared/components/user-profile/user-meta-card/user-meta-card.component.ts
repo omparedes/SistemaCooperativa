@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { InputFieldComponent } from './../../form/input/input-field.component';
-import { ModalService } from '../../../services/modal.service';
+import { ModalService } from '../../../../core/services/modal.service';
 import { CommonModule } from '@angular/common';
 import { ModalComponent } from '../../ui/modal/modal.component';
 import { ButtonComponent } from '../../ui/button/button.component';
@@ -18,7 +18,7 @@ import { ButtonComponent } from '../../ui/button/button.component';
 })
 export class UserMetaCardComponent {
 
-  constructor(public modal: ModalService) {}
+  constructor(public modal: ModalService) { }
 
   isOpen = false;
   openModal() { this.isOpen = true; }

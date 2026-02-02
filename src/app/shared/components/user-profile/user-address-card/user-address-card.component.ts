@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ModalService } from '../../../services/modal.service';
+import { ModalService } from '../../../../core/services/modal.service';
 import { CommonModule } from '@angular/common';
 import { InputFieldComponent } from '../../form/input/input-field.component';
 import { ButtonComponent } from '../../ui/button/button.component';
@@ -22,7 +22,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class UserAddressCardComponent {
 
-  constructor(public modal: ModalService) {}
+  constructor(public modal: ModalService) { }
 
   isOpen = false;
   openModal() { this.isOpen = true; }

@@ -1,0 +1,370 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+
+    <!-- Header -->
+    <header class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Documento de Arquitectura y Especificación
+        Técnica</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400">SistemaCooperativa (TailAdmin)</p>
+
+      <div class="mt-4 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold">Fecha:</span> 17 de Diciembre de 2025
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold">Versión:</span> 1.0
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold">Framework:</span> Angular (Standalone) + Tailwind CSS 4
+        </div>
+      </div>
+    </header>
+
+    <!-- 1. Resumen Ejecutivo -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">1. Resumen Ejecutivo</h2>
+      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+        El proyecto <strong>SistemaCooperativa</strong> es una aplicación web administrativa basada en el template
+        <em>TailAdmin</em>, desarrollada sobre <strong>Angular</strong> (Versión experimental/reciente ^20.x) utilizando
+        la arquitectura de <strong>Standalone Components</strong>. El sistema está diseñado para gestionar actividades
+        de una cooperativa o mercado, incluyendo módulos para Socios, Gastos, Recaudación e Inventario.
+      </p>
+      <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+        <p class="text-blue-800 dark:text-blue-200">
+          <strong>Estado Actual:</strong> La aplicación opera como un <strong>prototipo de alta fidelidad</strong>. La
+          interfaz de usuario (UI) está implementada y es funcional, pero la persistencia de datos se realiza mediante
+          <strong>Mock Data (Hardcoded)</strong> o <strong>LocalStorage</strong>. No existe actualmente integración con
+          un backend real.
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. Visión General de la Arquitectura -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">2. Visión General de la Arquitectura
+      </h2>
+      <p class="text-gray-700 dark:text-gray-300 mb-4">
+        La aplicación sigue una arquitectura <strong>Monolítica Modular basada en Componentes (Standalone)</strong>. Se
+        ha eliminado la dependencia de <code>NgModules</code> para la mayoría de la aplicación.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700">
+              <th class="p-3 font-semibold text-gray-700 dark:text-gray-200">Característica</th>
+              <th class="p-3 font-semibold text-gray-700 dark:text-gray-200">Implementación</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Bootstrapping</td>
+              <td class="p-3 text-gray-700 dark:text-gray-300"><code>bootstrapApplication</code> en <code>main.ts</code>
+              </td>
+            </tr>
+            <tr>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Ruteo</td>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Centralizado en <code>app.routes.ts</code>, mayormente
+                Eager Loading</td>
+            </tr>
+            <tr>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Estilos</td>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Tailwind CSS v4 (configuración en <code>@theme</code>)
+              </td>
+            </tr>
+            <tr>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Gestión de Estado</td>
+              <td class="p-3 text-gray-700 dark:text-gray-300">Local (en componentes) y <code>LocalStorage</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Estructura del Proyecto -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">3. Estructura del Proyecto</h2>
+      <div
+        class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg font-mono text-sm overflow-x-auto text-gray-800 dark:text-gray-200">
+        <pre>
+src/app/
+├── core/                   # Servicios Singleton y Lógica Global
+│   └── services/           # Sidebar, Theme, Modal
+├── pages/                  # Vistas y Lógica de Negocio (Features)
+│   ├── socios/             # Gestión de Socios
+│   ├── gastos/             # Gestión de Gastos
+│   ├── pagos/              # Recaudación y Caja
+│   ├── dashboard/          # Vistas principales
+│   └── ...
+├── shared/                 # Recursos Reutilizables
+│   ├── layout/             # Sidebar, Header
+│   ├── components/         # Componentes UI puros
+│   └── pipe/               # Pipes
+├── app.routes.ts           # Ruteo global
+├── app.config.ts           # Providers globales
+└── app.component.ts        # Raíz
+</pre>
+      </div>
+    </section>
+
+    <!-- 4. Descripción de Módulos -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">4. Descripción de Módulos</h2>
+      <p class="text-gray-700 dark:text-gray-300">
+        Dado que la aplicación usa <strong>Standalone Components</strong>, el concepto de "Módulo" es casi inexistente.
+      </p>
+      <div class="mt-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Estado de Migración</h3>
+        <p class="text-gray-700 dark:text-gray-300">
+          Actualmente el proyecto es <strong>100% Standalone</strong>. Se han eliminado todos los <code>NgModules</code>
+          legacy (como <em>SociosModule</em>, <em>GastosModule</em>, etc.) para simplificar la arquitectura y reducir el
+          boilerplate.
+        </p>
+      </div>
+    </section>
+
+    <!-- 5. Catálogo de Componentes Clave -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">5. Catálogo de Componentes Clave</h2>
+
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.1. Feature: Socios</h3>
+          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
+            <li><strong>Componente:</strong> <code>SocioListComponent</code></li>
+            <li><strong>Responsabilidad:</strong> Listar socios con filtrado.</li>
+            <li><strong>Datos:</strong> Array estático hardcoded.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.2. Feature: Gastos</h3>
+          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
+            <li><strong>Componente:</strong> <code>GastoListComponent</code></li>
+            <li><strong>Responsabilidad:</strong> CRUD completo de gastos.</li>
+            <li><strong>Datos:</strong> Persistencia en <code>localStorage</code>.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.3. Layout (Shared)</h3>
+          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
+            <li><strong>Componente:</strong> <code>AppLayoutComponent</code></li>
+            <li><strong>Responsabilidad:</strong> Orquestador principal (Sidebar + Header).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Catálogo de Servicios -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">6. Catálogo de Servicios</h2>
+      <p class="text-gray-700 dark:text-gray-300 mb-4">Los servicios globales se han centralizado en
+        <code>src/app/core/services</code>. Actualmente gestionan principalmente el estado de la UI (Sidebar, Theme,
+        Modales). Se planea agregar aquí los servicios de negocio (HTTP).
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700">
+              <th class="p-2 font-semibold">Servicio</th>
+              <th class="p-2 font-semibold">Responsabilidad</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr>
+              <td class="p-2 font-mono">SidebarService</td>
+              <td class="p-2">Gestiona estado del menú lateral.</td>
+            </tr>
+            <tr>
+              <td class="p-2 font-mono">ThemeService</td>
+              <td class="p-2">Gestiona tema Claro/Oscuro.</td>
+            </tr>
+            <tr>
+              <td class="p-2 font-mono">ModalService</td>
+              <td class="p-2">Controla apertura de modales simples.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 7. Arquitectura de Ruteo -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">7. Arquitectura de Ruteo</h2>
+      <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+        <li><strong>Estrategia:</strong> Eager Loading (Carga ansiosa).</li>
+        <li><strong>Ruta raíz /:</strong> Redirige a Dashboard.</li>
+        <li><strong>Riesgo:</strong> Bundle inicial pesado. Se recomienda migrar a Lazy Loading
+          (<code>loadComponent</code>).</li>
+      </ul>
+    </section>
+
+    <!-- 8. Recomendaciones -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">8. Recomendaciones de Desarrollo</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800">
+          <h3 class="font-bold text-orange-800 dark:text-orange-200 mb-2">Fase 1: Arquitectura</h3>
+          <ul class="list-disc pl-4 text-sm text-orange-900 dark:text-orange-100">
+            <li>Crear directorio Core para servicios singleton.</li>
+            <li>Implementar Lazy Loading en rutas.</li>
+            <li>Eliminar NgModules remanentes.</li>
+          </ul>
+        </div>
+
+        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-800">
+          <h3 class="font-bold text-green-800 dark:text-green-200 mb-2">Fase 2: Integración Backend</h3>
+          <ul class="list-disc pl-4 text-sm text-green-900 dark:text-green-100">
+            <li>Crear servicios HTTP (SociosService, GastosService).</li>
+            <li>Reemplazar Mocks por llamadas API.</li>
+            <li>Configurar variables de entorno.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Guía Funcional de Vistas -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">9. Guía Funcional de Vistas</h2>
+      <div class="grid grid-cols-1 gap-8">
+
+        <!-- Métricas Dashboard -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">1. Métricas Dashboard</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: / (EcommerceComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Vista principal que muestra tarjetas de resumen (KPIs) con totales de
+              Ingresos, Gastos y Beneficio Neto del mes en curso.</p>
+            <p><strong>Funcionamiento:</strong> Carga datos simulados para gráficos de línea y barras. Sirve como punto
+              de entrada para visualizar el estado general de la cooperativa.</p>
+          </div>
+        </article>
+
+        <!-- Usuario -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">2. Usuario (Perfil)</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /profile (ProfileComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Información detallada del usuario logueado, incluyendo foto de perfil, rol y
+              datos de contacto.</p>
+            <p><strong>Funcionamiento:</strong> Permite visualizar tarjetas de información personal. Actualmente utiliza
+              datos estáticos de ejemplo.</p>
+          </div>
+        </article>
+
+        <!-- Listado de Socios -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">3. Listado de Socios</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /socios (SocioListComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Tabla con la lista completa de socios (aprox. 100 registros precargados).
+              Muestra ID, Tienda, Nombre, Estado y Deuda Total.</p>
+            <p><strong>Funcionamiento:</strong> Incluye un buscador en tiempo real por nombre, apellido o número de
+              tienda. Permite navegar al detalle de cada socio.</p>
+          </div>
+        </article>
+
+        <!-- Información del Socio -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">4. Información del Socio</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /socios/:id (SocioDetailComponent)
+          </p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Vista detallada de un socio específico. Muestra su historial de pagos, deudas
+              pendientes y estado de habilitación.</p>
+            <p><strong>Funcionamiento:</strong> Recibe el <code>ID</code> por URL, busca al socio en el array estático y
+              muestra sus datos. Incluye botón para "Registrar Pago".</p>
+          </div>
+        </article>
+
+        <!-- Registrar Pago -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">5. Registrar Pago</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /pagos/registrar/:id
+            (RegistroPagoComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Wizard de 3 pasos para procesar un pago: 1) Selección de Conceptos, 2)
+              Confirmación de Monto, 3) Generación de Recibo.</p>
+            <p><strong>Funcionamiento:</strong> Valida montos y conceptos. Al finalizar, actualiza (simuladamente) la
+              deuda del socio y genera un registro de transacción.</p>
+          </div>
+        </article>
+
+        <!-- Recaudación Diaria -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">6. Recaudación Diaria</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /pagos/recaudacion-diaria
+            (RecaudacionDiariaComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Resumen de caja del día. Muestra el total recaudado en efectivo y
+              transferencias, desglosado por cajero.</p>
+            <p><strong>Funcionamiento:</strong> Simula el cierre de caja diario, permitiendo visualizar cuadres y
+              diferencias (mock).</p>
+          </div>
+        </article>
+
+        <!-- Reportes -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">7, 8, 9. Reportes (Ingresos, Gastos,
+            Almacén)</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /reportes/* (ReportesComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Vistas gráficas y tabulares para análisis histórico de datos.</p>
+            <p><strong>Funcionamiento:</strong> Componente reutilizable que adapta su contenido según la ruta
+              (`/reportes`, `/gastos`, `/inventario`). Usa gráficos de ApexCharts para visualizar tendencias.</p>
+          </div>
+        </article>
+
+        <!-- Gastos -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">10. Gastos</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /gastos (GastoListComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> CRUD para la gestión de egresos operativos y administrativos.</p>
+            <p><strong>Funcionamiento:</strong> Permite crear, editar y eliminar gastos. Persiste la información en
+              <strong>LocalStorage</strong> para mantener los datos entre recargas.</p>
+          </div>
+        </article>
+
+        <!-- Bancos -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">11. Movimientos Bancarios</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /bancos (BancosComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Registro de depósitos, retiros y conciliaciones bancarias.</p>
+            <p><strong>Funcionamiento:</strong> Interfaz para registrar manualmente operaciones bancarias externas
+              asociadas a la cooperativa.</p>
+          </div>
+        </article>
+
+        <!-- Inventario -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">12. Inventario - Almacén Interno</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /inventario (InventarioListComponent)
+          </p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Control de stock de insumos internos (limpieza, papelería, etc.).</p>
+            <p><strong>Funcionamiento:</strong> Control de kardex básico (entradas y salidas). Alertas visuales de stock
+              bajo.</p>
+          </div>
+        </article>
+
+        <!-- Auditoría -->
+        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">13. Auditoría de Cambios</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /auditoria (AuditoriaComponent)</p>
+          <div class="text-gray-700 dark:text-gray-300 space-y-2">
+            <p><strong>Contenido:</strong> Log histórico de acciones críticas realizadas en el sistema (quién hizo qué y
+              cuándo).</p>
+            <p><strong>Funcionamiento:</strong> Lista de solo lectura que registra eventos de modificación de datos
+              sensibles.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </div>
+</div>
