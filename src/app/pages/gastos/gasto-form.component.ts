@@ -1,71 +1,127 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, computed, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-export interface Gasto {
-  id: number;
-  categoria_gasto_id: number;
-  categoria_nombre?: string;
-  fecha: string; // YYYY-MM-DD
-  monto: number;
-  descripcion?: string;
-  comprobante_ref?: string;
-}
+import { CategoriaGasto, Gasto, GastoInput, gastoInputVacio } from './gasto.model';
 
 @Component({
   selector: 'app-gasto-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg w-full max-w-lg p-6">
-        <h3 class="text-lg font-semibold mb-4">{{ gasto.id ? 'Editar Gasto' : 'Nuevo Gasto' }}</h3>
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-5">
+          {{ esEdicion() ? 'Editar Gasto' : 'Nuevo Gasto' }}
+        </h3>
 
-        <div class="grid grid-cols-1 gap-3">
-          <label class="block text-sm">Categoría</label>
-          <select [(ngModel)]="gasto.categoria_gasto_id" class="border rounded px-3 py-2">
-            <option *ngFor="let c of categorias" [value]="c.id">{{ c.nombre }}</option>
-          </select>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
+            <select
+              [ngModel]="modelo().categoria_gasto_id"
+              (ngModelChange)="actualizar('categoria_gasto_id', $event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option [ngValue]="0" disabled>— Selecciona —</option>
+              @for (c of categorias; track c.id) {
+                <option [ngValue]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+          </div>
 
-          <label class="block text-sm">Fecha</label>
-          <input type="date" [(ngModel)]="gasto.fecha" class="border rounded px-3 py-2" />
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha</label>
+            <input type="date"
+              [ngModel]="modelo().fecha"
+              (ngModelChange)="actualizar('fecha', $event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
 
-          <label class="block text-sm">Monto</label>
-          <input type="number" [(ngModel)]="gasto.monto" class="border rounded px-3 py-2" />
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto (S/)</label>
+            <input type="number" step="0.01" min="0.01"
+              [ngModel]="modelo().monto"
+              (ngModelChange)="actualizar('monto', +$event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
 
-          <label class="block text-sm">Descripción</label>
-          <textarea [(ngModel)]="gasto.descripcion" class="border rounded px-3 py-2" rows="3"></textarea>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
+            <textarea rows="3"
+              [ngModel]="modelo().descripcion"
+              (ngModelChange)="actualizar('descripcion', $event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          </div>
 
-          <label class="block text-sm">Comprobante (ref)</label>
-          <input type="text" [(ngModel)]="gasto.comprobante_ref" class="border rounded px-3 py-2" />
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comprobante (referencia)</label>
+            <input type="text"
+              [ngModel]="modelo().comprobante_ref"
+              (ngModelChange)="actualizar('comprobante_ref', $event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          </div>
+
+          @if (errorValidacion()) {
+            <p class="text-sm text-red-600 dark:text-red-400">{{ errorValidacion() }}</p>
+          }
         </div>
 
-        <div class="mt-4 flex justify-end space-x-2">
-          <button (click)="onCancel()" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-          <button (click)="onSave()" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button>
+        <div class="mt-6 flex justify-end gap-2">
+          <button type="button" (click)="cancel.emit()"
+            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg">
+            Cancelar
+          </button>
+          <button type="button" (click)="onSave()"
+            class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm">
+            Guardar
+          </button>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class GastoFormComponent {
-  @Input() gasto: Gasto = { id: 0, categoria_gasto_id: 1, fecha: new Date().toISOString().slice(0,10), monto: 0 };
-  @Input() categorias: { id: number; nombre: string }[] = [
-    { id: 1, nombre: 'Operativo' },
-    { id: 2, nombre: 'Mantenimiento' },
-    { id: 3, nombre: 'Servicios' },
-  ];
-  @Output() save = new EventEmitter<Gasto>();
+  @Input() set gasto(g: Gasto | null) {
+    if (g) {
+      this._esEdicion.set(true);
+      this._editId.set(g.id);
+      this._modelo.set({
+        categoria_gasto_id: g.categoria_gasto_id,
+        fecha: g.fecha,
+        monto: Number(g.monto),
+        descripcion: g.descripcion,
+        comprobante_ref: g.comprobante_ref,
+      });
+    } else {
+      this._esEdicion.set(false);
+      this._editId.set(null);
+      this._modelo.set(gastoInputVacio());
+    }
+  }
+  @Input() categorias: CategoriaGasto[] = [];
+
+  @Output() save = new EventEmitter<{ id: number | null; input: GastoInput }>();
   @Output() cancel = new EventEmitter<void>();
 
-  onSave() {
-    if (!this.gasto.fecha || !this.gasto.monto) return alert('Fecha y monto son requeridos');
-    const cat = this.categorias.find(c => c.id === this.gasto.categoria_gasto_id);
-    this.gasto.categoria_nombre = cat ? cat.nombre : '';
-    this.save.emit(this.gasto);
+  private readonly _modelo = signal<GastoInput>(gastoInputVacio());
+  private readonly _esEdicion = signal(false);
+  private readonly _editId = signal<number | null>(null);
+  readonly modelo = this._modelo.asReadonly();
+  readonly esEdicion = this._esEdicion.asReadonly();
+
+  readonly errorValidacion = computed(() => {
+    const m = this._modelo();
+    if (!m.fecha) return 'La fecha es obligatoria.';
+    if (!m.monto || m.monto <= 0) return 'El monto debe ser mayor a 0.';
+    if (!m.categoria_gasto_id) return 'Selecciona una categoría.';
+    return null;
+  });
+
+  actualizar<K extends keyof GastoInput>(key: K, value: GastoInput[K]): void {
+    this._modelo.update(m => ({ ...m, [key]: value }));
   }
 
-  onCancel() {
-    this.cancel.emit();
+  onSave(): void {
+    if (this.errorValidacion()) return;
+    this.save.emit({ id: this._editId(), input: this._modelo() });
   }
 }

@@ -1,0 +1,427 @@
+-- =============================================================================
+-- Migracion 00004 - Seed: Historial de Titularidad y Arriendos (estado inicial)
+-- Cooperativa Primero de Mayo - SistemaCooperativa
+-- -----------------------------------------------------------------------------
+-- Vincula los socios e inquilinos del seed 00003 con sus puestos fisicos,
+-- segun el mapeo extraido de los Excel (columna N DE PUESTO).
+--
+-- Estado modelado: ESTADO INICIAL DEL SISTEMA
+--   * fecha_inicio = 2025-01-01
+--   * fecha_fin    = NULL (vigente)
+--
+-- Resolucion de claves foraneas (NO se hardcodean IDs):
+--   El INSERT...SELECT cruza:
+--     - public.puestos.codigo_puesto    <-> codigo del Excel
+--     - public.socios.apellidos         <-> nombre del socio (preservado exacto en 00003)
+--     - public.inquilinos.apellidos     <-> nombre del inquilino
+--     - historial_titularidad.socio_id  <-> se resuelve desde la titularidad VIGENTE
+--                                           del puesto al insertar arriendos
+--
+-- Idempotencia: TODOS los INSERT respetan los indices unicos parciales de 00002:
+--   ON CONFLICT (puesto_id) WHERE fecha_fin IS NULL DO NOTHING
+--   -> re-ejecutar la migracion es seguro y no inserta duplicados.
+--
+-- Inserts esperados:
+--   * 1 socio institucional COOPERATIVA PRIMERO DE MAYO (DNI 'COOP-00000')
+--   * 186 titularidades de socios individuales
+--   *  77 titularidades institucionales (puestos arrendados directamente)
+--   *  79 arriendos inquilino -> puesto
+--
+-- Calidad de datos (no bloqueante):
+--   * 37 variantes de nombre de socio descartadas por colision en mismo puesto
+--     (typos / nombres duplicados en Excel fuente).
+--   * 28 variantes de nombre de inquilino descartadas, idem.
+--   Las descartadas QUEDAN insertadas en socios/inquilinos (00003) pero sin
+--   titularidad/arriendo vinculados - revisar manualmente.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- 0. Socio institucional: COOPERATIVA PRIMERO DE MAYO
+--    Representa la titularidad colectiva sobre los puestos arrendados
+--    directamente por la cooperativa a inquilinos (tipicamente puestos -E).
+-- -----------------------------------------------------------------------------
+insert into public.socios (dni, nombres, apellidos, fecha_ingreso) values
+    ('COOP-00000', '', 'COOPERATIVA PRIMERO DE MAYO (titular institucional)', '1970-01-01')
+on conflict (dni) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- 1. Titularidad de socios individuales (186 registros)
+-- -----------------------------------------------------------------------------
+insert into public.historial_titularidad (puesto_id, socio_id, fecha_inicio, motivo_cambio)
+select p.id, s.id, '2025-01-01'::date, 'Carga inicial del sistema (seed 00004)'
+from (values
+    ('AGUIRRE QUISPE WILFREDO', '134'),
+    ('ALHUAY PALOMINO DE ALHUAY JUANA', '181'),
+    ('ALVAREZ CAMPOS VICTOR', '155'),
+    ('ALVAREZ MARIN MARIANELA', '80'),
+    ('ATANASIO ORTEGA MAXIMILIANA', '179'),
+    ('Alarcon Anampa Betsy', '63'),
+    ('Alarcon Anampa Nancy Gisela', '59'),
+    ('Alvarez Campos Rolando', '73'),
+    ('Anampa Corahua Clemencia Migdonia', '60'),
+    ('Ancco Leon Valentina', '48'),
+    ('Ayala Huashuayo Norma Gladys', '12'),
+    ('Ayala Toboada Eliseo', '10'),
+    ('BASTIDAS MEDINA HERMEREGILDO', '104'),
+    ('BERNAOLA DE PRADO FLORENCIA', '166'),
+    ('Bastidas Medina Dina', '74'),
+    ('Bravo Heredia Ana Maritza', '64'),
+    ('Burga Carrasco Elida', '15'),
+    ('CABALLERO CALZADO GLADYS VICTORIA', '108'),
+    ('CAHUANA PUCURIMAY ALEX', '67E'),
+    ('CAHUANA VDA DE DAVILA VICENTINA', '159'),
+    ('CALDERON VERA SEGUNDO', '184'),
+    ('CALLE ALVAREZ MARCO', '149'),
+    ('CAMPUZANO CABELLO VICENTA DONATILA', '101'),
+    ('CARDEÑA DE PACOMPIA ALEJANDRA', '13'),
+    ('CARPIO VASQUEZ TEOFILA', '183'),
+    ('CARRASCO SALVATIERRA FELICITA', '75'),
+    ('CARTAGENA MAMANI BENJAMIN', '165'),
+    ('CARTAGENA PALOMINO ALVARO BENJAMIN', '89'),
+    ('CASTRO ALEJANDRO HORTENCIA LUCILA', '79'),
+    ('CASTRO GUTIERREZ AQUILA', '18'),
+    ('CCOYLLO MAYHUASCA ALEXIS', '110'),
+    ('CCOYLLO POLANCO DANIEL', '117'),
+    ('CERDA YUPANQUI CARMEN ROSA', '103'),
+    ('CHALLCO DE PALOMINO NICOLAZA', '194'),
+    ('CHIRINOS CABRACANCHA LOURDES', '78'),
+    ('CHOQUE HUAMANI FELIX CEFERINO', '93'),
+    ('CORDOVA PEREZ MARCO ANTONI0', '94'),
+    ('CORNEJO DONATO DE CORDOVA ESTELA PILAR', '128'),
+    ('CRUZ JARAMILLO LUIS', '167'),
+    ('CUCHO DE LA CRUZ SAUL', '177'),
+    ('CULE CARRASCO HAYDEE MONICA', '171'),
+    ('CUSI LAURA SONIA', '154'),
+    ('Cabero Mendoza Gloria', '37'),
+    ('Cajaleon Carrasco Luis Enrique', '76'),
+    ('Calle Calle Fidel', '56'),
+    ('Ccoyllo Chinchay Daniel Masia', '62'),
+    ('Ccoyllo Chinchay Judith', '55'),
+    ('Ccoyllo Polanco German', '49'),
+    ('Choque Alata Marta Nelida', '17'),
+    ('Chuchuyo Hacha José', '67'),
+    ('Clemente Aller Cirila', '27'),
+    ('Cuevas Mayo Enrique', '71'),
+    ('Cuya Sanchez Alberto', '16'),
+    ('DE LA CRUZ ESTEBAN JOSE', '125'),
+    ('Davila Cahuana Marisol', '57'),
+    ('ESTELA SUAREZ ELVIA', '95'),
+    ('ESTRADA OSORIO DONATO', '162'),
+    ('Espejo Urbano Rosa Florencia', '35'),
+    ('Estela Calderon Torres', '58'),
+    ('FLORES FLORES IRENE', '152'),
+    ('FLORES FLORES UMBELINA', '163'),
+    ('Falcon Chiara Hector  Marcial', '14'),
+    ('Flores Yato Francisca Dolores', '24'),
+    ('GAVILAN MOSQUERA NORMA', '107'),
+    ('GELDRES REVILLA MIGUEL', '109'),
+    ('GUTIERREZ CASTILLO  JORGE', '191'),
+    ('GUTIERREZ CASTILLO  TERESA JESUS', '84'),
+    ('GUTIERREZ CASTRO JORGE', '170'),
+    ('GUTIERREZ FLORES ROGER', '39'),
+    ('HALIRE YUCRA JOSUE', '100'),
+    ('HEREDIA MUÑOZ DE BRAVO MARIA', '150'),
+    ('HERMELINDA MAYTA MATOS', '88'),
+    ('HUAMAN YNCA VISITACION', '140'),
+    ('HUAYHUALLA DE LOPEZ DONATILA', '113'),
+    ('Huamani Romero Donatila', '1'),
+    ('Huashuyo Gomez Eudosia', '9'),
+    ('JARA ALVARES CRISTALINA', '161'),
+    ('JARA ALVAREZ SANTOS', '87'),
+    ('Jara Alvarez Maria Cenaida', '50'),
+    ('Javier Sermeño Gutierrez', '20'),
+    ('Juan Valverde Rosas (CERRADO)', '54'),
+    ('Juarez Cuellar Leonor', '47'),
+    ('LOPEZ HUAYHUALLA NELLY', '169'),
+    ('LUJAN GONZALES MARINO', '178'),
+    ('Lagos Luna de Leiva Zaida', '25'),
+    ('Limas Vargas Carmen Rosa', '2'),
+    ('MALLQUI JULCA ALEJANDRINO', '192'),
+    ('MALLQUI LIZBETH', '130'),
+    ('MARIN HUAMAN MARIA YNES', '31'),
+    ('MARIN ILIZARDE BASILISA', '96'),
+    ('MARIN LONDOÑE EDUARDO SANTIAGO', '176'),
+    ('MARIN LONDOÑE MARIA LUZ', '81'),
+    ('MARIN ROCHA ESTEFANY', '126'),
+    ('MAYHUASCA BASTIDAS CLUDDY', '135'),
+    ('MAYHUASCA BASTIDAS MARILU', '186'),
+    ('MAYHUASCA BASTIDAS ULISES', '188'),
+    ('MAYTA COLQUI VIOLETA', '158'),
+    ('MEDINA GUITIERRES HONORATA', '174'),
+    ('MEDINA MEDRANO JUAN CARLOS', '143'),
+    ('MEJIA DE ARCE VICTORIA', '120'),
+    ('MELO BACA MARINA', '122'),
+    ('MESIA CRUZ GLADYS', '106'),
+    ('MONTALVO NEYRA RUFINA', '38'),
+    ('MORENO CHAVEZ RAFAEL FREDY', '83'),
+    ('Medina Jota Vicenta', '5'),
+    ('NICHO LOPEZ ESTHEPANY CARICIA', '144'),
+    ('OJEDA CAMPOS EDSON', '133'),
+    ('OQUENDO ARISACA MELESIA ROSARIO', '119'),
+    ('OQUENDO QUISPE JESSICA', '172'),
+    ('OQUENDO QUISPE MIGUEL   cerrado', '146'),
+    ('ORDOÑEZ NICHO AZUL CARILE', '182'),
+    ('ORTIZ ÑAUPA WELINTONH', '185'),
+    ('PALOMINO HANCCO CECILIA', '164'),
+    ('PALOMINO TENORIO SILVIO EDUARDO', '195'),
+    ('PALOMINO VELASQUEZ EUSEBIO', '147'),
+    ('PEREZ PONCE SATURNINA MARGARITA', '187'),
+    ('PORRAS DE OROYA OLIMPIA', '123'),
+    ('Paconpia Cardeña Giovanni', '29'),
+    ('Paredes Flores Oscar', '53'),
+    ('Paredes Morales Diana', '19'),
+    ('Paredes Morales Oscar Martín', '28'),
+    ('Perez Quispe Epifania', '40'),
+    ('Pittman Concepción Nelly Maria', '33'),
+    ('Prado Llancari Zosima', '42'),
+    ('QUINTANA VIDAL GLICERIO', '97'),
+    ('QUISPE CONSA MIGUEL', '115'),
+    ('QUISPE CONSA VIDAL', '90'),
+    ('QUISPE COPAYO  ELIO CARLOS', '114'),
+    ('QUISPE DE PALOMINO DOROTEA', '132'),
+    ('QUISPE DURAN ADRIANA', '157'),
+    ('QUISPE ORTEGA ROSA', '175'),
+    ('Quispe Uribe Luciano', '30'),
+    ('RAMOS CUEVA PEDRO', '139'),
+    ('REYES PEREZ DE VALENCIA NANCY', '127'),
+    ('RICSE SAYES TERESA REYNA', '136'),
+    ('RIOS RAMOS MANUEL ELOY', '138'),
+    ('RIVERA FERNANDEZ MARINA', '142'),
+    ('RODRIGUEZ MORENO NORA', '180'),
+    ('ROJAS CORNEJO ERICK', '99'),
+    ('ROMERO FLORES EDDNA', '151'),
+    ('ROMERO YSLA ESTEBAN LIDIO', '156'),
+    ('Rivera Callpa Juana Regis', '69'),
+    ('Rodriguez Arquiñego Idilio Félix', '51'),
+    ('Rojas Ignacio Leonila', '41'),
+    ('Romero Ninahuaman Javier', '3'),
+    ('SALAZAR CONCEPCION VICTORIA', '102'),
+    ('SALVATIERRA AYALA JUAN', '148'),
+    ('SANCHEZ RODRIGUEZ JUDITH', '190'),
+    ('SANTILLAN MESIA ZOILA', '124'),
+    ('SIRLEY KARINA COLINA CORREA', '32'),
+    ('SOTO GALLEGO DE VALERO', '85'),
+    ('SOTO VARGAS DE FLORES MARIA DEL CARMEN', '98'),
+    ('Saavedra Curipuma Luis Humberto', '43'),
+    ('Salas Montalvo Ruth', '6'),
+    ('Sanchez Astos de Torres Yolanda Sofia', '36'),
+    ('Sanchez Soto Lucia', '65'),
+    ('Segovia Villafuerte de Ponce', '34'),
+    ('Soria Tapia Edith Catalina', '68'),
+    ('Sosa Valdivia Juana Isabel', '4'),
+    ('TELLO QUINTANA EDGAR', '86'),
+    ('TINEO CABRERA SONIA', '112'),
+    ('TITO FALCON JESUSA', '105'),
+    ('TORRES ASTO FRANCISCO', '189'),
+    ('TORRES ASTO NERY (F)', '137'),
+    ('TORRES ASTO VDA DE CALDERON JUANA', '82'),
+    ('Taype Oquendo Eugenio Joel', '26'),
+    ('Tello Alvarez Marino', '44'),
+    ('Tintaya Cahuana Patricia', '72'),
+    ('Torres Anyorsa Marcelino', '70'),
+    ('URETA CRUZ  EMILIA', '8'),
+    ('VALENCIA TOMAS VICENTE', '116'),
+    ('VALERO SOTO  MAXIMO ELIAS', '153'),
+    ('VALLEJOS HUAMAN MARIA', '129'),
+    ('VARA CASTRO ERNESTINA', '121'),
+    ('VARA DE ROSAS ALICIA', '118'),
+    ('VICENTE CALIXTO JOSE ALBERTO', '160'),
+    ('VILCHEZ GUTARRA LOURDES', '91'),
+    ('VILLANUEVA INGA DE VASQUEZ ROSA', '168'),
+    ('Valero Pariona Maximo', '21'),
+    ('Valero Soto Willy Perseo Albino', '22'),
+    ('YRUPAILLA ANAMPA ISIDRO', '111'),
+    ('Yaurimucha Rimachi Marcos', '23'),
+    ('Yruipalla Falcon Hilda', '66'),
+    ('ZAPATA  VELIT VICTORIANO', '145'),
+    ('ZAPATA RIVERA ROSANA', '141'),
+    ('Ñahui Ruiz Aurelio', '61')
+) as m(nombre, codigo_puesto)
+join public.puestos p on p.codigo_puesto = m.codigo_puesto
+join public.socios   s on s.apellidos    = m.nombre
+on conflict (puesto_id) where fecha_fin is null do nothing;
+
+-- -----------------------------------------------------------------------------
+-- 2. Titularidad institucional COOPERATIVA (77 puestos)
+--    Para puestos con inquilino vigente pero sin socio individual conocido.
+-- -----------------------------------------------------------------------------
+insert into public.historial_titularidad (puesto_id, socio_id, fecha_inicio, motivo_cambio)
+select p.id,
+       (select id from public.socios where dni = 'COOP-00000'),
+       '2025-01-01'::date,
+       'Titularidad institucional - arrendado directamente por la cooperativa'
+from (values
+    ('1-E'),
+    ('10-E'),
+    ('11'),
+    ('11-E'),
+    ('12-E'),
+    ('13-E'),
+    ('14-E'),
+    ('15-E'),
+    ('16-E'),
+    ('17-E'),
+    ('18-E'),
+    ('19-E'),
+    ('2 DO PISO'),
+    ('2-E'),
+    ('20-E'),
+    ('21-E'),
+    ('22-E'),
+    ('23-E'),
+    ('24-E'),
+    ('25-E'),
+    ('26-E'),
+    ('27-E'),
+    ('28-E'),
+    ('29-E'),
+    ('2DO PISO'),
+    ('3-E'),
+    ('30-E'),
+    ('31-E'),
+    ('32-E'),
+    ('33-E'),
+    ('34-E'),
+    ('35-E'),
+    ('36-E'),
+    ('37-E'),
+    ('38-E'),
+    ('39-E'),
+    ('4-E'),
+    ('40-E'),
+    ('41-E'),
+    ('42-E'),
+    ('43-E'),
+    ('44-E'),
+    ('45'),
+    ('45-E'),
+    ('46'),
+    ('46-E'),
+    ('47-E'),
+    ('48-E'),
+    ('49-E'),
+    ('5-E'),
+    ('50-E'),
+    ('51-E'),
+    ('52'),
+    ('52-E'),
+    ('53-E'),
+    ('53-E Y 54-E'),
+    ('54-E'),
+    ('56-E'),
+    ('57-E'),
+    ('58-E'),
+    ('6-E'),
+    ('60-E'),
+    ('61-E'),
+    ('62-E'),
+    ('63-E'),
+    ('64-E'),
+    ('65-E'),
+    ('66-E'),
+    ('67-E'),
+    ('68-E'),
+    ('69-E'),
+    ('7-E'),
+    ('70-E'),
+    ('71-E'),
+    ('8-E'),
+    ('9-E'),
+    ('HUMITAS')
+) as m(codigo_puesto)
+join public.puestos p on p.codigo_puesto = m.codigo_puesto
+on conflict (puesto_id) where fecha_fin is null do nothing;
+
+-- -----------------------------------------------------------------------------
+-- 3. Arriendos inquilino -> puesto (79 registros)
+--    socio_titular_id se resuelve cruzando con la titularidad vigente del
+--    puesto (insertada en pasos 1 y 2 - siempre debe existir a estas alturas).
+-- -----------------------------------------------------------------------------
+insert into public.historial_arriendos (puesto_id, inquilino_id, socio_titular_id, fecha_inicio, motivo_termino)
+select p.id, i.id, ht.socio_id, '2025-01-01'::date, 'Carga inicial del sistema (seed 00004)'
+from (values
+    ('AIRE MALPARTIDA HECTOR', '31-E'),
+    ('ALARCON ESPINOZA MARTHA', '71-E'),
+    ('ALVAREZ CHIARA EDGAR', '36-E'),
+    ('ALVAREZ CHIARA EDGAR  SALVADOR', '51-E'),
+    ('ANATOLIA CHIPANA', 'HUMITAS'),
+    ('ANCHAYA HUAMAN ABEL', '2-E'),
+    ('ARMESTA GODOS JUANA JACKELINE', '29-E'),
+    ('ARREDONDO GARCIA GLADYS', '16-E'),
+    ('AVILA CHAVEZ ROSA', '48-E'),
+    ('AYALA HUASHUAYO MARLENE', '3-E'),
+    ('AZURZA TRIBIÑOS DAYSI ELIZABETH', '11-E'),
+    ('AZURZA TRIBIÑOS FABIOLA', '12-E'),
+    ('BELLIDO DE LA TORRE DE CHUQUITAIPE ZENAIDA', '4-E'),
+    ('BURGA CARRASCO ELMER', '8-E'),
+    ('BUSTAMANTE CHILON GRACIELA', '37-E'),
+    ('CAHUANA ALEX', '30-E'),
+    ('CARRASCO PICHIHUA MERY RUTH', '24-E'),
+    ('CASTILLO ZAPATA ESAEL', '1-E'),
+    ('CASTRO RODRIGUEZ JANET  CONSUELO', '45-E'),
+    ('CAYO HUAMANI BASILIO', '64-E'),
+    ('CCENCHO CARRASCO DAVID VICENTE', '23-E'),
+    ('CERDAN  MUÑOZ MARIA', '25-E'),
+    ('CERRON GALVAN OBDULIA', '2 DO PISO'),
+    ('CERVANTES GARCIA CARLOS ARTURO', '14-E'),
+    ('CHAMBI APAZA SIMONA', '60-E'),
+    ('CHOQUEHUANCA HUAMAN DAVID', '53-E Y 54-E'),
+    ('CHOQUEHUANCA HUAMAN DERSE', '62-E'),
+    ('CHOQUEHUANCA HUMAN DERSE', '57-E'),
+    ('CLAROS SANTOS', '38-E'),
+    ('COLINA SHIRLEY', '32'),
+    ('CUNIAS SANTOS MARIELA', '49-E'),
+    ('Coop. (Ayala Huashuayo Marlen Ester)', '11'),
+    ('Cooperativa Inq. L', '52'),
+    ('Cooperativa Inq. Loceria', '46'),
+    ('Cooperativa Inq. Peluquería', '45'),
+    ('DAVILA HILARES YESENIA', '22-E'),
+    ('DEISSY YESENIA LUJAN HUERTA', '34-E'),
+    ('DEPOSITO DEL LA SRA. VILLANUEVA ROSA', '43-E'),
+    ('DURAN CHACON  BLANCA', '70-E'),
+    ('Decoraciones', '54'),
+    ('ESPARTA CARDENAS JULIO HECTOR', '69-E'),
+    ('FLORES LAREDO DOMINICIA LUCIANA', '52-E'),
+    ('GARCIA MEDINA VDA DE MOLINA CLEMENCIA BEATRIZ', '15-E'),
+    ('GLADYS ENCARNACION PAUCARPOMA', '19-E'),
+    ('GOMERO DULANTO MARGARITA', '46-E'),
+    ('GOMEZ MITMA MARIBEL', '56-E'),
+    ('HERNANDEZ HERNANDEZ LILIBETH', '20-E'),
+    ('HERRERA CAMPOS ORFELITA', '35-E'),
+    ('HERRRERA CAMPOS ORFELITA', '50-E'),
+    ('HUAMANI MAXIMO', '2DO PISO'),
+    ('IDALINA MONTENEGRO', '67-E'),
+    ('LA ROSA LOPEZ MARGARITA', '47-E'),
+    ('LA ROSA MARGARITA', '61-E'),
+    ('LAPAS SALAZAR ANA MARIA', '26-E'),
+    ('LEON RODRIGUEZ ANGIE MARGARITA', '33-E'),
+    ('LEONARDO AMARILLO FEDERICO', '39-E'),
+    ('LEONARDO AMARILLO ROSANA PILAR', '40-E'),
+    ('LOPEZ CERRON HAYDEE', '13-E'),
+    ('LUCIANO INGA KARINA', '68-E'),
+    ('MALLMA CONDORI LISBETH', '58-E'),
+    ('MALLMA CONDORI LIZBETH LUCIA', '42-E'),
+    ('MARILIN DEL CARMEN VERA', '66-E'),
+    ('MAYHUASCA BASTIDAS DORIS', '5-E'),
+    ('MIRANDA CACERES FELICITA', '27-E'),
+    ('MUJICA PALOMINO SANDRA', '44-E'),
+    ('OBREGON CASTILLO FERNANDO MARTIN', '41-E'),
+    ('PALOMINO CUSI ROSA', '28-E'),
+    ('PEÑA VDA DE VILLANUEVA TEREZA', '17-E'),
+    ('PFUÑO RAMOS VICTOR', '10-E'),
+    ('PRADO CATAÑO MIRIAM MILAGROS', '18-E'),
+    ('QUISPE CHACEZ MARISOL', '53-E'),
+    ('QUISPE NAPUCHI LISBETH  KARITO', '65-E'),
+    ('REBAZA REBAZA CASILDA', '6-E'),
+    ('SANTOS CLAROS', '54-E'),
+    ('SATALAYA TAPULIMA SEGUNDO ELVIS', '32-E'),
+    ('TUEROS QUISPE PRUDENCIO', '63-E'),
+    ('YAURIMUCHA RIMACHI URSULA', '21-E'),
+    ('YAUYOS MENDIETA MARLENE', '9-E'),
+    ('ZANABRIA LADERA LILIA', '7-E')
+) as m(nombre, codigo_puesto)
+join public.puestos             p  on p.codigo_puesto = m.codigo_puesto
+join public.inquilinos          i  on i.apellidos     = m.nombre
+join public.historial_titularidad ht on ht.puesto_id  = p.id
+                                       and ht.fecha_fin is null
+on conflict (puesto_id) where fecha_fin is null do nothing;

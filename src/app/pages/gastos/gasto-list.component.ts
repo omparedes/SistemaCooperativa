@@ -1,155 +1,212 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GastoFormComponent, Gasto } from './gasto-form.component';
+import { GastosService } from '../../core/services/gastos.service';
+import { GastoFormComponent } from './gasto-form.component';
+import { Gasto, GastoInput } from './gasto.model';
 
 @Component({
   selector: 'app-gasto-list',
   standalone: true,
   imports: [CommonModule, FormsModule, GastoFormComponent],
   template: `
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-semibold">Gastos</h2>
-        <button (click)="nuevo()" class="px-4 py-2 bg-blue-600 text-white rounded">Registrar Nuevo Gasto</button>
-      </div>
+    <div class="p-6 max-w-7xl mx-auto">
+      <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Gastos</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Egresos operativos · {{ gastosFiltrados().length }} de {{ gastos().length }} visibles
+            @if (realtimeActivo()) {
+              <span class="ml-2 inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                en vivo
+              </span>
+            }
+          </p>
+        </div>
+        <button (click)="nuevo()"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm font-medium transition">
+          + Registrar Nuevo Gasto
+        </button>
+      </header>
 
-      <div class="bg-white p-4 rounded shadow mb-4">
+      @if (error()) {
+        <div class="mb-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 text-sm">
+          <strong>Error:</strong> {{ error() }}
+        </div>
+      }
+
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 mb-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label class="text-sm">Fecha inicio</label>
-            <input type="date" [(ngModel)]="fInicio" (change)="aplicarFiltro()" class="mt-1 border rounded px-3 py-2 w-full" />
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Fecha inicio</label>
+            <input type="date" [ngModel]="fInicio()" (ngModelChange)="fInicio.set($event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
           <div>
-            <label class="text-sm">Fecha fin</label>
-            <input type="date" [(ngModel)]="fFin" (change)="aplicarFiltro()" class="mt-1 border rounded px-3 py-2 w-full" />
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Fecha fin</label>
+            <input type="date" [ngModel]="fFin()" (ngModelChange)="fFin.set($event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
           </div>
           <div>
-            <label class="text-sm">Categoría</label>
-            <select [(ngModel)]="categoriaFiltro" (change)="aplicarFiltro()" class="mt-1 border rounded px-3 py-2 w-full">
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Categoría</label>
+            <select [ngModel]="categoriaFiltro()" (ngModelChange)="categoriaFiltro.set($event)"
+              class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
               <option value="">Todas</option>
-              <option *ngFor="let c of categorias" [value]="c.id">{{ c.nombre }}</option>
+              @for (c of categorias(); track c.id) {
+                <option [value]="c.id">{{ c.nombre }}</option>
+              }
             </select>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded shadow">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-gray-600 border-b">
-              <th>Fecha</th>
-              <th>Categoría</th>
-              <th class="text-right">Monto</th>
-              <th>Descripción</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let g of gastosFiltrados" class="border-b">
-              <td class="py-2">{{ g.fecha | date:'dd/MM/yyyy' }}</td>
-              <td class="py-2">{{ g.categoria_nombre }}</td>
-              <td class="py-2 text-right">S/ {{ g.monto.toFixed(2) }}</td>
-              <td class="py-2">{{ g.descripcion }}</td>
-              <td class="py-2">
-                <button (click)="editar(g)" class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded mr-2">Editar</button>
-                <button (click)="eliminar(g.id)" class="px-2 py-1 bg-red-100 text-red-800 rounded">Eliminar</button>
-              </td>
-            </tr>
-            <tr *ngIf="gastosFiltrados.length === 0">
-              <td colspan="5" class="py-4 text-center text-gray-500">No se encontraron gastos.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        @if (loading() && gastos().length === 0) {
+          <div class="p-12 flex items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
+            <span class="inline-block h-5 w-5 rounded-full border-2 border-brand-600 border-t-transparent animate-spin"></span>
+            Cargando gastos...
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium">Fecha</th>
+                  <th class="px-4 py-3 text-left font-medium">Categoría</th>
+                  <th class="px-4 py-3 text-right font-medium">Monto</th>
+                  <th class="px-4 py-3 text-left font-medium">Descripción</th>
+                  <th class="px-4 py-3 text-right font-medium">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                @for (g of gastosFiltrados(); track g.id) {
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition">
+                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ g.fecha | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300">
+                        {{ nombreCategoria(g.categoria_gasto_id) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white tabular-nums">S/ {{ g.monto.toFixed(2) }}</td>
+                    <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ g.descripcion || '—' }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <button (click)="editar(g)"
+                        class="px-2.5 py-1 text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded mr-1.5">
+                        Editar
+                      </button>
+                      <button (click)="anular(g)"
+                        class="px-2.5 py-1 text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded">
+                        Anular
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                      No hay gastos que coincidan con los filtros.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
 
-      <!-- Modal form -->
-      <ng-container *ngIf="showForm">
-        <app-gasto-form [gasto]="formModel" [categorias]="categorias" (save)="onSave($event)" (cancel)="onCancel()"></app-gasto-form>
-      </ng-container>
+      @if (showForm()) {
+        <app-gasto-form
+          [gasto]="gastoEnEdicion()"
+          [categorias]="categorias()"
+          (save)="onSave($event)"
+          (cancel)="cerrarForm()" />
+      }
     </div>
-  `
+  `,
 })
-export class GastoListComponent implements OnInit {
-  gastos: Gasto[] = [];
-  gastosFiltrados: Gasto[] = [];
+export class GastoListComponent implements OnInit, OnDestroy {
+  private readonly svc = inject(GastosService);
 
-  categorias = [
-    { id: 1, nombre: 'Operativo' },
-    { id: 2, nombre: 'Mantenimiento' },
-    { id: 3, nombre: 'Servicios' },
-  ];
+  readonly gastos = this.svc.gastos;
+  readonly categorias = this.svc.categorias;
+  readonly loading = this.svc.loading;
+  readonly error = this.svc.error;
 
-  fInicio: string | null = null;
-  fFin: string | null = null;
-  categoriaFiltro: string = '';
+  readonly fInicio = signal<string>('');
+  readonly fFin = signal<string>('');
+  readonly categoriaFiltro = signal<string>('');
 
-  showForm = false;
-  formModel: Gasto = { id: 0, categoria_gasto_id: 1, fecha: new Date().toISOString().slice(0,10), monto: 0 };
+  readonly showForm = signal(false);
+  readonly gastoEnEdicion = signal<Gasto | null>(null);
+  readonly realtimeActivo = signal(false);
 
-  ngOnInit(): void {
-    this.cargar();
-    this.aplicarFiltro();
-  }
-
-  cargar() {
-    try {
-      const raw = localStorage.getItem('gastos');
-      this.gastos = raw ? JSON.parse(raw) as Gasto[] : [];
-    } catch (e) {
-      this.gastos = [];
-    }
-    this.gastosFiltrados = [...this.gastos];
-  }
-
-  guardar() {
-    localStorage.setItem('gastos', JSON.stringify(this.gastos));
-    this.aplicarFiltro();
-  }
-
-  aplicarFiltro() {
-    const start = this.fInicio ? new Date(this.fInicio + 'T00:00:00') : null;
-    const end = this.fFin ? new Date(this.fFin + 'T23:59:59') : null;
-
-    this.gastosFiltrados = this.gastos.filter(g => {
+  readonly gastosFiltrados = computed(() => {
+    const inicio = this.fInicio();
+    const fin = this.fFin();
+    const cat = this.categoriaFiltro();
+    const start = inicio ? new Date(inicio + 'T00:00:00') : null;
+    const end = fin ? new Date(fin + 'T23:59:59') : null;
+    return this.gastos().filter(g => {
       const fecha = new Date(g.fecha);
       const inRange = (!start || fecha >= start) && (!end || fecha <= end);
-      const inCat = !this.categoriaFiltro || g.categoria_gasto_id === Number(this.categoriaFiltro);
+      const inCat = !cat || g.categoria_gasto_id === Number(cat);
       return inRange && inCat;
     });
+  });
+
+  ngOnInit(): void {
+    void this.svc.cargarTodo();
+    this.svc.conectarRealtime();
+    this.realtimeActivo.set(true);
   }
 
-  nuevo() {
-    this.formModel = { id: 0, categoria_gasto_id: 1, fecha: new Date().toISOString().slice(0,10), monto: 0 };
-    this.showForm = true;
+  ngOnDestroy(): void {
+    this.svc.desconectarRealtime();
+    this.realtimeActivo.set(false);
   }
 
-  editar(g: Gasto) {
-    this.formModel = { ...g };
-    this.showForm = true;
+  nombreCategoria(id: number): string {
+    return this.svc.nombreCategoria(id);
   }
 
-  eliminar(id: number) {
-    if (!confirm('¿Eliminar gasto?')) return;
-    this.gastos = this.gastos.filter(x => x.id !== id);
-    this.guardar();
+  nuevo(): void {
+    this.gastoEnEdicion.set(null);
+    this.showForm.set(true);
   }
 
-  onSave(g: Gasto) {
-    if (g.id && g.id > 0) {
-      const idx = this.gastos.findIndex(x => x.id === g.id);
-      if (idx >= 0) this.gastos[idx] = { ...g };
-    } else {
-      g.id = Date.now();
-      const cat = this.categorias.find(c => c.id === g.categoria_gasto_id);
-      g.categoria_nombre = cat ? cat.nombre : '';
-      this.gastos.unshift(g);
+  editar(g: Gasto): void {
+    this.gastoEnEdicion.set(g);
+    this.showForm.set(true);
+  }
+
+  cerrarForm(): void {
+    this.showForm.set(false);
+    this.gastoEnEdicion.set(null);
+  }
+
+  async onSave(ev: { id: number | null; input: GastoInput }): Promise<void> {
+    try {
+      if (ev.id) {
+        await this.svc.actualizar(ev.id, ev.input);
+      } else {
+        await this.svc.crear(ev.input);
+      }
+      this.cerrarForm();
+    } catch {
+      // El error ya fue capturado en el signal `error` del servicio.
     }
-    this.guardar();
-    this.showForm = false;
   }
 
-  onCancel() {
-    this.showForm = false;
+  async anular(g: Gasto): Promise<void> {
+    const motivo = window.prompt(
+      `Anular el gasto de S/ ${g.monto.toFixed(2)} del ${g.fecha}.\n` +
+      `Motivo de anulación (obligatorio):`
+    );
+    if (!motivo || !motivo.trim()) return;
+    try {
+      await this.svc.anular(g.id, motivo.trim());
+    } catch {
+      // Error ya reflejado en el signal del servicio.
+    }
   }
 }

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import openpyxl; print\\('openpyxl OK'\\)\")",
+      "Bash(python -c \"import pandas; print\\('pandas OK'\\)\")",
+      "Bash(python)",
+      "Bash(python -c ' *)",
+      "Bash(python c:/Github/SistemaCooperativa/datos_iniciales/_gen_00004.py)",
+      "Bash(node test_db.js)",
+      "Bash(npm install *)"
+    ]
+  }
+}

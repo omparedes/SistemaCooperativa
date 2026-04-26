@@ -40,3 +40,14 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Secrets / credenciales (NUNCA committear)
+.env
+.env.*
+!.env.example
+.mcp.json
+
+# Supabase local
+/supabase/.branches
+/supabase/.temp
+/supabase/.env

@@ -1,0 +1,163 @@
+import { inject, Injectable, signal } from '@angular/core';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { SUPABASE_CLIENT } from './supabase.client';
+import {
+  CategoriaGasto,
+  Gasto,
+  GastoInput,
+} from '../../pages/gastos/gasto.model';
+
+@Injectable({ providedIn: 'root' })
+export class GastosService {
+  private readonly db = inject(SUPABASE_CLIENT);
+
+  private readonly _gastos = signal<Gasto[]>([]);
+  private readonly _categorias = signal<CategoriaGasto[]>([]);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
+
+  readonly gastos = this._gastos.asReadonly();
+  readonly categorias = this._categorias.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
+
+  private channel: RealtimeChannel | null = null;
+
+  private async garantizarSesion(): Promise<string> {
+    const { data: actual } = await this.db.auth.getUser();
+    if (actual.user) return actual.user.id;
+
+    const { data, error } = await this.db.auth.signInAnonymously();
+    if (error || !data.user) {
+      throw new Error(
+        `No se pudo iniciar sesión anónima: ${error?.message ?? 'sin usuario'}. ` +
+        `Habilita 'Anonymous Sign-Ins' en Supabase Dashboard → Authentication → Providers.`
+      );
+    }
+    return data.user.id;
+  }
+
+  async cargarTodo(): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
+    try {
+      await this.garantizarSesion();
+
+      const [gastosRes, catsRes] = await Promise.all([
+        this.db.from('gastos')
+          .select('*')
+          .is('deleted_at', null)
+          .order('fecha', { ascending: false }),
+        this.db.from('categorias_gasto')
+          .select('*')
+          .eq('activo', true)
+          .order('nombre'),
+      ]);
+
+      if (gastosRes.error) throw new Error(gastosRes.error.message);
+      if (catsRes.error) throw new Error(catsRes.error.message);
+
+      this._gastos.set((gastosRes.data ?? []) as Gasto[]);
+      this._categorias.set((catsRes.data ?? []) as CategoriaGasto[]);
+    } catch (e: unknown) {
+      this._error.set(e instanceof Error ? e.message : 'Error desconocido al cargar');
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  async crear(input: GastoInput): Promise<void> {
+    this._error.set(null);
+    try {
+      const userId = await this.garantizarSesion();
+      const { error } = await this.db.from('gastos').insert({
+        ...input,
+        created_by: userId,
+      });
+      if (error) throw new Error(error.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al crear el gasto';
+      this._error.set(msg);
+      throw e;
+    }
+  }
+
+  async actualizar(id: number, input: GastoInput): Promise<void> {
+    this._error.set(null);
+    try {
+      const { error } = await this.db.from('gastos')
+        .update(input)
+        .eq('id', id)
+        .is('deleted_at', null);
+      if (error) throw new Error(error.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al actualizar el gasto';
+      this._error.set(msg);
+      throw e;
+    }
+  }
+
+  async anular(id: number, motivo: string): Promise<void> {
+    this._error.set(null);
+    try {
+      const userId = await this.garantizarSesion();
+      const { error } = await this.db.from('gastos')
+        .update({
+          deleted_at: new Date().toISOString(),
+          anulado_por: userId,
+          motivo_anulacion: motivo,
+        })
+        .eq('id', id)
+        .is('deleted_at', null);
+      if (error) throw new Error(error.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al anular el gasto';
+      this._error.set(msg);
+      throw e;
+    }
+  }
+
+  conectarRealtime(): void {
+    if (this.channel) return;
+
+    this.channel = this.db
+      .channel('gastos-list-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'gastos' },
+        ({ new: row }) => {
+          const g = row as Gasto;
+          if (g.deleted_at) return;
+          this._gastos.update(list =>
+            list.some(x => x.id === g.id) ? list : [g, ...list]
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'gastos' },
+        ({ new: row }) => {
+          const g = row as Gasto;
+          this._gastos.update(list => {
+            if (g.deleted_at) return list.filter(x => x.id !== g.id);
+            const idx = list.findIndex(x => x.id === g.id);
+            if (idx === -1) return [g, ...list];
+            const copia = list.slice();
+            copia[idx] = g;
+            return copia;
+          });
+        }
+      )
+      .subscribe();
+  }
+
+  desconectarRealtime(): void {
+    if (!this.channel) return;
+    void this.db.removeChannel(this.channel);
+    this.channel = null;
+  }
+
+  nombreCategoria(id: number): string {
+    return this._categorias().find(c => c.id === id)?.nombre ?? '';
+  }
+}
