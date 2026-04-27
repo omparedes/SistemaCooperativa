@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
+import { authGuard, noAuthGuard } from './core/guards/auth.guard';
+import { LoginComponent } from './pages/auth-pages/login/login.component';
 import { EcommerceComponent } from './pages/dashboard/ecommerce/ecommerce.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { FormElementsComponent } from './pages/forms/form-elements/form-elements.component';
 import { BasicTablesComponent } from './pages/tables/basic-tables/basic-tables.component';
@@ -24,6 +27,7 @@ import { InquilinoDetailComponent } from './pages/socios/inquilino-detail.compon
 import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
 import { PagoWizardComponent } from './pages/pagos/pago-wizard.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
+import { ArqueoCajaComponent } from './pages/reportes/arqueo-caja.component';
 import { GastoListComponent } from './pages/gastos/gasto-list.component';
 import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
 import { InventarioListComponent } from './pages/inventario/inventario-list.component';
@@ -35,13 +39,13 @@ export const routes: Routes = [
   {
     path: '',
     component: AppLayoutComponent,
+    canActivate: [authGuard],   // ← protege todas las rutas hijas
     children: [
       {
         path: '',
-        component: EcommerceComponent,
+        component: DashboardComponent,
         pathMatch: 'full',
-        title:
-          'Mercado Primero de Mayo - Sistema Interno de Gestión',
+        title: 'Dashboard | Mercado Primero de Mayo',
       },
       {
         path: 'calendar',
@@ -135,6 +139,11 @@ export const routes: Routes = [
         title: 'Reportes de Ingresos | TailAdmin'
       },
       {
+        path: 'reportes/arqueo-diario',
+        component: ArqueoCajaComponent,
+        title: 'Arqueo de Caja Diario | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'reportes/gastos',
         component: ReportesComponent,
         title: 'Reportes de Gastos | TailAdmin'
@@ -191,11 +200,18 @@ export const routes: Routes = [
       },
     ]
   },
-  // auth pages
+  // ── Autenticación ────────────────────────────────────────────────────────
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [noAuthGuard],  // redirige a / si ya hay sesión
+    title: 'Iniciar sesión | Cooperativa Primero de Mayo',
+  },
   {
     path: 'signin',
     component: SignInComponent,
-    title: 'Iniciar sesión | TailAdmin'
+    canActivate: [noAuthGuard],   // redirige a / si ya hay sesión con perfil
+    title: 'Iniciar sesión | Cooperativa Primero de Mayo',
   },
   {
     path: 'signup',

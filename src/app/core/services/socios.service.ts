@@ -66,18 +66,10 @@ export class SociosService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  private async garantizarSesion(): Promise<void> {
-    const { data: actual } = await this.db.auth.getUser();
-    if (actual.user) return;
-    const { error } = await this.db.auth.signInAnonymously();
-    if (error) throw new Error(`No se pudo iniciar sesión: ${error.message}`);
-  }
-
   async cargar(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
     try {
-      await this.garantizarSesion();
 
       const { data, error } = await this.db
         .from('socios')
@@ -105,7 +97,6 @@ export class SociosService {
   }
 
   async cargarDetalle(id: number): Promise<SocioDetalle> {
-    await this.garantizarSesion();
 
     const { data, error } = await this.db
       .from('socios')

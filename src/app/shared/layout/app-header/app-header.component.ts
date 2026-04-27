@@ -1,5 +1,6 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeToggleButtonComponent } from '../../components/common/theme-toggle/theme-toggle-button.component';
@@ -21,10 +22,17 @@ export class AppHeaderComponent {
   isApplicationMenuOpen = false;
   readonly isMobileOpen$;
 
+  /** Expuesto como `protected` para uso directo en la plantilla HTML del header. */
+  protected readonly auth = inject(AuthService);
+
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   constructor(public sidebarService: SidebarService) {
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
+  }
+
+  logout(): void {
+    void this.auth.logout();
   }
 
   handleToggle() {

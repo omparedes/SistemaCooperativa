@@ -23,26 +23,10 @@ export class GastosService {
 
   private channel: RealtimeChannel | null = null;
 
-  private async garantizarSesion(): Promise<string> {
-    const { data: actual } = await this.db.auth.getUser();
-    if (actual.user) return actual.user.id;
-
-    const { data, error } = await this.db.auth.signInAnonymously();
-    if (error || !data.user) {
-      throw new Error(
-        `No se pudo iniciar sesión anónima: ${error?.message ?? 'sin usuario'}. ` +
-        `Habilita 'Anonymous Sign-Ins' en Supabase Dashboard → Authentication → Providers.`
-      );
-    }
-    return data.user.id;
-  }
-
   async cargarTodo(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
     try {
-      await this.garantizarSesion();
-
       const [gastosRes, catsRes] = await Promise.all([
         this.db.from('gastos')
           .select('*')
@@ -69,7 +53,8 @@ export class GastosService {
   async crear(input: GastoInput): Promise<void> {
     this._error.set(null);
     try {
-      const userId = await this.garantizarSesion();
+      const { data: { user } } = await this.db.auth.getUser();
+      const userId = user?.id ?? null;
       const { error } = await this.db.from('gastos').insert({
         ...input,
         created_by: userId,
@@ -100,7 +85,8 @@ export class GastosService {
   async anular(id: number, motivo: string): Promise<void> {
     this._error.set(null);
     try {
-      const userId = await this.garantizarSesion();
+      const { data: { user } } = await this.db.auth.getUser();
+      const userId = user?.id ?? null;
       const { error } = await this.db.from('gastos')
         .update({
           deleted_at: new Date().toISOString(),

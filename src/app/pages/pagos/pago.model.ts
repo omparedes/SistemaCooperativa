@@ -29,3 +29,25 @@ export interface LineaFifo {
   monto_aplicado: number;
   cubierto_completo: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Historial de pagos (para las fichas de socio / inquilino)
+// ---------------------------------------------------------------------------
+export interface PagoHistorialDetalle {
+  monto_aplicado: number;
+  concepto: string;
+  periodo_anio: number;
+  periodo_mes: number;
+  monto_original: number;
+}
+
+export interface PagoHistorial {
+  id: number;
+  codigo_transaccion: string;
+  fecha_pago: string;
+  monto_total: number;
+  metodo_pago: MetodoPago;
+  comprobante: string | null;
+  codigo_puesto: string;
+  detalle: PagoHistorialDetalle[];
+}
