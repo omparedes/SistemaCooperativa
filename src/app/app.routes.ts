@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-import { authGuard, noAuthGuard } from './core/guards/auth.guard';
+import { adminGuard, authGuard, noAuthGuard } from './core/guards/auth.guard';
+import { FacturacionMedidoresComponent } from './pages/facturacion/facturacion-medidores.component';
+import { FacturacionFijaComponent } from './pages/facturacion/facturacion-fija.component';
 import { LoginComponent } from './pages/auth-pages/login/login.component';
 import { EcommerceComponent } from './pages/dashboard/ecommerce/ecommerce.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
@@ -157,6 +159,19 @@ export const routes: Routes = [
         path: 'reportes/inventario/bajo-stock',
         component: ReportesComponent,
         title: 'Reporte de Almacén - Bajo Stock | TailAdmin'
+      },
+      // ── Facturación (solo Administrador) ────────────────────────────────
+      {
+        path: 'facturacion/medidores',
+        component: FacturacionMedidoresComponent,
+        canActivate: [adminGuard],
+        title: 'Registro de Medidores | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'facturacion/cargos-fijos',
+        component: FacturacionFijaComponent,
+        canActivate: [adminGuard],
+        title: 'Cargos Fijos del Mes | Cooperativa Primero de Mayo',
       },
       {
         path: 'gastos',

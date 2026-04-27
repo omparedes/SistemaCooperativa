@@ -1,0 +1,21 @@
+# =========================
+# Ignorar dependencias y compilados
+# =========================
+node_modules/
+dist/
+.angular/
+
+# =========================
+# Ignorar datos pesados (CRÍTICO PARA AHORRAR TOKENS)
+# =========================
+datos_iniciales/
+*.csv
+*.xlsx
+*.xls
+*.pdf
+
+# =========================
+# Ignorar configuraciones locales
+# =========================
+.env
+.env.local

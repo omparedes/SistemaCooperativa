@@ -21,6 +21,24 @@ export const authGuard: CanActivateFn = async () => {
 };
 
 /**
+ * Protege rutas exclusivas del rol Administrador.
+ * Redirige al dashboard (/) si el usuario está autenticado pero no es Admin.
+ */
+export const adminGuard: CanActivateFn = async () => {
+  const auth   = inject(AuthService);
+  const router = inject(Router);
+
+  await auth.esperarInicializacion();
+
+  if (auth.usuario() !== null && auth.perfil() !== null && auth.esAdmin()) return true;
+
+  // Autenticado pero sin permisos → vuelve al dashboard en silencio
+  if (auth.usuario() !== null && auth.perfil() !== null) return router.createUrlTree(['/']);
+
+  return router.createUrlTree(['/signin']);
+};
+
+/**
  * Redirige a / si el usuario ya está autenticado.
  * Usado en la ruta /login para evitar que un usuario logueado vea el login.
  */

@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { PdfGeneratorService } from '../../core/services/pdf-generator.service';
 import {
   ArqueoResumen,
   ReportesService,
@@ -39,7 +39,7 @@ function fmtSoles(n: number): string {
 @Component({
   selector: 'app-arqueo-caja',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6 2xl:p-8">
 
@@ -98,12 +98,20 @@ function fmtSoles(n: number): string {
           <!-- Imprimir -->
           <button
             (click)="imprimirArqueo()"
-            [disabled]="!resumen() || cargando()"
+            [disabled]="!resumen() || cargando() || generandoPdf()"
             class="flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-4 text-sm font-medium text-white transition hover:bg-brand-700 disabled:opacity-40">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-            </svg>
-            Imprimir Arqueo
+            @if (generandoPdf()) {
+              <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Generando PDF…
+            } @else {
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+              </svg>
+              Imprimir Arqueo (PDF)
+            }
           </button>
         </div>
       </div>
@@ -432,6 +440,7 @@ function fmtSoles(n: number): string {
 export class ArqueoCajaComponent implements OnInit {
   protected readonly auth = inject(AuthService);
   private readonly reportesSvc = inject(ReportesService);
+  private readonly pdfSvc      = inject(PdfGeneratorService);
 
   // Helpers expuestos al template
   protected readonly fmtSoles        = fmtSoles;
@@ -445,6 +454,7 @@ export class ArqueoCajaComponent implements OnInit {
   readonly cargando      = signal(false);
   readonly error         = signal<string | null>(null);
   readonly resumen       = signal<ArqueoResumen | null>(null);
+  readonly generandoPdf  = signal(false);
 
   // Computed para los porcentajes de la barra de métodos
   readonly efectivoPct = computed(() => {
@@ -493,33 +503,21 @@ export class ArqueoCajaComponent implements OnInit {
     void this.cargar();
   }
 
-  imprimirArqueo(): void {
+  async imprimirArqueo(): Promise<void> {
     const r = this.resumen();
     if (!r) return;
 
-    console.log('══════════════════════════════════════════');
-    console.log('   ARQUEO DE CAJA — Cooperativa Primero de Mayo');
-    console.log(`   Fecha: ${formatFechaLarga(r.fecha)}`);
-    console.log('══════════════════════════════════════════');
-    console.log(`   Total del día:     ${fmtSoles(r.total_dia)}`);
-    console.log(`   Efectivo (gaveta): ${fmtSoles(r.total_efectivo)}`);
-    console.log(`   Transferencia/QR:  ${fmtSoles(r.total_transferencia)}`);
-    console.log(`   Recibos emitidos:  ${r.cantidad_recibos}`);
-    console.log('──────────────────────────────────────────');
-    console.log('   Por concepto:');
-    for (const c of r.por_concepto) {
-      console.log(`     ${c.concepto.padEnd(24)} ${fmtSoles(c.monto)}  (${c.cantidad} det.)`);
+    const cajero = this.auth.perfil()?.nombres
+      ?? this.auth.perfil()?.email
+      ?? 'Sistema de Recaudación';
+
+    this.generandoPdf.set(true);
+    try {
+      await this.pdfSvc.generarArqueoYAbrir(r, cajero);
+    } catch (e: unknown) {
+      this.error.set(`Error al generar PDF: ${e instanceof Error ? e.message : 'error desconocido'}`);
+    } finally {
+      this.generandoPdf.set(false);
     }
-    console.log('──────────────────────────────────────────');
-    console.log('   Recibos:');
-    for (const p of r.recibos) {
-      console.log(
-        `     ${formatHora(p.fecha_pago)}  ${p.codigo_transaccion}  ` +
-        `${p.pagador.substring(0, 25).padEnd(25)}  ${fmtSoles(p.monto_total)}  ${p.metodo_pago}`,
-      );
-    }
-    console.log('══════════════════════════════════════════');
-    console.log('   Cajero registrador:', this.auth.perfil()?.nombres ?? this.auth.perfil()?.email);
-    console.log('   Impreso:', new Date().toLocaleString('es-PE'));
   }
 }

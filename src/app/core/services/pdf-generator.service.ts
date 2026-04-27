@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import type { ArqueoConcepto, ArqueoPago, ArqueoResumen } from './reportes.service';
 // @types/pdfmake no re-exporta TDocumentDefinitions ni TVirtualFileSystem desde
 // su API pública, pero sí las usa en las firmas de sus funciones exportadas.
 // Usamos `import type * as` para obtener el tipo del namespace y extraemos
@@ -59,6 +60,16 @@ const FUENTES: FontDictionary = {
   },
 };
 
+function formatFechaArqueo(fechaYYYYMMDD: string): string {
+  const [y, m, d] = fechaYYYYMMDD.split('-').map(Number);
+  return `${d} de ${MESES_ES[m - 1]} de ${y}`;
+}
+
+function formatHoraISO(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 // ---------------------------------------------------------------------------
 // Colores del recibo
 // ---------------------------------------------------------------------------
@@ -92,6 +103,247 @@ export class PdfGeneratorService {
     const pm = await this.cargarModulo();
     await pm.createPdf(this.construirDocumento(datos))
       .download(`recibo-${datos.codigo_transaccion}.pdf`);
+  }
+
+  // -------------------------------------------------------------------------
+  // Arqueo de caja
+  // -------------------------------------------------------------------------
+
+  /** Genera el arqueo diario y lo abre en nueva pestaña. */
+  async generarArqueoYAbrir(resumen: ArqueoResumen, cajero: string): Promise<void> {
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumentoArqueo(resumen, cajero)).open();
+  }
+
+  /** Genera el arqueo diario y lo descarga. */
+  async descargarArqueo(resumen: ArqueoResumen, cajero: string): Promise<void> {
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumentoArqueo(resumen, cajero))
+      .download(`arqueo-${resumen.fecha}.pdf`);
+  }
+
+  private construirDocumentoArqueo(r: ArqueoResumen, cajero: string): DocDefinition {
+    const pct = (n: number) =>
+      r.total_dia > 0 ? `${((n / r.total_dia) * 100).toFixed(0)}%` : '0%';
+
+    // ── Layout reutilizable ────────────────────────────────────────────────
+    const layoutBordes: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+    };
+
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: C.azulClaro, alignment: al });
+
+    // ── Tabla KPI (3 columnas) ─────────────────────────────────────────────
+    const kpiTable: DocDefinition = {
+      table: {
+        widths: ['*', '*', '*'],
+        body: [[
+          {
+            stack: [
+              { text: 'TOTAL DEL DÍA', fontSize: 8, bold: true, color: C.grisTxt },
+              { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 20, bold: true, color: C.azul, margin: [0, 4, 0, 2] },
+              { text: `${r.cantidad_recibos} recibo${r.cantidad_recibos !== 1 ? 's' : ''}`, fontSize: 8, color: C.grisTxt },
+            ],
+            fillColor: '#F0F4FF', margin: [8, 8, 8, 8],
+          },
+          {
+            stack: [
+              { text: 'EFECTIVO (GAVETA)', fontSize: 8, bold: true, color: '#166534' },
+              { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 20, bold: true, color: C.verde, margin: [0, 4, 0, 2] },
+              { text: pct(r.total_efectivo), fontSize: 8, color: '#166534' },
+            ],
+            fillColor: '#F0FDF4', margin: [8, 8, 8, 8],
+          },
+          {
+            stack: [
+              { text: 'TRANSFERENCIA / QR', fontSize: 8, bold: true, color: '#1e3a8a' },
+              { text: `S/ ${r.total_transferencia.toFixed(2)}`, fontSize: 20, bold: true, color: '#2563EB', margin: [0, 4, 0, 2] },
+              { text: pct(r.total_transferencia), fontSize: 8, color: '#1e3a8a' },
+            ],
+            fillColor: '#EFF6FF', margin: [8, 8, 8, 8],
+          },
+        ]],
+      },
+      layout: {
+        hLineWidth: () => 1, vLineWidth: () => 1,
+        hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde,
+      },
+      margin: [0, 0, 0, 16],
+    } as unknown as DocDefinition;
+
+    // ── Tabla desglose por concepto ────────────────────────────────────────
+    const filasConcepto: TableCell[][] = r.por_concepto.map((c: ArqueoConcepto) => [
+      { text: c.concepto, fontSize: 9, color: C.grisOsc },
+      { text: String(c.cantidad), fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
+      { text: `S/ ${c.monto.toFixed(2)}`, fontSize: 9, bold: true, color: C.negro, alignment: 'right' as const },
+      { text: pct(c.monto), fontSize: 9, color: C.grisTxt, alignment: 'right' as const },
+    ]);
+
+    const filaTotalConcepto: TableCell[] = [
+      { text: 'TOTAL', fontSize: 9, bold: true, color: C.azul },
+      { text: String(r.por_concepto.reduce((s, c) => s + c.cantidad, 0)),
+        fontSize: 9, bold: true, color: C.azul, alignment: 'center' as const },
+      { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 11, bold: true, color: C.azulClaro, alignment: 'right' as const },
+      { text: '100%', fontSize: 9, color: C.grisTxt, alignment: 'right' as const },
+    ];
+
+    // ── Tabla recibos ──────────────────────────────────────────────────────
+    const filasRecibos: TableCell[][] = r.recibos.map((p: ArqueoPago) => [
+      { text: formatHoraISO(p.fecha_pago), fontSize: 8, color: C.grisOsc },
+      { text: p.codigo_transaccion, fontSize: 7.5, color: C.azulClaro },
+      { text: p.pagador, fontSize: 8, color: C.grisOsc },
+      { text: p.codigo_puesto, fontSize: 8, color: C.grisOsc, alignment: 'center' as const },
+      { text: p.conceptos.join(', '), fontSize: 7.5, color: C.grisTxt },
+      {
+        text: p.metodo_pago,
+        fontSize: 8,
+        color: p.metodo_pago === 'Efectivo' ? C.verde : '#1D4ED8',
+        alignment: 'center' as const,
+      },
+      { text: `S/ ${p.monto_total.toFixed(2)}`, fontSize: 8, bold: true, color: C.negro, alignment: 'right' as const },
+    ]);
+
+    const filaTotalRecibos: TableCell[] = [
+      { text: 'TOTAL', fontSize: 9, bold: true, color: C.azul, colSpan: 6, alignment: 'right' as const },
+      {}, {}, {}, {}, {},
+      { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 10, bold: true, color: C.azulClaro, alignment: 'right' as const },
+    ];
+
+    // ── Documento ──────────────────────────────────────────────────────────
+    return {
+      pageSize: 'A4',
+      pageMargins: [40, 48, 40, 60],
+      defaultStyle: { font: 'Roboto', fontSize: 9, lineHeight: 1.3 },
+
+      content: [
+
+        // Encabezado
+        {
+          alignment: 'center',
+          stack: [
+            { text: 'COOPERATIVA DE COMERCIANTES', fontSize: 12, color: C.grisTxt },
+            { text: 'PRIMERO DE MAYO', fontSize: 20, bold: true, color: C.azul, margin: [0, 2, 0, 3] },
+            { text: 'Mercado Municipal', fontSize: 9, color: C.grisTxt },
+          ],
+        },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 2.5, lineColor: C.azulClaro }],
+          margin: [0, 8, 0, 10],
+        },
+        {
+          table: { widths: ['*'], body: [[{
+            text: 'A R Q U E O   D E   C A J A   D I A R I O',
+            fontSize: 14, bold: true, alignment: 'center', color: 'white',
+            fillColor: C.azulClaro, margin: [0, 8, 0, 8],
+          }]] },
+          layout: 'noBorders',
+          margin: [0, 0, 0, 10],
+        },
+        {
+          columns: [
+            { text: `Fecha: ${formatFechaArqueo(r.fecha)}`, fontSize: 10, bold: true, color: C.negro },
+            { text: `Cajero: ${cajero}`, fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
+            { text: `Impreso: ${new Date().toLocaleString('es-PE')}`, fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+          ],
+          margin: [0, 0, 0, 16],
+        },
+
+        // KPIs
+        kpiTable,
+
+        // Desglose por concepto
+        { text: 'DESGLOSE POR CONCEPTO', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
+        r.por_concepto.length > 0
+          ? {
+              table: {
+                headerRows: 1,
+                widths: ['*', '12%', '18%', '12%'],
+                body: [
+                  [encTH('Concepto'), encTH('Recibos', 'center'), encTH('Monto', 'right'), encTH('% Día', 'right')],
+                  ...filasConcepto,
+                  filaTotalConcepto,
+                ],
+              },
+              layout: layoutBordes,
+              margin: [0, 0, 0, 20],
+            }
+          : { text: 'Sin cobros en esta fecha.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 20], italics: true },
+
+        // Lista de recibos
+        { text: 'DETALLE DE RECIBOS EMITIDOS', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
+        r.recibos.length > 0
+          ? {
+              table: {
+                headerRows: 1,
+                widths: ['7%', '22%', '22%', '8%', '*', '10%', '12%'],
+                body: [
+                  [
+                    encTH('Hora'), encTH('Código'), encTH('Pagador'),
+                    encTH('Puesto', 'center'), encTH('Conceptos'),
+                    encTH('Método', 'center'), encTH('Monto', 'right'),
+                  ],
+                  ...filasRecibos,
+                  filaTotalRecibos,
+                ],
+              },
+              layout: layoutBordes,
+              margin: [0, 0, 0, 24],
+            }
+          : { text: 'Sin recibos registrados.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 24], italics: true },
+
+        // Firma
+        {
+          columns: [
+            {
+              width: '55%',
+              stack: [
+                { text: '\n\n' },
+                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 4 } }] },
+                { text: 'Firma del cajero responsable', fontSize: 7.5, color: '#9CA3AF', margin: [0, 3, 0, 0] },
+                { text: cajero, fontSize: 9, bold: true, color: C.grisOsc, margin: [0, 2, 0, 0] },
+              ],
+            },
+            {
+              width: '45%',
+              alignment: 'center',
+              stack: [{
+                table: { widths: ['*'], body: [[{
+                  text: '☐  Conforme\n☐  Con observaciones',
+                  fontSize: 9, color: C.grisOsc, margin: [12, 8, 12, 8],
+                }]] },
+                layout: { hLineWidth: () => 1, vLineWidth: () => 1,
+                          hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde },
+                margin: [20, 0, 0, 0],
+              }],
+            },
+          ],
+        },
+      ],
+
+      footer: (currentPage: number, pageCount: number, _ps: unknown) => ({
+        stack: [
+          { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          {
+            columns: [
+              { text: `Arqueo de Caja — ${formatFechaArqueo(r.fecha)} — Cooperativa Primero de Mayo`, fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
+            ],
+          },
+        ],
+      }),
+
+    } as unknown as DocDefinition;
   }
 
   // -------------------------------------------------------------------------
