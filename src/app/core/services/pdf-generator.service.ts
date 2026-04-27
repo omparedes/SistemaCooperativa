@@ -83,14 +83,14 @@ export class PdfGeneratorService {
 
   /** Genera el recibo y lo abre en nueva pestaña del navegador. */
   async generarYAbrir(datos: ReciboDatos): Promise<void> {
-    const { createPdf } = await this.cargarModulo();
-    await createPdf(this.construirDocumento(datos)).open();
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumento(datos)).open();
   }
 
   /** Genera el recibo y lo descarga automáticamente. */
   async descargar(datos: ReciboDatos): Promise<void> {
-    const { createPdf } = await this.cargarModulo();
-    await createPdf(this.construirDocumento(datos))
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumento(datos))
       .download(`recibo-${datos.codigo_transaccion}.pdf`);
   }
 
@@ -98,16 +98,24 @@ export class PdfGeneratorService {
   // Carga lazy de pdfmake + fonts (solo la primera vez)
   // -------------------------------------------------------------------------
   private async cargarModulo() {
-    const [pm, vfsRaw] = await Promise.all([
+    const [pmNs, vfsNs] = await Promise.all([
       import('pdfmake/build/pdfmake'),
       import('pdfmake/build/vfs_fonts'),
     ]);
 
+    // Angular/esbuild envuelve módulos CJS/UMD en un namespace ESM.
+    // Las funciones exportadas llegan en `.default` en el browser,
+    // pero directamente en el namespace en entornos Node.js/SSR.
+    // Detectamos cuál aplica con una comprobación de runtime.
+    type PmType = typeof pmNs;
+    const pm: PmType = typeof pmNs.createPdf === 'function'
+      ? pmNs
+      : (pmNs as unknown as { default: PmType }).default;
+
     if (!this.fontsRegistered) {
-      // vfs_fonts usa `export =` (CommonJS) → con esModuleInterop puede venir
-      // en .default o directamente en el namespace del módulo dinámico.
-      const vfs = ((vfsRaw as { default?: VirtualFs }).default
-        ?? vfsRaw) as VirtualFs;
+      // vfs_fonts también es CJS; misma estrategia de interop.
+      const vfsDefault = (vfsNs as unknown as { default: VirtualFs }).default;
+      const vfs = (vfsDefault ?? vfsNs) as VirtualFs;
 
       pm.addVirtualFileSystem(vfs);
       pm.addFonts(FUENTES);
