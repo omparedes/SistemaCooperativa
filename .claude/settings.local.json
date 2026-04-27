@@ -7,7 +7,11 @@
       "Bash(python -c ' *)",
       "Bash(python c:/Github/SistemaCooperativa/datos_iniciales/_gen_00004.py)",
       "Bash(node test_db.js)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(awk 'NR>=200 && NR<=225 {printf \"%4d: %s\\\\n\", NR, $0}' c:/Github/SistemaCooperativa/src/app/pages/socios/socio-detail.component.ts)",
+      "Bash(python datos_iniciales/_explore_excel.py)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const p = require\\('./node_modules/pdfmake/package.json'\\); console.log\\('version:', p.version, '| types:', p.types ?? p.typings ?? 'none'\\)\")"
     ]
   }
 }

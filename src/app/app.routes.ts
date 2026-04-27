@@ -20,7 +20,9 @@ import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { CalenderComponent } from './pages/calender/calender.component';
 import { SocioListComponent } from './pages/socios/socio-list.component';
 import { SocioDetailComponent } from './pages/socios/socio-detail.component';
+import { InquilinoDetailComponent } from './pages/socios/inquilino-detail.component';
 import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
+import { PagoWizardComponent } from './pages/pagos/pago-wizard.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
 import { GastoListComponent } from './pages/gastos/gasto-list.component';
 import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
@@ -118,6 +120,11 @@ export const routes: Routes = [
         title: 'Listado de Socios | TailAdmin'
       },
       {
+        path: 'pagos/registrar',
+        component: PagoWizardComponent,
+        title: 'Registrar Pago | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'pagos/recaudacion-diaria',
         component: RecaudacionDiariaComponent,
         title: 'Recaudación Diaria | TailAdmin'
@@ -166,6 +173,11 @@ export const routes: Routes = [
         path: 'socios/:id',
         component: SocioDetailComponent,
         title: 'Detalle de Socio | TailAdmin'
+      },
+      {
+        path: 'inquilinos/:id',
+        component: InquilinoDetailComponent,
+        title: 'Detalle de Inquilino | TailAdmin'
       },
       {
         path: 'documentacion',

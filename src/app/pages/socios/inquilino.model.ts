@@ -26,3 +26,23 @@ export interface InquilinoConPuesto extends Inquilino {
   puesto: PuestoArrendado | null;
   titular: TitularReferencia | null;
 }
+
+export interface ArriendoHistorial {
+  id: number;
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  monto_arriendo: number | null;
+  motivo_termino: string | null;
+  puesto: {
+    id: number;
+    codigo: string;
+    estado: string;
+  };
+  titular: TitularReferencia | null;
+  vigente: boolean;
+}
+
+export interface InquilinoDetalle extends Inquilino {
+  arriendos: ArriendoHistorial[];
+  arriendo_vigente: ArriendoHistorial | null;
+}

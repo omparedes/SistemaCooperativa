@@ -23,12 +23,9 @@ type Tab = 'socios' | 'inquilinos';
       <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
         <nav class="flex gap-1" role="tablist">
           <button (click)="cambiarTab('socios')" role="tab"
-            [class.text-brand-600]="tab() === 'socios'"
-            [class.dark:text-brand-400]="tab() === 'socios'"
-            [class.border-brand-600]="tab() === 'socios'"
-            [class.dark:border-brand-400]="tab() === 'socios'"
-            [class.text-gray-500]="tab() !== 'socios'"
-            [class.border-transparent]="tab() !== 'socios'"
+            [ngClass]="tab() === 'socios'
+              ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+              : 'text-gray-500 border-transparent'"
             class="px-4 py-2.5 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
             Socios
             <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -36,12 +33,9 @@ type Tab = 'socios' | 'inquilinos';
             </span>
           </button>
           <button (click)="cambiarTab('inquilinos')" role="tab"
-            [class.text-brand-600]="tab() === 'inquilinos'"
-            [class.dark:text-brand-400]="tab() === 'inquilinos'"
-            [class.border-brand-600]="tab() === 'inquilinos'"
-            [class.dark:border-brand-400]="tab() === 'inquilinos'"
-            [class.text-gray-500]="tab() !== 'inquilinos'"
-            [class.border-transparent]="tab() !== 'inquilinos'"
+            [ngClass]="tab() === 'inquilinos'
+              ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+              : 'text-gray-500 border-transparent'"
             class="px-4 py-2.5 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
             Inquilinos
             <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -106,27 +100,17 @@ type Tab = 'socios' | 'inquilinos';
                       }
                     </td>
                     <td class="px-4 py-3">
-                      <span [class.bg-emerald-50]="s.estado === 'Activo'"
-                            [class.dark:bg-emerald-900/30]="s.estado === 'Activo'"
-                            [class.text-emerald-700]="s.estado === 'Activo'"
-                            [class.dark:text-emerald-300]="s.estado === 'Activo'"
-                            [class.bg-gray-100]="s.estado === 'Inactivo'"
-                            [class.dark:bg-gray-700]="s.estado === 'Inactivo'"
-                            [class.text-gray-600]="s.estado === 'Inactivo'"
-                            [class.dark:text-gray-300]="s.estado === 'Inactivo'"
+                      <span [ngClass]="s.estado === 'Activo'
+                              ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'"
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                         {{ s.estado }}
                       </span>
                     </td>
                     <td class="px-4 py-3">
-                      <span [class.bg-emerald-50]="s.habilitado"
-                            [class.dark:bg-emerald-900/30]="s.habilitado"
-                            [class.text-emerald-700]="s.habilitado"
-                            [class.dark:text-emerald-300]="s.habilitado"
-                            [class.bg-amber-50]="!s.habilitado"
-                            [class.dark:bg-amber-900/30]="!s.habilitado"
-                            [class.text-amber-700]="!s.habilitado"
-                            [class.dark:text-amber-300]="!s.habilitado"
+                      <span [ngClass]="s.habilitado
+                              ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                              : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'"
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
                         {{ s.habilitado ? 'Hábil' : 'Inhábil' }}
                       </span>
@@ -159,6 +143,7 @@ type Tab = 'socios' | 'inquilinos';
                   <th class="px-4 py-3 text-left font-medium">Titular del puesto</th>
                   <th class="px-4 py-3 text-right font-medium">Arriendo (S/)</th>
                   <th class="px-4 py-3 text-left font-medium">Desde</th>
+                  <th class="px-4 py-3 text-right font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -196,10 +181,16 @@ type Tab = 'socios' | 'inquilinos';
                     <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap">
                       {{ i.puesto ? (i.puesto.fecha_inicio_arriendo | date:'dd/MM/yyyy') : '—' }}
                     </td>
+                    <td class="px-4 py-3 text-right">
+                      <a [routerLink]="['/inquilinos', i.id]"
+                        class="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline">
+                        Ver detalle →
+                      </a>
+                    </td>
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="6" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <td colspan="7" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                       No se encontraron inquilinos.
                     </td>
                   </tr>
