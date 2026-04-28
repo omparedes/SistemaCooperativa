@@ -5,6 +5,7 @@ import {
   LecturaMedidor,
   ResultadoBulkMediciones,
 } from '../../core/services/facturacion.service';
+import { ConfiguracionService } from '../../core/services/configuracion.service';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -178,10 +179,9 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                         placeholder="0.000"
                         [(ngModel)]="l.amperaje"
                         [name]="'amp_' + l.puesto_id"
-                        class="h-9 w-full rounded-lg border text-center text-sm tabular-nums transition focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                        [class]="ampNum(l.amperaje) > 0
+                        [class]="'h-9 w-full rounded-lg border text-center text-sm tabular-nums transition focus:outline-none focus:ring-2 focus:ring-brand-500/20 ' + (ampNum(l.amperaje) > 0
                           ? 'border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-300 focus:border-green-400'
-                          : 'border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-400'"
+                          : 'border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-400')"
                       />
                     </td>
 
@@ -256,12 +256,13 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
   `,
 })
 export class FacturacionMedidoresComponent implements OnInit {
-  private readonly svc = inject(FacturacionService);
+  private readonly svc       = inject(FacturacionService);
+  private readonly configSvc = inject(ConfiguracionService);
 
   // Estado
   anio      = hoyAnio();
   mes       = hoyMes();
-  precioKwh = 0.75;
+  precioKwh = 0.75;   // default local; se reemplaza al inicializar desde configuraciones
 
   readonly lecturas   = signal<LecturaMedidor[]>([]);
   readonly cargando   = signal(false);
@@ -291,7 +292,15 @@ export class FacturacionMedidoresComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    void this.cargar();
+    void this.inicializar();
+  }
+
+  private async inicializar(): Promise<void> {
+    const [precio] = await Promise.all([
+      this.configSvc.getValor('PRECIO_KWH_SOCIO').catch(() => 0.75),
+      this.cargar(),
+    ]);
+    this.precioKwh = precio;
   }
 
   ampNum(v: string | number): number {

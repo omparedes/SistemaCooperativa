@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { adminGuard, authGuard, noAuthGuard } from './core/guards/auth.guard';
 import { FacturacionMedidoresComponent } from './pages/facturacion/facturacion-medidores.component';
 import { FacturacionFijaComponent } from './pages/facturacion/facturacion-fija.component';
+import { TarifasComponent } from './pages/config/tarifas.component';
+import { CargosExtraordinariosComponent } from './pages/facturacion/cargos-extraordinarios.component';
 import { LoginComponent } from './pages/auth-pages/login/login.component';
 import { EcommerceComponent } from './pages/dashboard/ecommerce/ecommerce.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
@@ -160,7 +162,20 @@ export const routes: Routes = [
         component: ReportesComponent,
         title: 'Reporte de Almacén - Bajo Stock | TailAdmin'
       },
+      // ── Configuración (solo Administrador) ──────────────────────────────
+      {
+        path: 'configuracion/tarifas',
+        component: TarifasComponent,
+        canActivate: [adminGuard],
+        title: 'Configuración de Tarifas | Cooperativa Primero de Mayo',
+      },
       // ── Facturación (solo Administrador) ────────────────────────────────
+      {
+        path: 'facturacion/cargos-extraordinarios',
+        component: CargosExtraordinariosComponent,
+        canActivate: [adminGuard],
+        title: 'Cargos Extraordinarios | Cooperativa Primero de Mayo',
+      },
       {
         path: 'facturacion/medidores',
         component: FacturacionMedidoresComponent,

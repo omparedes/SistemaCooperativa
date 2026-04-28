@@ -62,6 +62,8 @@ interface PagoHistorialRow {
   monto_total: number;
   metodo_pago: string;
   comprobante: string | null;
+  deleted_at: string | null;
+  motivo_anulacion: string | null;
   puesto: { codigo_puesto: string } | null;
   detalle: PagoHistorialDetalleRow[];
 }
@@ -285,6 +287,7 @@ export class PagosService {
       .from('pagos')
       .select(`
         id, codigo_transaccion, fecha_pago, monto_total, metodo_pago, comprobante,
+        deleted_at, motivo_anulacion,
         puesto:puestos(codigo_puesto),
         detalle:detalle_pagos(
           id, monto_aplicado, deleted_at,
@@ -295,31 +298,54 @@ export class PagosService {
         )
       `)
       .eq(campo, id)
-      .is('deleted_at', null)
+      // Sin filtro deleted_at: incluimos anulados para mostrarlos con estilo distinto
       .order('fecha_pago', { ascending: false });
 
     if (error) throw new Error(error.message);
 
-    return ((data ?? []) as unknown as PagoHistorialRow[]).map(r => ({
-      id: r.id,
-      codigo_transaccion: r.codigo_transaccion,
-      fecha_pago: r.fecha_pago,
-      monto_total: Number(r.monto_total),
-      metodo_pago: r.metodo_pago as MetodoPago,
-      comprobante: r.comprobante,
-      codigo_puesto: r.puesto?.codigo_puesto ?? '—',
-      detalle: (r.detalle ?? [])
-        .filter(d => d.deleted_at === null)
-        .map(d => ({
-          monto_aplicado: Number(d.monto_aplicado),
-          // Fallback explícito: si el monto fue borrado físicamente (huérfano),
-          // se muestra el concepto y período en blanco pero se conserva el importe.
-          concepto:      d.monto_cobrar?.concepto?.nombre ?? 'Concepto eliminado',
-          periodo_anio:  d.monto_cobrar?.periodo_anio ?? 0,
-          periodo_mes:   d.monto_cobrar?.periodo_mes ?? 0,
-          monto_original: Number(d.monto_cobrar?.monto ?? d.monto_aplicado),
-        })),
-    }));
+    return ((data ?? []) as unknown as PagoHistorialRow[]).map(r => {
+      const pagoAnulado = r.deleted_at !== null;
+      return {
+        id: r.id,
+        codigo_transaccion: r.codigo_transaccion,
+        fecha_pago: r.fecha_pago,
+        monto_total: Number(r.monto_total),
+        metodo_pago: r.metodo_pago as MetodoPago,
+        comprobante: r.comprobante,
+        codigo_puesto: r.puesto?.codigo_puesto ?? '—',
+        anulado: pagoAnulado,
+        motivo_anulacion: r.motivo_anulacion,
+        deleted_at: r.deleted_at,
+        detalle: (r.detalle ?? [])
+          // Para pagos anulados: mostramos todos los detalles (incluso los soft-deleted)
+          // para ver los conceptos que contenía. Para pagos vigentes: solo activos.
+          .filter(d => pagoAnulado || d.deleted_at === null)
+          .map(d => ({
+            monto_aplicado: Number(d.monto_aplicado),
+            concepto:      d.monto_cobrar?.concepto?.nombre ?? 'Concepto eliminado',
+            periodo_anio:  d.monto_cobrar?.periodo_anio ?? 0,
+            periodo_mes:   d.monto_cobrar?.periodo_mes ?? 0,
+            monto_original: Number(d.monto_cobrar?.monto ?? d.monto_aplicado),
+          })),
+      };
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // Anulación de pago (soft delete vía RPC)
+  // -------------------------------------------------------------------------
+  async anularPago(pagoId: number, motivo: string): Promise<void> {
+    const { data: authData } = await this.db.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) throw new Error('Usuario no autenticado');
+
+    const { error } = await this.db.rpc('anular_pago', {
+      p_pago_id:    pagoId,
+      p_motivo:     motivo,
+      p_usuario_id: userId,
+    });
+
+    if (error) throw new Error(error.message);
   }
 
   // -------------------------------------------------------------------------

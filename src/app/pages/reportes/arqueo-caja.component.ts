@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { PdfGeneratorService } from '../../core/services/pdf-generator.service';
 import {
@@ -39,7 +40,7 @@ function fmtSoles(n: number): string {
 @Component({
   selector: 'app-arqueo-caja',
   standalone: true,
-  imports: [],
+  imports: [NgClass],
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6 2xl:p-8">
 
@@ -317,7 +318,13 @@ function fmtSoles(n: number): string {
           <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
             <div>
               <h3 class="text-sm font-semibold text-gray-800 dark:text-white">Recibos emitidos</h3>
-              <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{{ r.recibos.length }} recibo{{ r.recibos.length !== 1 ? 's' : '' }} · ordenados por hora</p>
+              <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                {{ r.cantidad_recibos }} válido{{ r.cantidad_recibos !== 1 ? 's' : '' }}
+                @if (anuladosCount() > 0) {
+                  · <span class="text-red-500 dark:text-red-400 font-medium">{{ anuladosCount() }} anulado{{ anuladosCount() !== 1 ? 's' : '' }}</span>
+                }
+                · ordenados por hora
+              </p>
             </div>
             @if (cargando()) {
               <svg class="h-4 w-4 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
@@ -353,28 +360,49 @@ function fmtSoles(n: number): string {
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                   @for (p of r.recibos; track p.id) {
-                    <tr class="transition hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                    <tr [ngClass]="p.anulado
+                        ? 'bg-red-50/60 dark:bg-red-900/10 opacity-70'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
+                      class="transition">
 
                       <!-- Hora -->
-                      <td class="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <td class="px-4 py-3 text-xs font-mono whitespace-nowrap"
+                        [ngClass]="p.anulado ? 'text-red-400 dark:text-red-500' : 'text-gray-500 dark:text-gray-400'">
                         {{ formatHora(p.fecha_pago) }}
                       </td>
 
-                      <!-- Código de transacción -->
+                      <!-- Código + badge ANULADO -->
                       <td class="px-4 py-3">
-                        <span class="font-mono text-xs text-brand-600 dark:text-brand-400 whitespace-nowrap">
+                        <span class="font-mono text-xs whitespace-nowrap"
+                          [ngClass]="p.anulado
+                            ? 'line-through text-red-400 dark:text-red-500'
+                            : 'text-brand-600 dark:text-brand-400'">
                           {{ p.codigo_transaccion }}
                         </span>
+                        @if (p.anulado) {
+                          <span class="mt-0.5 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">
+                            Anulado
+                          </span>
+                        }
                       </td>
 
                       <!-- Pagador -->
                       <td class="px-4 py-3">
-                        <p class="font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</p>
+                        <p class="font-medium leading-tight"
+                          [ngClass]="p.anulado ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-800 dark:text-white'">
+                          {{ p.pagador }}
+                        </p>
+                        @if (p.anulado && p.motivo_anulacion) {
+                          <p class="text-[10px] text-red-500 dark:text-red-400 mt-0.5">{{ p.motivo_anulacion }}</p>
+                        }
                       </td>
 
                       <!-- Puesto -->
                       <td class="px-4 py-3">
-                        <span class="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
+                        <span class="rounded-md px-2 py-0.5 text-xs font-semibold"
+                          [ngClass]="p.anulado
+                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                            : 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400'">
                           {{ p.codigo_puesto }}
                         </span>
                       </td>
@@ -383,7 +411,10 @@ function fmtSoles(n: number): string {
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-1">
                           @for (c of p.conceptos; track c) {
-                            <span class="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                            <span class="rounded-full border px-2 py-0.5 text-xs"
+                              [ngClass]="p.anulado
+                                ? 'border-red-200 bg-red-50 text-red-400 dark:border-red-800 dark:bg-red-900/20 dark:text-red-500 line-through'
+                                : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'">
                               {{ c }}
                             </span>
                           }
@@ -392,7 +423,9 @@ function fmtSoles(n: number): string {
 
                       <!-- Método -->
                       <td class="px-4 py-3 text-center">
-                        @if (p.metodo_pago === 'Efectivo') {
+                        @if (p.anulado) {
+                          <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                        } @else if (p.metodo_pago === 'Efectivo') {
                           <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                             Efectivo
                           </span>
@@ -404,13 +437,17 @@ function fmtSoles(n: number): string {
                       </td>
 
                       <!-- Monto -->
-                      <td class="px-4 py-3 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">
+                      <td class="px-4 py-3 text-right font-bold tabular-nums whitespace-nowrap"
+                        [ngClass]="p.anulado
+                          ? 'line-through text-red-400 dark:text-red-500'
+                          : 'text-gray-900 dark:text-white'">
                         {{ fmtSoles(p.monto_total) }}
                       </td>
 
                       <!-- Cajero (solo Admin) -->
                       @if (auth.esAdmin()) {
-                        <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                        <td class="px-4 py-3 text-xs"
+                          [ngClass]="p.anulado ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'">
                           {{ p.cajero_nombre }}
                         </td>
                       }
@@ -423,9 +460,12 @@ function fmtSoles(n: number): string {
             <!-- Totales pie de tabla -->
             <div class="flex items-center justify-between border-t border-gray-200 px-5 py-3 dark:border-gray-700">
               <p class="text-xs text-gray-400 dark:text-gray-500">
-                Recibos: {{ r.recibos.length }} ·
+                Válidos: {{ r.cantidad_recibos }} ·
                 Efectivo: {{ fmtSoles(r.total_efectivo) }} ·
                 Transferencia: {{ fmtSoles(r.total_transferencia) }}
+                @if (anuladosCount() > 0) {
+                  · <span class="text-red-400">Anulados: {{ anuladosCount() }}</span>
+                }
               </p>
               <p class="text-sm font-bold text-gray-900 dark:text-white">
                 Total: {{ fmtSoles(r.total_dia) }}
@@ -455,6 +495,11 @@ export class ArqueoCajaComponent implements OnInit {
   readonly error         = signal<string | null>(null);
   readonly resumen       = signal<ArqueoResumen | null>(null);
   readonly generandoPdf  = signal(false);
+
+  // Conteo de recibos anulados (solo para el label del encabezado de tabla)
+  readonly anuladosCount = computed(() =>
+    this.resumen()?.recibos.filter(r => r.anulado).length ?? 0,
+  );
 
   // Computed para los porcentajes de la barra de métodos
   readonly efectivoPct = computed(() => {

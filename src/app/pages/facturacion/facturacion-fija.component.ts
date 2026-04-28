@@ -4,6 +4,7 @@ import {
   FacturacionService,
   ResultadoGeneracionFija,
 } from '../../core/services/facturacion.service';
+import { ConfiguracionService } from '../../core/services/configuracion.service';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -150,7 +151,8 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
   `,
 })
 export class FacturacionFijaComponent implements OnInit {
-  private readonly svc = inject(FacturacionService);
+  private readonly svc       = inject(FacturacionService);
+  private readonly configSvc = inject(ConfiguracionService);
 
   anio = new Date().getFullYear();
   mes  = new Date().getMonth() + 1;
@@ -208,7 +210,22 @@ export class FacturacionFijaComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    // Pre-select current month
+    void this.cargarConfiguracion();
+  }
+
+  private async cargarConfiguracion(): Promise<void> {
+    try {
+      const [admin, prevision, mant] = await Promise.all([
+        this.configSvc.getValor('MONTO_GASTOS_ADMIN'),
+        this.configSvc.getValor('MONTO_PREVISION_SOCIAL'),
+        this.configSvc.getValor('MONTO_MANTENIMIENTO'),
+      ]);
+      this.conceptosFijos[0].monto = admin;
+      this.conceptosFijos[1].monto = prevision;
+      this.conceptosFijos[2].monto = mant;
+    } catch {
+      // Mantiene los defaults locales si la DB no está disponible
+    }
   }
 
   async generar(): Promise<void> {

@@ -50,4 +50,7 @@ export interface PagoHistorial {
   comprobante: string | null;
   codigo_puesto: string;
   detalle: PagoHistorialDetalle[];
+  anulado: boolean;
+  motivo_anulacion: string | null;
+  deleted_at: string | null;
 }

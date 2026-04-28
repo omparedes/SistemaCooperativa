@@ -15,6 +15,8 @@ export interface ArqueoPago {
   pagador: string;             // apellidos, nombres del socio o inquilino
   cajero_nombre: string;       // nombres del usuario que registró el pago
   conceptos: string[];         // lista de conceptos únicos del recibo
+  anulado: boolean;
+  motivo_anulacion: string | null;
 }
 
 export interface ArqueoConcepto {
@@ -44,6 +46,8 @@ interface PagoArqueoRow {
   metodo_pago: string;
   comprobante: string | null;
   created_by: string | null;
+  deleted_at: string | null;
+  motivo_anulacion: string | null;
   puesto: { codigo_puesto: string } | null;
   socio: { apellidos: string; nombres: string } | null;
   inquilino: { apellidos: string; nombres: string } | null;
@@ -101,6 +105,7 @@ export class ReportesService {
       .from('pagos')
       .select(`
         id, codigo_transaccion, fecha_pago, monto_total, metodo_pago, comprobante, created_by,
+        deleted_at, motivo_anulacion,
         puesto:puestos(codigo_puesto),
         socio:socios(apellidos, nombres),
         inquilino:inquilinos(apellidos, nombres),
@@ -111,7 +116,8 @@ export class ReportesService {
           )
         )
       `)
-      .is('deleted_at', null)
+      // Sin filtro deleted_at: incluimos anulados para mostrarlos en el arqueo
+      // con estilo distinto, pero excluidos de los totales en construirResumen.
       .gte('fecha_pago', inicio)
       .lte('fecha_pago', fin)
       .order('fecha_pago', { ascending: false });
@@ -159,27 +165,34 @@ export class ReportesService {
 
     const recibos: ArqueoPago[] = rows.map(row => {
       const monto = Number(row.monto_total);
+      const esAnulado = row.deleted_at !== null;
 
-      if (row.metodo_pago === 'Efectivo') totalEfectivo += monto;
-      else totalTransferencia += monto;
+      // Solo sumar al total si el pago NO está anulado
+      if (!esAnulado) {
+        if (row.metodo_pago === 'Efectivo') totalEfectivo += monto;
+        else totalTransferencia += monto;
+      }
 
-      const detalleActivo = (row.detalle ?? []).filter(
-        d => d.deleted_at === null && d.monto_cobrar?.concepto?.nombre,
+      // Para pagos anulados mostramos los detalles originales (aunque estén soft-deleted)
+      // para que se vean los conceptos que contenía el recibo.
+      const detalleVisible = (row.detalle ?? []).filter(
+        d => (esAnulado || d.deleted_at === null) && d.monto_cobrar?.concepto?.nombre,
       );
 
-      // Conceptos únicos de este recibo
       const conceptosUnicos = [
-        ...new Set(detalleActivo.map(d => d.monto_cobrar!.concepto!.nombre)),
+        ...new Set(detalleVisible.map(d => d.monto_cobrar!.concepto!.nombre)),
       ];
 
-      // Acumular por concepto para la tabla resumen
-      for (const d of detalleActivo) {
-        const nombre = d.monto_cobrar!.concepto!.nombre;
-        const prev = conceptoMap.get(nombre) ?? { monto: 0, cantidad: 0 };
-        conceptoMap.set(nombre, {
-          monto:    prev.monto + Number(d.monto_aplicado),
-          cantidad: prev.cantidad + 1,
-        });
+      // Acumular por concepto SOLO de pagos vigentes
+      if (!esAnulado) {
+        for (const d of detalleVisible) {
+          const nombre = d.monto_cobrar!.concepto!.nombre;
+          const prev = conceptoMap.get(nombre) ?? { monto: 0, cantidad: 0 };
+          conceptoMap.set(nombre, {
+            monto:    prev.monto + Number(d.monto_aplicado),
+            cantidad: prev.cantidad + 1,
+          });
+        }
       }
 
       const pagador = row.socio
@@ -202,6 +215,8 @@ export class ReportesService {
         pagador,
         cajero_nombre: cajeroNombre,
         conceptos: conceptosUnicos,
+        anulado: esAnulado,
+        motivo_anulacion: row.motivo_anulacion,
       };
     });
 
@@ -213,12 +228,14 @@ export class ReportesService {
       }))
       .sort((a, b) => b.monto - a.monto);
 
+    const recibosVigentes = recibos.filter(r => !r.anulado).length;
+
     return {
       fecha,
       total_dia:           round2(totalEfectivo + totalTransferencia),
       total_efectivo:      round2(totalEfectivo),
       total_transferencia: round2(totalTransferencia),
-      cantidad_recibos:    rows.length,
+      cantidad_recibos:    recibosVigentes,
       por_concepto,
       recibos,
     };
