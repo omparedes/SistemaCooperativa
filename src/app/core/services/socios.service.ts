@@ -2,10 +2,37 @@ import { inject, Injectable, signal } from '@angular/core';
 import { SUPABASE_CLIENT } from './supabase.client';
 import {
   DNI_INSTITUCIONAL,
+  EstadoSocio,
   SocioConPuesto,
   SocioDetalle,
   TitularidadHistorial,
 } from '../../pages/socios/socio.model';
+
+// ---------------------------------------------------------------------------
+// Parámetros de mutación
+// ---------------------------------------------------------------------------
+export interface NuevoSocioParams {
+  nombres:       string;
+  apellidos:     string;
+  dni:           string;
+  email:         string | null;
+  telefono:      string | null;
+  direccion:     string | null;
+  fecha_ingreso: string;          // 'YYYY-MM-DD'
+  estado:        EstadoSocio;
+}
+
+export interface ActualizarSocioParams {
+  nombres?:       string;
+  apellidos?:     string;
+  dni?:           string;
+  email?:         string | null;
+  telefono?:      string | null;
+  direccion?:     string | null;
+  fecha_ingreso?: string;
+  estado?:        EstadoSocio;
+  habilitado?:    boolean;
+}
 
 interface SocioListaRow {
   id: number;
@@ -119,6 +146,80 @@ export class SociosService {
     if (!data) throw new Error(`Socio ${id} no encontrado`);
 
     return this.mapearDetalle(data as unknown as SocioDetalleRow);
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────────────────────
+
+  /** Inserta un socio nuevo. Retorna el id generado. */
+  async crear(params: NuevoSocioParams): Promise<number> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+
+    const { data, error } = await this.db
+      .from('socios')
+      .insert({ ...params, created_by: userId })
+      .select('id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return (data as { id: number }).id;
+  }
+
+  /** Actualiza los datos personales de un socio existente. */
+  async actualizar(id: number, params: ActualizarSocioParams): Promise<void> {
+    const { error } = await this.db
+      .from('socios')
+      .update(params)
+      .eq('id', id)
+      .is('deleted_at', null);
+
+    if (error) throw new Error(error.message);
+  }
+
+  /** Soft-delete de un socio (nunca DELETE físico). */
+  async eliminar(id: number, motivo: string): Promise<void> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+
+    const { error } = await this.db
+      .from('socios')
+      .update({ deleted_at: new Date().toISOString(), anulado_por: userId, motivo_anulacion: motivo })
+      .eq('id', id)
+      .is('deleted_at', null);
+
+    if (error) throw new Error(error.message);
+  }
+
+  /**
+   * Gestiona la titularidad de puesto de un socio.
+   * - Si había puesto anterior, cierra esa titularidad (pone fecha_fin = hoy).
+   * - Si hay nuevo puesto, inserta una nueva titularidad vigente.
+   * - Soporta quitar el puesto (nuevoPuestoId = null).
+   */
+  async gestionarTitularidad(
+    socioId:          number,
+    nuevoPuestoId:    number | null,
+    puestoIdAnterior: number | null,
+  ): Promise<void> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+    const hoy    = new Date().toISOString().slice(0, 10);
+
+    if (puestoIdAnterior !== null) {
+      const { error } = await this.db
+        .from('historial_titularidad')
+        .update({ fecha_fin: hoy, motivo_cambio: 'Cambio gestionado en edición' })
+        .eq('socio_id', socioId)
+        .is('fecha_fin', null);
+      if (error) throw new Error(error.message);
+    }
+
+    if (nuevoPuestoId !== null) {
+      const { error } = await this.db
+        .from('historial_titularidad')
+        .insert({ socio_id: socioId, puesto_id: nuevoPuestoId, fecha_inicio: hoy, created_by: userId });
+      if (error) throw new Error(error.message);
+    }
   }
 
   private mapearLista(row: SocioListaRow): SocioConPuesto {

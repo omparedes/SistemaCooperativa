@@ -126,6 +126,16 @@ const MOTIVOS_ANULACION = [
               class="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium shadow-sm transition">
               💰 Registrar Pago
             </button>
+
+            @if (authSvc.esAdmin()) {
+              <button (click)="irAEditar()"
+                class="mt-2 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg font-medium shadow-sm transition text-sm">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+                </svg>
+                Editar Datos
+              </button>
+            }
             @if (!d.puesto_vigente) {
               <p class="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
                 Asigna un puesto antes de registrar pagos.
@@ -475,6 +485,11 @@ export class SocioDetailComponent implements OnDestroy {
   private readonly pagosSvc   = inject(PagosService);
   private readonly pdfSvc     = inject(PdfGeneratorService);
   protected readonly authSvc  = inject(AuthService);
+
+  irAEditar(): void {
+    const id = this.socioId();
+    if (id !== null) void this.router.navigate(['/socios/editar', id]);
+  }
 
   private readonly idParam = toSignal(this.route.paramMap, { initialValue: null });
 

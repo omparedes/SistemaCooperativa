@@ -149,7 +149,12 @@ function fmtSoles(n: number): string {
           <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-dark">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">Total del Día</p>
             <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ fmtSoles(r.total_dia) }}</p>
-            <p class="mt-1 text-xs text-gray-400">{{ r.cantidad_recibos }} {{ r.cantidad_recibos === 1 ? 'recibo' : 'recibos' }}</p>
+            <p class="mt-1 text-xs text-gray-400">
+              {{ r.cantidad_recibos }} {{ r.cantidad_recibos === 1 ? 'recibo' : 'recibos' }}
+              @if (r.cantidad_ingresos_internos > 0) {
+                · <span class="text-violet-500 dark:text-violet-400">{{ r.cantidad_ingresos_internos }} sin recibo</span>
+              }
+            </p>
           </div>
 
           <!-- Efectivo -->
@@ -320,6 +325,9 @@ function fmtSoles(n: number): string {
               <h3 class="text-sm font-semibold text-gray-800 dark:text-white">Recibos emitidos</h3>
               <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
                 {{ r.cantidad_recibos }} válido{{ r.cantidad_recibos !== 1 ? 's' : '' }}
+                @if (r.cantidad_ingresos_internos > 0) {
+                  · <span class="text-violet-500 dark:text-violet-400 font-medium">{{ r.cantidad_ingresos_internos }} sin recibo</span>
+                }
                 @if (anuladosCount() > 0) {
                   · <span class="text-red-500 dark:text-red-400 font-medium">{{ anuladosCount() }} anulado{{ anuladosCount() !== 1 ? 's' : '' }}</span>
                 }
@@ -359,10 +367,12 @@ function fmtSoles(n: number): string {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                  @for (p of r.recibos; track p.id) {
+                  @for (p of r.recibos; track (p.es_ingreso_interno ? 'ii' : 'pago') + p.id) {
                     <tr [ngClass]="p.anulado
                         ? 'bg-red-50/60 dark:bg-red-900/10 opacity-70'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
+                        : p.es_ingreso_interno
+                          ? 'bg-violet-50/40 dark:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
                       class="transition">
 
                       <!-- Hora -->
@@ -371,17 +381,24 @@ function fmtSoles(n: number): string {
                         {{ formatHora(p.fecha_pago) }}
                       </td>
 
-                      <!-- Código + badge ANULADO -->
+                      <!-- Código + badges (ANULADO / SIN RECIBO) -->
                       <td class="px-4 py-3">
                         <span class="font-mono text-xs whitespace-nowrap"
                           [ngClass]="p.anulado
                             ? 'line-through text-red-400 dark:text-red-500'
-                            : 'text-brand-600 dark:text-brand-400'">
+                            : p.es_ingreso_interno
+                              ? 'text-violet-600 dark:text-violet-400'
+                              : 'text-brand-600 dark:text-brand-400'">
                           {{ p.codigo_transaccion }}
                         </span>
                         @if (p.anulado) {
                           <span class="mt-0.5 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">
                             Anulado
+                          </span>
+                        }
+                        @if (p.es_ingreso_interno) {
+                          <span class="mt-0.5 inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">
+                            Sin Recibo
                           </span>
                         }
                       </td>
@@ -460,12 +477,15 @@ function fmtSoles(n: number): string {
             <!-- Totales pie de tabla -->
             <div class="flex items-center justify-between border-t border-gray-200 px-5 py-3 dark:border-gray-700">
               <p class="text-xs text-gray-400 dark:text-gray-500">
-                Válidos: {{ r.cantidad_recibos }} ·
-                Efectivo: {{ fmtSoles(r.total_efectivo) }} ·
-                Transferencia: {{ fmtSoles(r.total_transferencia) }}
+                Recibos: {{ r.cantidad_recibos }}
+                @if (r.cantidad_ingresos_internos > 0) {
+                  · <span class="text-violet-400">Sin recibo: {{ r.cantidad_ingresos_internos }}</span>
+                }
                 @if (anuladosCount() > 0) {
                   · <span class="text-red-400">Anulados: {{ anuladosCount() }}</span>
                 }
+                · Efectivo: {{ fmtSoles(r.total_efectivo) }}
+                · Transferencia: {{ fmtSoles(r.total_transferencia) }}
               </p>
               <p class="text-sm font-bold text-gray-900 dark:text-white">
                 Total: {{ fmtSoles(r.total_dia) }}

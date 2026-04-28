@@ -30,6 +30,9 @@ import { SocioDetailComponent } from './pages/socios/socio-detail.component';
 import { InquilinoDetailComponent } from './pages/socios/inquilino-detail.component';
 import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
 import { PagoWizardComponent } from './pages/pagos/pago-wizard.component';
+import { IngresosInternosComponent } from './pages/pagos/ingresos-internos.component';
+import { SocioFormComponent } from './pages/socios/socio-form.component';
+import { InquilinoFormComponent } from './pages/socios/inquilino-form.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
 import { ArqueoCajaComponent } from './pages/reportes/arqueo-caja.component';
 import { GastoListComponent } from './pages/gastos/gasto-list.component';
@@ -127,6 +130,32 @@ export const routes: Routes = [
         component: SocioListComponent,
         title: 'Listado de Socios | TailAdmin'
       },
+      // ── CRUD Socios (solo Administrador) ────────────────────────────────
+      {
+        path: 'socios/nuevo',
+        component: SocioFormComponent,
+        canActivate: [adminGuard],
+        title: 'Nuevo Socio | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'socios/editar/:id',
+        component: SocioFormComponent,
+        canActivate: [adminGuard],
+        title: 'Editar Socio | Cooperativa Primero de Mayo',
+      },
+      // ── CRUD Inquilinos (solo Administrador) ─────────────────────────────
+      {
+        path: 'inquilinos/nuevo',
+        component: InquilinoFormComponent,
+        canActivate: [adminGuard],
+        title: 'Nuevo Inquilino | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'inquilinos/editar/:id',
+        component: InquilinoFormComponent,
+        canActivate: [adminGuard],
+        title: 'Editar Inquilino | Cooperativa Primero de Mayo',
+      },
       {
         path: 'pagos/registrar',
         component: PagoWizardComponent,
@@ -136,6 +165,11 @@ export const routes: Routes = [
         path: 'pagos/recaudacion-diaria',
         component: RecaudacionDiariaComponent,
         title: 'Recaudación Diaria | TailAdmin'
+      },
+      {
+        path: 'pagos/ingresos-internos',
+        component: IngresosInternosComponent,
+        title: 'Caja Rápida — Ingresos sin Recibo | Cooperativa Primero de Mayo',
       },
       {
         path: 'reportes',
@@ -247,6 +281,13 @@ export const routes: Routes = [
     path: 'signup',
     component: SignUpComponent,
     title: 'Registrar | TailAdmin'
+  },
+  // ── Portal público (sin auth) ────────────────────────────────────────────
+  {
+    path: 'consultas',
+    loadComponent: () =>
+      import('./pages/consultas/consultas.component').then(m => m.ConsultasComponent),
+    title: 'Consultas | Cooperativa Primero de Mayo',
   },
   // error pages
   {

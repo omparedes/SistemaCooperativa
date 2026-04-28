@@ -6,6 +6,27 @@ import {
   InquilinoDetalle,
 } from '../../pages/socios/inquilino.model';
 
+// ---------------------------------------------------------------------------
+// Parámetros de mutación
+// ---------------------------------------------------------------------------
+export interface NuevoInquilinoParams {
+  nombres:   string;
+  apellidos: string;
+  dni:       string;
+  email:     string | null;
+  telefono:  string | null;
+  direccion: string | null;
+}
+
+export interface ActualizarInquilinoParams {
+  nombres?:   string;
+  apellidos?: string;
+  dni?:       string;
+  email?:     string | null;
+  telefono?:  string | null;
+  direccion?: string | null;
+}
+
 interface InquilinoListaRow {
   id: number;
   dni: string;
@@ -120,6 +141,89 @@ export class InquilinosService {
     if (!data) throw new Error(`Inquilino ${id} no encontrado`);
 
     return this.mapearDetalle(data as unknown as InquilinoDetalleRow);
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────────────────────
+
+  /** Inserta un inquilino nuevo. Retorna el id generado. */
+  async crear(params: NuevoInquilinoParams): Promise<number> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+
+    const { data, error } = await this.db
+      .from('inquilinos')
+      .insert({ ...params, created_by: userId })
+      .select('id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return (data as { id: number }).id;
+  }
+
+  /** Actualiza los datos de un inquilino existente. */
+  async actualizar(id: number, params: ActualizarInquilinoParams): Promise<void> {
+    const { error } = await this.db
+      .from('inquilinos')
+      .update(params)
+      .eq('id', id)
+      .is('deleted_at', null);
+
+    if (error) throw new Error(error.message);
+  }
+
+  /** Soft-delete de un inquilino (nunca DELETE físico). */
+  async eliminar(id: number, motivo: string): Promise<void> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+
+    const { error } = await this.db
+      .from('inquilinos')
+      .update({ deleted_at: new Date().toISOString(), anulado_por: userId, motivo_anulacion: motivo })
+      .eq('id', id)
+      .is('deleted_at', null);
+
+    if (error) throw new Error(error.message);
+  }
+
+  /**
+   * Gestiona el arriendo de puesto de un inquilino.
+   * - Cierra el arriendo anterior (fecha_fin = hoy) si existe.
+   * - Crea uno nuevo si hay nuevo puesto seleccionado.
+   * @param socioTitularId   Titular actual del puesto (requerido para el historial).
+   */
+  async gestionarArriendo(
+    inquilinoId:      number,
+    nuevoPuestoId:    number | null,
+    montoArriendo:    number | null,
+    puestoIdAnterior: number | null,
+    socioTitularId:   number | null,
+  ): Promise<void> {
+    const { data: auth } = await this.db.auth.getUser();
+    const userId = auth.user?.id ?? null;
+    const hoy    = new Date().toISOString().slice(0, 10);
+
+    if (puestoIdAnterior !== null) {
+      const { error } = await this.db
+        .from('historial_arriendos')
+        .update({ fecha_fin: hoy, motivo_termino: 'Cambio gestionado en edición' })
+        .eq('inquilino_id', inquilinoId)
+        .is('fecha_fin', null);
+      if (error) throw new Error(error.message);
+    }
+
+    if (nuevoPuestoId !== null) {
+      const { error } = await this.db
+        .from('historial_arriendos')
+        .insert({
+          inquilino_id:     inquilinoId,
+          puesto_id:        nuevoPuestoId,
+          socio_titular_id: socioTitularId,
+          monto_arriendo:   montoArriendo,
+          fecha_inicio:     hoy,
+          created_by:       userId,
+        });
+      if (error) throw new Error(error.message);
+    }
   }
 
   private mapearLista(row: InquilinoListaRow): InquilinoConPuesto {

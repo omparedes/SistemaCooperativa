@@ -1,23 +1,44 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
 import { SociosService } from '../../core/services/socios.service';
 import { InquilinosService } from '../../core/services/inquilinos.service';
+import { AuthService } from '../../core/services/auth.service';
 
 type Tab = 'socios' | 'inquilinos';
 
 @Component({
   selector: 'app-socio-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [NgClass, DatePipe, DecimalPipe, RouterModule],
   template: `
     <div class="p-6 max-w-7xl mx-auto">
-      <header class="mb-6">
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Directorio del Mercado</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Padrón de socios titulares e inquilinos posesionarios — vista del estado vigente.
-        </p>
+      <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Directorio del Mercado</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Padrón de socios titulares e inquilinos posesionarios — vista del estado vigente.
+          </p>
+        </div>
+        @if (authSvc.esAdmin()) {
+          @if (tab() === 'socios') {
+            <button (click)="nuevoSocio()"
+              class="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600 shrink-0">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Nuevo Socio
+            </button>
+          } @else {
+            <button (click)="nuevoInquilino()"
+              class="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 shrink-0">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Nuevo Inquilino
+            </button>
+          }
+        }
       </header>
 
       <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
@@ -47,8 +68,8 @@ type Tab = 'socios' | 'inquilinos';
 
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 mb-4">
         <input type="text"
-          [ngModel]="busqueda()"
-          (ngModelChange)="busqueda.set($event)"
+          [value]="busqueda()"
+          (input)="busqueda.set($any($event.target).value)"
           placeholder="Buscar por nombre, apellido, DNI o código de puesto..."
           class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
       </div>
@@ -204,8 +225,10 @@ type Tab = 'socios' | 'inquilinos';
   `,
 })
 export class SocioListComponent implements OnInit {
-  private readonly sociosSvc = inject(SociosService);
+  private readonly sociosSvc     = inject(SociosService);
   private readonly inquilinosSvc = inject(InquilinosService);
+  private readonly router        = inject(Router);
+  protected readonly authSvc     = inject(AuthService);
 
   readonly tab = signal<Tab>('socios');
   readonly busqueda = signal<string>('');
@@ -252,5 +275,13 @@ export class SocioListComponent implements OnInit {
 
   cambiarTab(t: Tab): void {
     this.tab.set(t);
+  }
+
+  nuevoSocio(): void {
+    void this.router.navigate(['/socios/nuevo']);
+  }
+
+  nuevoInquilino(): void {
+    void this.router.navigate(['/inquilinos/nuevo']);
   }
 }

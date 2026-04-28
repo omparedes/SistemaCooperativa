@@ -48,9 +48,10 @@ export class AppSidebarComponent {
       name: 'Socios',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7614 0 5-2.2386 5-5s-2.2386-5-5-5-5 2.2386-5 5 2.2386 5 5 5zm0 2c-3.866 0-7 3.134-7 7h2c0-2.7614 2.2386-5 5-5s5 2.2386 5 5h2c0-3.866-3.134-7-7-7z" fill="currentColor"/></svg>`,
       subItems: [
-        { name: 'Listado de Socios', path: '/socios', pro: false },
-        { name: 'Registrar Pago', path: '/pagos/registrar', pro: false },
-        { name: 'Recaudación Diaria', path: '/pagos/recaudacion-diaria', pro: false }
+        { name: 'Listado de Socios',    path: '/socios',                    pro: false },
+        { name: 'Registrar Pago',       path: '/pagos/registrar',           pro: false },
+        { name: 'Recaudación Diaria',   path: '/pagos/recaudacion-diaria',  pro: false },
+        { name: 'Caja Rápida',          path: '/pagos/ingresos-internos',   pro: false },
       ]
     },
     {
