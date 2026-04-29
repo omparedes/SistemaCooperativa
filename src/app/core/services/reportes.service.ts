@@ -101,8 +101,57 @@ interface PerfilResumen {
 }
 
 // ---------------------------------------------------------------------------
+// Tipos del Reporte Consolidado
+// ---------------------------------------------------------------------------
+export type RangoReporte = 'hoy' | 'semana' | 'mes' | 'año';
+
+export interface ReporteConsolidado {
+  rango: RangoReporte;
+  fechaDesde: string;       // YYYY-MM-DD
+  fechaHasta: string;       // YYYY-MM-DD
+  // Caja Física (pagos + ingresos_internos vs gastos)
+  caja_ingresos:           number;
+  caja_egresos:            number;
+  caja_saldo:              number;
+  caja_count_recibos:      number;
+  caja_count_internos:     number;
+  // Banco (movimientos_bancarios por tipo)
+  banco_ingresos:          number;
+  banco_egresos:           number;
+  banco_saldo:             number;
+  banco_count_movimientos: number;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers de fecha (usa la zona horaria del browser → correcta para Lima)
 // ---------------------------------------------------------------------------
+function pad2(n: number): string { return String(n).padStart(2, '0'); }
+
+function fechaLocal(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function calcularRango(rango: RangoReporte): {
+  desde: string; hasta: string; desdeISO: string; hastaISO: string;
+} {
+  const hoy = new Date();
+  const [y, m, d] = [hoy.getFullYear(), hoy.getMonth(), hoy.getDate()];
+  let inicio: Date;
+  switch (rango) {
+    case 'hoy':    inicio = new Date(y, m, d);     break;
+    case 'semana': inicio = new Date(y, m, d - 6); break;
+    case 'mes':    inicio = new Date(y, m, 1);     break;
+    case 'año':    inicio = new Date(y, 0, 1);     break;
+  }
+  const fin = new Date(y, m, d, 23, 59, 59, 999);
+  return {
+    desde:    fechaLocal(inicio),  // YYYY-MM-DD local → correcto para columnas date
+    hasta:    fechaLocal(fin),     // YYYY-MM-DD local → no salta al día siguiente
+    desdeISO: inicio.toISOString(),
+    hastaISO: fin.toISOString(),
+  };
+}
+
 function isoInicioDia(fecha: string): string {
   const [y, m, d] = fecha.split('-').map(Number);
   return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
@@ -367,6 +416,84 @@ export class ReportesService {
       total_gastos:                totalGastos,
       saldo_neto,
       gastos,
+    };
+  }
+
+  // ── Reporte Consolidado ───────────────────────────────────────────────────
+
+  /**
+   * Carga los totales financieros del período seleccionado en paralelo:
+   * pagos, ingresos_internos, gastos y movimientos_bancarios.
+   */
+  async cargarReporteConsolidado(rango: RangoReporte): Promise<ReporteConsolidado> {
+    const { desde, hasta, desdeISO, hastaISO } = calcularRango(rango);
+
+    const [pagosRes, iiRes, gastosRes, bancosRes] = await Promise.all([
+      // Pagos de caja (recibos emitidos, no anulados)
+      this.db.from('pagos')
+        .select('monto_total')
+        .is('deleted_at', null)
+        .gte('fecha_pago', desdeISO)
+        .lte('fecha_pago', hastaISO),
+
+      // Ingresos internos (cobros sin recibo)
+      this.db.from('ingresos_internos')
+        .select('monto')
+        .is('deleted_at', null)
+        .gte('fecha_ingreso', desdeISO)
+        .lte('fecha_ingreso', hastaISO),
+
+      // Gastos operativos (columna `fecha` es tipo date)
+      this.db.from('gastos')
+        .select('monto')
+        .is('deleted_at', null)
+        .gte('fecha', desde)
+        .lte('fecha', hasta),
+
+      // Movimientos bancarios (columna `fecha_operacion` es tipo date)
+      this.db.from('movimientos_bancarios')
+        .select('tipo, monto')
+        .is('deleted_at', null)
+        .gte('fecha_operacion', desde)
+        .lte('fecha_operacion', hasta),
+    ]);
+
+    if (pagosRes.error)  throw new Error(pagosRes.error.message);
+    if (iiRes.error)     throw new Error(iiRes.error.message);
+    if (gastosRes.error) throw new Error(gastosRes.error.message);
+    if (bancosRes.error) throw new Error(bancosRes.error.message);
+
+    const totalPagos  = ((pagosRes.data  ?? []) as Array<{ monto_total: unknown }>)
+      .reduce((s, r) => s + Number(r.monto_total), 0);
+    const totalII     = ((iiRes.data     ?? []) as Array<{ monto: unknown }>)
+      .reduce((s, r) => s + Number(r.monto), 0);
+    const totalGastos = ((gastosRes.data ?? []) as Array<{ monto: unknown }>)
+      .reduce((s, r) => s + Number(r.monto), 0);
+
+    const movBancos = (bancosRes.data ?? []) as Array<{ tipo: string; monto: unknown }>;
+    const totalBancoIngresos = movBancos
+      .filter(m => m.tipo === 'Ingreso')
+      .reduce((s, m) => s + Number(m.monto), 0);
+    const totalBancoEgresos = movBancos
+      .filter(m => m.tipo === 'Egreso')
+      .reduce((s, m) => s + Number(m.monto), 0);
+
+    const caja_ingresos = round2(totalPagos + totalII);
+    const caja_egresos  = round2(totalGastos);
+
+    return {
+      rango,
+      fechaDesde: desde,
+      fechaHasta: hasta,
+      caja_ingresos,
+      caja_egresos,
+      caja_saldo:              round2(caja_ingresos - caja_egresos),
+      caja_count_recibos:      (pagosRes.data  ?? []).length,
+      caja_count_internos:     (iiRes.data     ?? []).length,
+      banco_ingresos:          round2(totalBancoIngresos),
+      banco_egresos:           round2(totalBancoEgresos),
+      banco_saldo:             round2(totalBancoIngresos - totalBancoEgresos),
+      banco_count_movimientos: movBancos.length,
     };
   }
 }

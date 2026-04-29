@@ -171,27 +171,12 @@ export const routes: Routes = [
       {
         path: 'reportes',
         component: ReportesComponent,
-        title: 'Reportes de Ingresos | TailAdmin'
+        title: 'Central de Reportes | Cooperativa Primero de Mayo'
       },
       {
         path: 'reportes/arqueo-diario',
         component: ArqueoCajaComponent,
         title: 'Arqueo de Caja Diario | Cooperativa Primero de Mayo',
-      },
-      {
-        path: 'reportes/gastos',
-        component: ReportesComponent,
-        title: 'Reportes de Gastos | TailAdmin'
-      },
-      {
-        path: 'reportes/inventario',
-        component: ReportesComponent,
-        title: 'Reporte de Almacén | TailAdmin'
-      },
-      {
-        path: 'reportes/inventario/bajo-stock',
-        component: ReportesComponent,
-        title: 'Reporte de Almacén - Bajo Stock | TailAdmin'
       },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
