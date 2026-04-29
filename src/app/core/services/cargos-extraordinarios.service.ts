@@ -99,8 +99,7 @@ export class CargosExtraordinariosService {
       this.db
         .from('historial_arriendos')
         .select('id', { count: 'exact', head: true })
-        .is('fecha_fin', null)
-        .is('deleted_at', null),
+        .is('fecha_fin', null),
     ]);
     const socios     = sociosRes.count     ?? 0;
     const inquilinos = inquilinosRes.count ?? 0;

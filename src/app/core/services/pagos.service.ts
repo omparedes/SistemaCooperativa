@@ -161,16 +161,26 @@ export class PagosService {
     return resultados.slice(0, 10);
   }
 
-  async cargarDeudasPuesto(puestoId: number): Promise<DeudaItem[]> {
+  async cargarDeudasPuesto(puestoId: number, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
 
-    const { data, error } = await this.db
+    let query = this.db
       .from('montos_por_cobrar')
       .select(`
         id, monto, estado, periodo_anio, periodo_mes, fecha_generacion,
         concepto:conceptos(nombre),
         pagos_parciales:detalle_pagos(monto_aplicado, deleted_at)
-      `)
-      .eq('puesto_id', puestoId)
+      `);
+
+    if (personaId && tipo === 'socio') {
+      query = query.or(`puesto_id.eq.${puestoId},socio_id.eq.${personaId}`);
+    } else if (personaId && tipo === 'inquilino') {
+      // Inquilinos in theory only pay puesto debts, but we add it for symmetry
+      query = query.eq('puesto_id', puestoId);
+    } else {
+      query = query.eq('puesto_id', puestoId);
+    }
+
+    const { data, error } = await query
       .neq('estado', 'Cancelado')
       .is('deleted_at', null)
       .order('periodo_anio', { ascending: true })

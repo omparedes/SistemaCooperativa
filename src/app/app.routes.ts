@@ -39,7 +39,6 @@ import { GastoListComponent } from './pages/gastos/gasto-list.component';
 import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
 import { InventarioListComponent } from './pages/inventario/inventario-list.component';
 import { BancosComponent } from './pages/bancos/bancos.component';
-import { AuditoriaComponent } from './pages/auditoria/auditoria.component';
 import { DocumentationComponent } from './pages/documentation/documentation.component';
 
 export const routes: Routes = [
@@ -239,8 +238,10 @@ export const routes: Routes = [
       },
       {
         path: 'auditoria',
-        component: AuditoriaComponent,
-        title: 'Auditoría | TailAdmin'
+        loadComponent: () =>
+          import('./pages/auditoria/auditoria-list.component').then(m => m.AuditoriaListComponent),
+        canActivate: [adminGuard],
+        title: 'Auditoría de Cambios | Cooperativa Primero de Mayo',
       },
       {
         path: 'socios/:id',

@@ -627,7 +627,7 @@ export class PagoWizardComponent {
     this.errorDeudas.set(null);
     this.cargandoDeudas.set(true);
     try {
-      const items = await this.pagosService.cargarDeudasPuesto(r.puesto_id);
+      const items = await this.pagosService.cargarDeudasPuesto(r.puesto_id, r.persona_id, r.tipo);
       this.deudas.set(items);
     } catch (e: unknown) {
       this.errorDeudas.set(e instanceof Error ? e.message : 'Error al cargar deudas');

@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { PagosService } from '../../core/services/pagos.service';
+import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
 import type { BusquedaResultado, DeudaItem, PagoHistorial, TipoPagador } from '../pagos/pago.model';
 
 type TabActiva = 'pendientes' | 'realizados';
@@ -275,7 +275,7 @@ const MESES: ReadonlyArray<string> = [
   `,
 })
 export class ConsultasComponent {
-  private readonly pagosSvc = inject(PagosService);
+  private readonly pagosSvc = inject(ConsultasPublicasService);
 
   readonly currentYear = new Date().getFullYear();
 
@@ -333,7 +333,7 @@ export class ConsultasComponent {
 
     try {
       const [deudas, historial] = await Promise.all([
-        this.pagosSvc.cargarDeudasPuesto(r.puesto_id),
+        this.pagosSvc.cargarDeudasPuesto(r.puesto_id, r.persona_id, r.tipo),
         this.pagosSvc.obtenerHistorialPorPagador(r.persona_id, r.tipo),
       ]);
       this.deudas.set(deudas);
