@@ -37,8 +37,6 @@ import { ReportesComponent } from './pages/reportes/reportes.component';
 import { ArqueoCajaComponent } from './pages/reportes/arqueo-caja.component';
 import { GastoListComponent } from './pages/gastos/gasto-list.component';
 import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
-import { InventarioListComponent } from './pages/inventario/inventario-list.component';
-import { BancosComponent } from './pages/bancos/bancos.component';
 import { DocumentationComponent } from './pages/documentation/documentation.component';
 
 export const routes: Routes = [
@@ -228,13 +226,15 @@ export const routes: Routes = [
       },
       {
         path: 'inventario',
-        component: InventarioListComponent,
-        title: 'Inventario | TailAdmin'
+        loadComponent: () =>
+          import('./pages/inventario/inventario-list.component').then(m => m.InventarioListComponent),
+        title: 'Almacén Interno | Cooperativa Primero de Mayo',
       },
       {
         path: 'bancos',
-        component: BancosComponent,
-        title: 'Bancos | TailAdmin'
+        loadComponent: () =>
+          import('./pages/bancos/bancos.component').then(m => m.BancosComponent),
+        title: 'Movimientos Bancarios | Cooperativa Primero de Mayo',
       },
       {
         path: 'auditoria',

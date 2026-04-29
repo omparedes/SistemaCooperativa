@@ -176,16 +176,16 @@ export class SociosService {
     if (error) throw new Error(error.message);
   }
 
-  /** Soft-delete de un socio (nunca DELETE físico). */
+  /** Soft-delete de un socio + cierre de titularidad vigente (atómico). */
   async eliminar(id: number, motivo: string): Promise<void> {
     const { data: auth } = await this.db.auth.getUser();
     const userId = auth.user?.id ?? null;
 
-    const { error } = await this.db
-      .from('socios')
-      .update({ deleted_at: new Date().toISOString(), anulado_por: userId, motivo_anulacion: motivo })
-      .eq('id', id)
-      .is('deleted_at', null);
+    const { error } = await this.db.rpc('rpc_eliminar_socio', {
+      p_socio_id:   id,
+      p_motivo:     motivo,
+      p_usuario_id: userId,
+    });
 
     if (error) throw new Error(error.message);
   }
@@ -196,6 +196,7 @@ export class SociosService {
    * - Si hay nuevo puesto, inserta una nueva titularidad vigente.
    * - Soporta quitar el puesto (nuevoPuestoId = null).
    */
+  /** Cierra titularidad anterior y abre la nueva en una sola transacción (atómico). */
   async gestionarTitularidad(
     socioId:          number,
     nuevoPuestoId:    number | null,
@@ -203,23 +204,15 @@ export class SociosService {
   ): Promise<void> {
     const { data: auth } = await this.db.auth.getUser();
     const userId = auth.user?.id ?? null;
-    const hoy    = new Date().toISOString().slice(0, 10);
 
-    if (puestoIdAnterior !== null) {
-      const { error } = await this.db
-        .from('historial_titularidad')
-        .update({ fecha_fin: hoy, motivo_cambio: 'Cambio gestionado en edición' })
-        .eq('socio_id', socioId)
-        .is('fecha_fin', null);
-      if (error) throw new Error(error.message);
-    }
+    const { error } = await this.db.rpc('rpc_gestionar_titularidad', {
+      p_socio_id:        socioId,
+      p_nuevo_puesto_id: nuevoPuestoId,
+      p_viejo_puesto_id: puestoIdAnterior,
+      p_usuario_id:      userId,
+    });
 
-    if (nuevoPuestoId !== null) {
-      const { error } = await this.db
-        .from('historial_titularidad')
-        .insert({ socio_id: socioId, puesto_id: nuevoPuestoId, fecha_inicio: hoy, created_by: userId });
-      if (error) throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
   }
 
   private mapearLista(row: SocioListaRow): SocioConPuesto {

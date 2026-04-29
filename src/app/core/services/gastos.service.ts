@@ -29,7 +29,7 @@ export class GastosService {
     try {
       const [gastosRes, catsRes] = await Promise.all([
         this.db.from('gastos')
-          .select('*')
+          .select('id, categoria_gasto_id, fecha, monto, descripcion, comprobante_ref, responsable, created_at, updated_at, created_by, deleted_at, anulado_por, motivo_anulacion')
           .is('deleted_at', null)
           .order('fecha', { ascending: false }),
         this.db.from('categorias_gasto')

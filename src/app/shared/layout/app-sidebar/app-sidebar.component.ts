@@ -255,7 +255,6 @@ export class AppSidebarComponent {
   }
 
   onSubmenuClick() {
-    console.log('click submenu');
     this.isMobileOpen$.subscribe(isMobile => {
       if (isMobile) {
         this.sidebarService.setMobileOpen(false);
@@ -264,15 +263,18 @@ export class AppSidebarComponent {
   }
 
   loadCounts() {
+    interface ProductoBadge { stock_actual: unknown; stock_minimo: unknown }
     try {
       const rawP = localStorage.getItem('productos_almacen');
-      const prods = rawP ? JSON.parse(rawP) : [];
-      this.lowStockCount = Array.isArray(prods) ? prods.filter((p: any) => Number(p.stock_actual) <= Number(p.stock_minimo)).length : 0;
+      const prods: unknown = rawP ? JSON.parse(rawP) : [];
+      this.lowStockCount = Array.isArray(prods)
+        ? (prods as ProductoBadge[]).filter(p => Number(p.stock_actual) <= Number(p.stock_minimo)).length
+        : 0;
 
       const rawA = localStorage.getItem('AuditoriaDeCambios');
-      const aud = rawA ? JSON.parse(rawA) : [];
+      const aud: unknown = rawA ? JSON.parse(rawA) : [];
       this.auditCount = Array.isArray(aud) ? aud.length : 0;
-    } catch (e) {
+    } catch (_e: unknown) {
       this.lowStockCount = 0;
       this.auditCount = 0;
     }

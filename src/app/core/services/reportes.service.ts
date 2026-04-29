@@ -26,15 +26,28 @@ export interface ArqueoConcepto {
   cantidad: number;
 }
 
+export interface GastoArqueoRow {
+  id: number;
+  fecha: string;                  // YYYY-MM-DD (columna date)
+  monto: number;
+  descripcion: string | null;
+  comprobante_ref: string | null;
+  responsable: string | null;
+  categoria_nombre: string;
+}
+
 export interface ArqueoResumen {
   fecha: string;                  // YYYY-MM-DD
-  total_dia: number;
+  total_dia: number;              // ingresos brutos del día
   total_efectivo: number;
   total_transferencia: number;
-  cantidad_recibos: number;           // solo pagos tradicionales vigentes
-  cantidad_ingresos_internos: number; // solo ingresos internos del día
+  cantidad_recibos: number;
+  cantidad_ingresos_internos: number;
   por_concepto: ArqueoConcepto[];
-  recibos: ArqueoPago[];              // pagos + ingresos internos mezclados, por hora desc
+  recibos: ArqueoPago[];
+  total_gastos: number;           // egresos del día
+  saldo_neto: number;             // total_dia - total_gastos
+  gastos: GastoArqueoRow[];
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +83,17 @@ interface IngresoInternoArqueoRow {
   concepto: { nombre: string; grupo: string } | null;
 }
 
+interface GastoArqueoRawRow {
+  id: number;
+  fecha: string;
+  monto: number;
+  descripcion: string | null;
+  comprobante_ref: string | null;
+  responsable: string | null;
+  created_by: string | null;
+  categoria: { nombre: string } | null;
+}
+
 interface PerfilResumen {
   id: string;
   nombres: string | null;
@@ -101,9 +125,9 @@ export class ReportesService {
   private readonly db = inject(SUPABASE_CLIENT);
 
   /**
-   * Carga pagos e ingresos internos del día indicado.
+   * Carga pagos, ingresos internos y gastos del día indicado.
    * Los pagos anulados se incluyen en la lista pero NO en los totales.
-   * Los ingresos internos siempre suman a los totales.
+   * Los gastos se deducen del total para calcular el saldo neto en caja.
    */
   async cargarArqueo(
     fecha: string,
@@ -112,7 +136,6 @@ export class ReportesService {
     const inicio = isoInicioDia(fecha);
     const fin    = isoFinDia(fecha);
 
-    // Obtener userId una sola vez para ambas queries
     let userId: string | null = null;
     if (soloMiCajero) {
       const { data: authData } = await this.db.auth.getUser();
@@ -150,17 +173,30 @@ export class ReportesService {
       .lte('fecha_ingreso', fin)
       .order('fecha_ingreso', { ascending: false });
 
+    // gastos.fecha es de tipo DATE → compara directamente con la cadena YYYY-MM-DD
+    let gastosQuery = this.db
+      .from('gastos')
+      .select('id, fecha, monto, descripcion, comprobante_ref, responsable, created_by, categoria:categorias_gasto(nombre)')
+      .is('deleted_at', null)
+      .gte('fecha', fecha)
+      .lte('fecha', fecha)
+      .order('fecha', { ascending: true });
+
     if (userId) {
-      pagosQuery = pagosQuery.eq('created_by', userId);
-      iiQuery    = iiQuery.eq('created_by', userId);
+      pagosQuery  = pagosQuery.eq('created_by', userId);
+      iiQuery     = iiQuery.eq('created_by', userId);
+      // gastos: NO se filtra por cajero — son egresos de la cooperativa,
+      // no del operador. Mostrar siempre el total del día para un cuadre correcto.
     }
 
-    const [pagosRes, iiRes] = await Promise.all([pagosQuery, iiQuery]);
-    if (pagosRes.error) throw new Error(pagosRes.error.message);
-    if (iiRes.error)    throw new Error(iiRes.error.message);
+    const [pagosRes, iiRes, gastosRes] = await Promise.all([pagosQuery, iiQuery, gastosQuery]);
+    if (pagosRes.error)  throw new Error(pagosRes.error.message);
+    if (iiRes.error)     throw new Error(iiRes.error.message);
+    if (gastosRes.error) throw new Error(gastosRes.error.message);
 
-    const rows     = (pagosRes.data ?? []) as unknown as PagoArqueoRow[];
-    const ingresos = (iiRes.data ?? []) as unknown as IngresoInternoArqueoRow[];
+    const rows      = (pagosRes.data  ?? []) as unknown as PagoArqueoRow[];
+    const ingresos  = (iiRes.data     ?? []) as unknown as IngresoInternoArqueoRow[];
+    const gastosRaw = (gastosRes.data ?? []) as unknown as GastoArqueoRawRow[];
 
     // ── Batch de perfiles para nombres de cajeros ────────────────────────────
     const idsSet = new Set<string>();
@@ -178,7 +214,7 @@ export class ReportesService {
       }
     }
 
-    return this.construirResumen(fecha, rows, ingresos, perfilMap);
+    return this.construirResumen(fecha, rows, ingresos, perfilMap, gastosRaw);
   }
 
   // ── Construcción del resumen ──────────────────────────────────────────────
@@ -187,6 +223,7 @@ export class ReportesService {
     rows: PagoArqueoRow[],
     ingresos: IngresoInternoArqueoRow[],
     perfilMap: Map<string, PerfilResumen>,
+    gastosRaw: GastoArqueoRawRow[],
   ): ArqueoResumen {
     let totalEfectivo = 0;
     let totalTransferencia = 0;
@@ -245,7 +282,7 @@ export class ReportesService {
       };
     });
 
-    // ── Ingresos internos (nunca anulados en esta query — filtered IS NULL) ──
+    // ── Ingresos internos (filtrados por deleted_at IS NULL) ─────────────────
     const filasInternas: ArqueoPago[] = ingresos.map(row => {
       const monto = Number(row.monto);
 
@@ -266,8 +303,6 @@ export class ReportesService {
         : 'Otros Ingresos';
 
       const perfil = row.created_by ? perfilMap.get(row.created_by) : null;
-
-      // Código de referencia visual (no es un código de transacción real)
       const codigoRef = `INT-${String(row.id).padStart(6, '0')}`;
 
       return {
@@ -287,7 +322,7 @@ export class ReportesService {
       };
     });
 
-    // ── Mezclar y ordenar por fecha desc ─────────────────────────────────────
+    // ── Mezclar recibos por fecha desc ───────────────────────────────────────
     const todosRecibos = [...recibos, ...filasInternas].sort(
       (a, b) => new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime(),
     );
@@ -300,15 +335,38 @@ export class ReportesService {
       }))
       .sort((a, b) => b.monto - a.monto);
 
+    // ── Gastos / Egresos del día ─────────────────────────────────────────────
+    const totalGastos = round2(
+      gastosRaw.reduce((s, g) => s + Number(g.monto), 0),
+    );
+
+    const gastos: GastoArqueoRow[] = gastosRaw
+      .map(g => ({
+        id:               g.id,
+        fecha:            g.fecha,
+        monto:            Number(g.monto),
+        descripcion:      g.descripcion,
+        comprobante_ref:  g.comprobante_ref,
+        responsable:      g.responsable,
+        categoria_nombre: g.categoria?.nombre ?? 'Sin categoría',
+      }))
+      .sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+    const total_dia  = round2(totalEfectivo + totalTransferencia);
+    const saldo_neto = round2(total_dia - totalGastos);
+
     return {
       fecha,
-      total_dia:                   round2(totalEfectivo + totalTransferencia),
+      total_dia,
       total_efectivo:              round2(totalEfectivo),
       total_transferencia:         round2(totalTransferencia),
       cantidad_recibos:            recibos.filter(r => !r.anulado).length,
       cantidad_ingresos_internos:  filasInternas.length,
       por_concepto,
       recibos:                     todosRecibos,
+      total_gastos:                totalGastos,
+      saldo_neto,
+      gastos,
     };
   }
 }

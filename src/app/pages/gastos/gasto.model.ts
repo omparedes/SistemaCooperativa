@@ -11,6 +11,7 @@ export interface Gasto {
   monto: number;
   descripcion: string | null;
   comprobante_ref: string | null;
+  responsable: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -25,6 +26,7 @@ export interface GastoInput {
   monto: number;
   descripcion: string | null;
   comprobante_ref: string | null;
+  responsable: string | null;
 }
 
 export const gastoInputVacio = (): GastoInput => ({
@@ -33,4 +35,5 @@ export const gastoInputVacio = (): GastoInput => ({
   monto: 0,
   descripcion: null,
   comprobante_ref: null,
+  responsable: null,
 });

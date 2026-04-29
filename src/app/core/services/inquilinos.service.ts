@@ -171,16 +171,16 @@ export class InquilinosService {
     if (error) throw new Error(error.message);
   }
 
-  /** Soft-delete de un inquilino (nunca DELETE físico). */
+  /** Soft-delete de un inquilino + cierre de arriendo vigente (atómico). */
   async eliminar(id: number, motivo: string): Promise<void> {
     const { data: auth } = await this.db.auth.getUser();
     const userId = auth.user?.id ?? null;
 
-    const { error } = await this.db
-      .from('inquilinos')
-      .update({ deleted_at: new Date().toISOString(), anulado_por: userId, motivo_anulacion: motivo })
-      .eq('id', id)
-      .is('deleted_at', null);
+    const { error } = await this.db.rpc('rpc_eliminar_inquilino', {
+      p_inquilino_id: id,
+      p_motivo:       motivo,
+      p_usuario_id:   userId,
+    });
 
     if (error) throw new Error(error.message);
   }

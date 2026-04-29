@@ -226,61 +226,30 @@ export class PagosService {
 
     if (monto_total <= 0) throw new Error('El monto total debe ser mayor a cero');
 
-    // 1. Insert pago — XOR socio/inquilino enforced aquí
-    const pagoBase: Record<string, unknown> = {
-      puesto_id: params.resultado.puesto_id,
-      monto_total,
-      metodo_pago: params.metodo_pago,
-      comprobante: params.comprobante || null,
-      observacion: params.observacion || null,
-      created_by: userId,
-    };
-
     const tipoPagador: TipoPagador = params.resultado.tipo;
-    if (tipoPagador === 'socio') {
-      pagoBase['socio_id'] = params.resultado.persona_id;
-    } else {
-      pagoBase['inquilino_id'] = params.resultado.persona_id;
-    }
 
-    const { data: pagoData, error: pagoError } = await this.db
-      .from('pagos')
-      .insert(pagoBase)
-      .select('id, codigo_transaccion')
-      .single();
-
-    if (pagoError) throw new Error(pagoError.message);
-    const pago = pagoData as { id: number; codigo_transaccion: string };
-
-    // 2. Insert detalle_pagos (distribución FIFO)
-    const detalleRows = lineasActivas.map(l => ({
-      pago_id: pago.id,
-      monto_id: l.monto_id,
-      monto_aplicado: l.monto_aplicado,
-      created_by: userId,
+    const distribucion = lineasActivas.map(l => ({
+      monto_id:          l.monto_id,
+      monto_aplicado:    l.monto_aplicado,
+      cubierto_completo: l.cubierto_completo,
     }));
 
-    const { error: detalleError } = await this.db
-      .from('detalle_pagos')
-      .insert(detalleRows);
+    const { data, error } = await this.db.rpc('rpc_procesar_pago', {
+      p_puesto_id:    params.resultado.puesto_id,
+      p_socio_id:     tipoPagador === 'socio'     ? params.resultado.persona_id : null,
+      p_inquilino_id: tipoPagador === 'inquilino' ? params.resultado.persona_id : null,
+      p_monto_total:  monto_total,
+      p_metodo_pago:  params.metodo_pago,
+      p_comprobante:  params.comprobante || null,
+      p_observacion:  params.observacion || null,
+      p_usuario_id:   userId,
+      p_distribucion: distribucion,
+    });
 
-    if (detalleError) throw new Error(detalleError.message);
+    if (error) throw new Error(error.message);
 
-    // 3. Marcar como 'Pagado' las deudas completamente cubiertas
-    const idsToPagar = lineasActivas
-      .filter(l => l.cubierto_completo)
-      .map(l => l.monto_id);
-
-    if (idsToPagar.length > 0) {
-      const { error: updateError } = await this.db
-        .from('montos_por_cobrar')
-        .update({ estado: 'Pagado' })
-        .in('id', idsToPagar);
-
-      if (updateError) throw new Error(updateError.message);
-    }
-
-    return { pago_id: pago.id, codigo_transaccion: pago.codigo_transaccion };
+    const resultado = data as unknown as { pago_id: number; codigo_transaccion: string };
+    return { pago_id: resultado.pago_id, codigo_transaccion: resultado.codigo_transaccion };
   }
 
   // -------------------------------------------------------------------------

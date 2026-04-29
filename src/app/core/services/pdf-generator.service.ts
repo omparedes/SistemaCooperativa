@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import type { ArqueoConcepto, ArqueoPago, ArqueoResumen } from './reportes.service';
+import type { ArqueoConcepto, ArqueoPago, ArqueoResumen, GastoArqueoRow } from './reportes.service';
 // @types/pdfmake no re-exporta TDocumentDefinitions ni TVirtualFileSystem desde
 // su API pública, pero sí las usa en las firmas de sus funciones exportadas.
 // Usamos `import type * as` para obtener el tipo del namespace y extraemos
@@ -126,7 +126,7 @@ export class PdfGeneratorService {
     const pct = (n: number) =>
       r.total_dia > 0 ? `${((n / r.total_dia) * 100).toFixed(0)}%` : '0%';
 
-    // ── Layout reutilizable ────────────────────────────────────────────────
+    // ── Layouts reutilizables ──────────────────────────────────────────────
     const layoutBordes: CustomTableLayout = {
       hLineWidth: (i, node: { table: { body: unknown[] } }) =>
         i === 0 || i === node.table.body.length ? 1.5 : 0.5,
@@ -141,18 +141,36 @@ export class PdfGeneratorService {
       paddingRight: () => 6,
     };
 
+    const layoutResumen: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length || i === node.table.body.length - 1 ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length || i === node.table.body.length - 1 ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      paddingTop: () => 5,
+      paddingBottom: () => 5,
+      paddingLeft: () => 8,
+      paddingRight: () => 8,
+    };
+
     const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
       ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: C.azulClaro, alignment: al });
 
-    // ── Tabla KPI (3 columnas) ─────────────────────────────────────────────
+    const encTHRojo = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: '#B91C1C', alignment: al });
+
+    // ── Tabla KPI (4 columnas: Ingresos, Efectivo, Transferencia, Saldo Neto) ─
+    const saldoColor = r.saldo_neto >= 0 ? C.verde : '#B91C1C';
+    const saldoBg    = r.saldo_neto >= 0 ? '#F0FDF4' : '#FEF2F2';
     const kpiTable: DocDefinition = {
       table: {
-        widths: ['*', '*', '*'],
+        widths: ['*', '*', '*', '*'],
         body: [[
           {
             stack: [
-              { text: 'TOTAL DEL DÍA', fontSize: 8, bold: true, color: C.grisTxt },
-              { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 20, bold: true, color: C.azul, margin: [0, 4, 0, 2] },
+              { text: 'INGRESOS TOTALES', fontSize: 8, bold: true, color: C.grisTxt },
+              { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 18, bold: true, color: C.azul, margin: [0, 4, 0, 2] },
               { text: `${r.cantidad_recibos} recibo${r.cantidad_recibos !== 1 ? 's' : ''}`, fontSize: 8, color: C.grisTxt },
             ],
             fillColor: '#F0F4FF', margin: [8, 8, 8, 8],
@@ -160,18 +178,26 @@ export class PdfGeneratorService {
           {
             stack: [
               { text: 'EFECTIVO (GAVETA)', fontSize: 8, bold: true, color: '#166534' },
-              { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 20, bold: true, color: C.verde, margin: [0, 4, 0, 2] },
+              { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 18, bold: true, color: C.verde, margin: [0, 4, 0, 2] },
               { text: pct(r.total_efectivo), fontSize: 8, color: '#166534' },
             ],
             fillColor: '#F0FDF4', margin: [8, 8, 8, 8],
           },
           {
             stack: [
-              { text: 'TRANSFERENCIA / QR', fontSize: 8, bold: true, color: '#1e3a8a' },
-              { text: `S/ ${r.total_transferencia.toFixed(2)}`, fontSize: 20, bold: true, color: '#2563EB', margin: [0, 4, 0, 2] },
-              { text: pct(r.total_transferencia), fontSize: 8, color: '#1e3a8a' },
+              { text: 'EGRESOS DEL DÍA', fontSize: 8, bold: true, color: '#92400E' },
+              { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 18, bold: true, color: '#D97706', margin: [0, 4, 0, 2] },
+              { text: `${r.gastos.length} egreso${r.gastos.length !== 1 ? 's' : ''}`, fontSize: 8, color: '#92400E' },
             ],
-            fillColor: '#EFF6FF', margin: [8, 8, 8, 8],
+            fillColor: '#FFFBEB', margin: [8, 8, 8, 8],
+          },
+          {
+            stack: [
+              { text: 'SALDO NETO EN CAJA', fontSize: 8, bold: true, color: saldoColor },
+              { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 18, bold: true, color: saldoColor, margin: [0, 4, 0, 2] },
+              { text: 'Ingresos − Egresos', fontSize: 8, color: saldoColor },
+            ],
+            fillColor: saldoBg, margin: [8, 8, 8, 8],
           },
         ]],
       },
@@ -180,6 +206,29 @@ export class PdfGeneratorService {
         hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde,
       },
       margin: [0, 0, 0, 16],
+    } as unknown as DocDefinition;
+
+    // ── Tabla Resumen Financiero ───────────────────────────────────────────
+    const resumenFinanciero: DocDefinition = {
+      table: {
+        widths: ['*', '30%'],
+        body: [
+          [
+            { text: 'Ingresos totales del día', fontSize: 9, color: C.grisOsc },
+            { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 9, bold: true, color: C.negro, alignment: 'right' as const },
+          ],
+          [
+            { text: '(−) Egresos del día', fontSize: 9, color: '#B91C1C' },
+            { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 9, bold: true, color: '#B91C1C', alignment: 'right' as const },
+          ],
+          [
+            { text: '(=) SALDO NETO EN CAJA', fontSize: 10, bold: true, color: saldoColor, fillColor: saldoBg },
+            { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 11, bold: true, color: saldoColor, alignment: 'right' as const, fillColor: saldoBg },
+          ],
+        ],
+      },
+      layout: layoutResumen,
+      margin: [0, 0, 0, 20],
     } as unknown as DocDefinition;
 
     // ── Tabla desglose por concepto ────────────────────────────────────────
@@ -205,20 +254,61 @@ export class PdfGeneratorService {
       { text: p.pagador, fontSize: 8, color: C.grisOsc },
       { text: p.codigo_puesto, fontSize: 8, color: C.grisOsc, alignment: 'center' as const },
       { text: p.conceptos.join(', '), fontSize: 7.5, color: C.grisTxt },
-      {
-        text: p.metodo_pago,
-        fontSize: 8,
-        color: p.metodo_pago === 'Efectivo' ? C.verde : '#1D4ED8',
-        alignment: 'center' as const,
-      },
+      { text: p.metodo_pago, fontSize: 8, color: p.metodo_pago === 'Efectivo' ? C.verde : '#1D4ED8', alignment: 'center' as const },
       { text: `S/ ${p.monto_total.toFixed(2)}`, fontSize: 8, bold: true, color: C.negro, alignment: 'right' as const },
     ]);
 
     const filaTotalRecibos: TableCell[] = [
-      { text: 'TOTAL', fontSize: 9, bold: true, color: C.azul, colSpan: 6, alignment: 'right' as const },
+      { text: 'TOTAL INGRESOS', fontSize: 9, bold: true, color: C.azul, colSpan: 6, alignment: 'right' as const },
       {}, {}, {}, {}, {},
       { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 10, bold: true, color: C.azulClaro, alignment: 'right' as const },
     ];
+
+    // ── Sección de Egresos (condicional) ───────────────────────────────────
+    const filasGastos: TableCell[][] = r.gastos.map((g: GastoArqueoRow) => [
+      { text: g.fecha, fontSize: 8, color: C.grisOsc },
+      { text: g.comprobante_ref ?? '—', fontSize: 8, color: C.grisOsc },
+      { text: g.responsable ?? '—', fontSize: 8, color: C.grisOsc },
+      { text: g.categoria_nombre, fontSize: 8, color: C.grisOsc },
+      { text: g.descripcion ?? '—', fontSize: 7.5, color: C.grisTxt },
+      { text: `S/ ${g.monto.toFixed(2)}`, fontSize: 8, bold: true, color: '#B91C1C', alignment: 'right' as const },
+    ]);
+
+    const filaTotalGastos: TableCell[] = [
+      { text: 'TOTAL EGRESOS', fontSize: 9, bold: true, color: '#B91C1C', colSpan: 5, alignment: 'right' as const },
+      {}, {}, {}, {},
+      { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 10, bold: true, color: '#B91C1C', alignment: 'right' as const },
+    ];
+
+    const seccionGastos = r.gastos.length > 0
+      ? [
+          { text: 'EGRESOS DEL DÍA', fontSize: 9, bold: true, decoration: 'underline', color: '#B91C1C', margin: [0, 0, 0, 5] },
+          {
+            table: {
+              headerRows: 1,
+              widths: ['12%', '14%', '18%', '16%', '*', '14%'],
+              body: [
+                [
+                  encTHRojo('Fecha'),
+                  encTHRojo('Comprobante'),
+                  encTHRojo('Responsable'),
+                  encTHRojo('Categoría'),
+                  encTHRojo('Detalle'),
+                  encTHRojo('Monto', 'right'),
+                ],
+                ...filasGastos,
+                filaTotalGastos,
+              ],
+            },
+            layout: {
+              ...layoutBordes,
+              hLineColor: (i: number, node: { table: { body: unknown[] } }) =>
+                i === 0 || i === node.table.body.length ? '#B91C1C' : C.grisBorde,
+            } as CustomTableLayout,
+            margin: [0, 0, 0, 20],
+          },
+        ]
+      : [];
 
     // ── Documento ──────────────────────────────────────────────────────────
     return {
@@ -259,11 +349,15 @@ export class PdfGeneratorService {
           margin: [0, 0, 0, 16],
         },
 
-        // KPIs
+        // KPIs (4 bloques: Ingresos, Efectivo, Egresos, Saldo Neto)
         kpiTable,
 
+        // Resumen financiero (tabla de deducción)
+        { text: 'RESUMEN FINANCIERO', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
+        resumenFinanciero,
+
         // Desglose por concepto
-        { text: 'DESGLOSE POR CONCEPTO', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
+        { text: 'DESGLOSE POR CONCEPTO DE INGRESOS', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
         r.por_concepto.length > 0
           ? {
               table: {
@@ -298,9 +392,12 @@ export class PdfGeneratorService {
                 ],
               },
               layout: layoutBordes,
-              margin: [0, 0, 0, 24],
+              margin: [0, 0, 0, r.gastos.length > 0 ? 16 : 24],
             }
-          : { text: 'Sin recibos registrados.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 24], italics: true },
+          : { text: 'Sin recibos registrados.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 16], italics: true },
+
+        // Sección egresos (condicional)
+        ...seccionGastos,
 
         // Firma
         {
