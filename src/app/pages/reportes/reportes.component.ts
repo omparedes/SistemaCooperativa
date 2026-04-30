@@ -380,7 +380,7 @@ const RANGO_LABELS: Record<RangoReporte, string> = {
                       </td>
                       <td class="px-5 py-3 text-center">
                         <span class="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:text-red-400">
-                          −{{ +(p.stock_minimo - p.stock_actual).toFixed(3).replace(/\.?0+$/, '') }} {{ p.unidad_medida }}
+                          −{{ +(p.stock_minimo - p.stock_actual).toFixed(3) }} {{ p.unidad_medida }}
                         </span>
                       </td>
                     </tr>

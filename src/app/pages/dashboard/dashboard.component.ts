@@ -181,7 +181,7 @@ function fmtSoles(n: number): string {
               <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-gray-700" [style.height.%]="i"></div>
             }
           </div>
-        } @else if (chartSeries()[0]?.data?.length) {
+        } @else if (chartSeries()[0].data.length) {
           <apx-chart
             [series]="chartSeries()"
             [chart]="chartConfig"
