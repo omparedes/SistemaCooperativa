@@ -3,364 +3,151 @@
 
     <!-- Header -->
     <header class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Documento de Arquitectura y Especificación
-        Técnica</h1>
-      <p class="text-lg text-gray-600 dark:text-gray-400">SistemaCooperativa (TailAdmin)</p>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Documentación Técnica y Manual de Uso</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400">Sistema ERP - Cooperativa Primero de Mayo</p>
 
       <div class="mt-4 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
         <div class="flex items-center gap-2">
-          <span class="font-semibold">Fecha:</span> 17 de Diciembre de 2025
+          <span class="font-semibold">Versión:</span> 2.0 (Producción)
         </div>
         <div class="flex items-center gap-2">
-          <span class="font-semibold">Versión:</span> 1.0
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="font-semibold">Framework:</span> Angular (Standalone) + Tailwind CSS 4
+          <span class="font-semibold">Arquitectura:</span> Atómica (ACID)
         </div>
       </div>
     </header>
 
-    <!-- 1. Resumen Ejecutivo -->
+    <!-- 0. Créditos de Autor -->
     <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">1. Resumen Ejecutivo</h2>
-      <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
-        El proyecto <strong>SistemaCooperativa</strong> es una aplicación web administrativa basada en el template
-        <em>TailAdmin</em>, desarrollada sobre <strong>Angular</strong> (Versión experimental/reciente ^20.x) utilizando
-        la arquitectura de <strong>Standalone Components</strong>. El sistema está diseñado para gestionar actividades
-        de una cooperativa o mercado, incluyendo módulos para Socios, Gastos, Recaudación e Inventario.
-      </p>
-      <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-        <p class="text-blue-800 dark:text-blue-200">
-          <strong>Estado Actual:</strong> La aplicación opera como un <strong>prototipo de alta fidelidad</strong>. La
-          interfaz de usuario (UI) está implementada y es funcional, pero la persistencia de datos se realiza mediante
-          <strong>Mock Data (Hardcoded)</strong> o <strong>LocalStorage</strong>. No existe actualmente integración con
-          un backend real.
-        </p>
-      </div>
-    </section>
-
-    <!-- 2. Visión General de la Arquitectura -->
-    <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">2. Visión General de la Arquitectura
-      </h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-4">
-        La aplicación sigue una arquitectura <strong>Monolítica Modular basada en Componentes (Standalone)</strong>. Se
-        ha eliminado la dependencia de <code>NgModules</code> para la mayoría de la aplicación.
-      </p>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-gray-100 dark:bg-gray-700">
-              <th class="p-3 font-semibold text-gray-700 dark:text-gray-200">Característica</th>
-              <th class="p-3 font-semibold text-gray-700 dark:text-gray-200">Implementación</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Bootstrapping</td>
-              <td class="p-3 text-gray-700 dark:text-gray-300"><code>bootstrapApplication</code> en <code>main.ts</code>
-              </td>
-            </tr>
-            <tr>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Ruteo</td>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Centralizado en <code>app.routes.ts</code>, mayormente
-                Eager Loading</td>
-            </tr>
-            <tr>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Estilos</td>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Tailwind CSS v4 (configuración en <code>@theme</code>)
-              </td>
-            </tr>
-            <tr>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Gestión de Estado</td>
-              <td class="p-3 text-gray-700 dark:text-gray-300">Local (en componentes) y <code>LocalStorage</code></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 3. Estructura del Proyecto -->
-    <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">3. Estructura del Proyecto</h2>
-      <div
-        class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg font-mono text-sm overflow-x-auto text-gray-800 dark:text-gray-200">
-        <pre>
-src/app/
-├── core/                   # Servicios Singleton y Lógica Global
-│   └── services/           # Sidebar, Theme, Modal
-├── pages/                  # Vistas y Lógica de Negocio (Features)
-│   ├── socios/             # Gestión de Socios
-│   ├── gastos/             # Gestión de Gastos
-│   ├── pagos/              # Recaudación y Caja
-│   ├── dashboard/          # Vistas principales
-│   └── ...
-├── shared/                 # Recursos Reutilizables
-│   ├── layout/             # Sidebar, Header
-│   ├── components/         # Componentes UI puros
-│   └── pipe/               # Pipes
-├── app.routes.ts           # Ruteo global
-├── app.config.ts           # Providers globales
-└── app.component.ts        # Raíz
-</pre>
-      </div>
-    </section>
-
-    <!-- 4. Descripción de Módulos -->
-    <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">4. Descripción de Módulos</h2>
-      <p class="text-gray-700 dark:text-gray-300">
-        Dado que la aplicación usa <strong>Standalone Components</strong>, el concepto de "Módulo" es casi inexistente.
-      </p>
-      <div class="mt-4">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Estado de Migración</h3>
-        <p class="text-gray-700 dark:text-gray-300">
-          Actualmente el proyecto es <strong>100% Standalone</strong>. Se han eliminado todos los <code>NgModules</code>
-          legacy (como <em>SociosModule</em>, <em>GastosModule</em>, etc.) para simplificar la arquitectura y reducir el
-          boilerplate.
-        </p>
-      </div>
-    </section>
-
-    <!-- 5. Catálogo de Componentes Clave -->
-    <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">5. Catálogo de Componentes Clave</h2>
-
-      <div class="space-y-6">
-        <div>
-          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.1. Feature: Socios</h3>
-          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
-            <li><strong>Componente:</strong> <code>SocioListComponent</code></li>
-            <li><strong>Responsabilidad:</strong> Listar socios con filtrado.</li>
-            <li><strong>Datos:</strong> Array estático hardcoded.</li>
-          </ul>
+      <div class="p-6 bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-100 dark:border-brand-800 flex flex-col md:flex-row items-center gap-6">
+        <div class="flex-shrink-0">
+          <div class="h-20 w-20 rounded-full bg-brand-600 text-white flex items-center justify-center text-3xl font-bold shadow-lg">
+            OP
+          </div>
         </div>
-
         <div>
-          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.2. Feature: Gastos</h3>
-          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
-            <li><strong>Componente:</strong> <code>GastoListComponent</code></li>
-            <li><strong>Responsabilidad:</strong> CRUD completo de gastos.</li>
-            <li><strong>Datos:</strong> Persistencia en <code>localStorage</code>.</li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">5.3. Layout (Shared)</h3>
-          <ul class="list-disc pl-5 mt-2 text-gray-700 dark:text-gray-300">
-            <li><strong>Componente:</strong> <code>AppLayoutComponent</code></li>
-            <li><strong>Responsabilidad:</strong> Orquestador principal (Sidebar + Header).</li>
-          </ul>
+          <h2 class="text-2xl font-bold text-brand-800 dark:text-brand-300 mb-1">Autor y Desarrollador Principal</h2>
+          <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Oscar Martin Paredes Morales</p>
+          <p class="text-gray-600 dark:text-gray-400 mb-3">Ingeniero de Sistemas | Full Stack Architect</p>
+          <div class="flex flex-wrap gap-3">
+            <a href="https://www.linkedin.com/in/omparedes/" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white text-sm font-medium rounded-lg hover:bg-[#084e96] transition shadow-sm">
+              <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              Conectar en LinkedIn
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 6. Catálogo de Servicios -->
+    <!-- 1. Tecnologías -->
     <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">6. Catálogo de Servicios</h2>
-      <p class="text-gray-700 dark:text-gray-300 mb-4">Los servicios globales se han centralizado en
-        <code>src/app/core/services</code>. Actualmente gestionan principalmente el estado de la UI (Sidebar, Theme,
-        Modales). Se planea agregar aquí los servicios de negocio (HTTP).
-      </p>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-gray-100 dark:bg-gray-700">
-              <th class="p-2 font-semibold">Servicio</th>
-              <th class="p-2 font-semibold">Responsabilidad</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr>
-              <td class="p-2 font-mono">SidebarService</td>
-              <td class="p-2">Gestiona estado del menú lateral.</td>
-            </tr>
-            <tr>
-              <td class="p-2 font-mono">ThemeService</td>
-              <td class="p-2">Gestiona tema Claro/Oscuro.</td>
-            </tr>
-            <tr>
-              <td class="p-2 font-mono">ModalService</td>
-              <td class="p-2">Controla apertura de modales simples.</td>
-            </tr>
-          </tbody>
-        </table>
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Stack Tecnológico Implementado</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <svg class="h-10 mb-2" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg"><path d="M125 0L10.6 40.5L31.2 195.4L125 250L218.8 195.4L239.4 40.5L125 0Z" fill="#DD0031"/><path d="M125 0V250L218.8 195.4L239.4 40.5L125 0Z" fill="#C3002F"/><path d="M125 22.4L44.2 191H71L88.2 147.8H161.7L178.9 191H205.7L125 22.4ZM152.1 125.4H97.9L125 56.6L152.1 125.4Z" fill="#FFFFFF"/></svg>
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Angular 20</span>
+          <span class="text-xs text-gray-500">Standalone Components</span>
+        </div>
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <svg class="h-10 mb-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.9998 22.4206C11.5303 22.4206 11.0805 22.1866 10.8207 21.7876L2.30232 8.70659C1.98254 8.21557 1.99253 7.57567 2.3323 7.09469C2.67206 6.61372 3.28164 6.38173 3.88122 6.50571L10.9862 7.97354C11.4159 8.06253 11.8357 7.78157 11.9256 7.35263C11.9556 7.20265 11.9256 7.05267 11.8556 6.92269L7.54865 0.505562C7.30882 0.145612 7.40875 -0.344321 7.76849 -0.584288C8.12824 -0.824254 8.6179 -0.724268 8.85773 -0.364318L13.1647 6.05281C13.8742 7.11266 13.5645 8.57246 12.4652 9.24237L5.35021 7.77356C5.03044 7.70857 4.70067 7.82855 4.5108 8.08852C4.33093 8.34848 4.32094 8.68843 4.49082 8.9484L13.0092 22.0294C13.1491 22.2494 13.4089 22.3893 13.6887 22.3893C13.9685 22.3893 14.2283 22.2494 14.3682 22.0294L22.8866 8.9484C23.0565 8.68843 23.0465 8.34848 22.8666 8.08852C22.6768 7.82855 22.347 7.70857 22.0272 7.77356L14.9122 9.24237C14.4825 9.33135 14.0628 9.05039 13.9729 8.62145C13.8829 8.19251 14.1627 7.77257 14.5924 7.68258L21.7074 6.21475C22.307 6.09077 22.9166 6.32273 23.2564 6.80371C23.5961 7.28468 23.6061 7.92459 23.2863 8.41561L14.768 21.4966C14.5081 21.8956 14.0584 22.1296 13.5888 22.1296H11.9998V22.4206Z" fill="#3ECF8E"/></svg>
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Supabase</span>
+          <span class="text-xs text-gray-500">PostgreSQL + RPCs + RLS</span>
+        </div>
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <svg class="h-10 mb-2 text-black dark:text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M24 22.525H0l12-21.05 12 21.05z"/></svg>
+          <span class="font-semibold text-gray-700 dark:text-gray-300">Vercel</span>
+          <span class="text-xs text-gray-500">Cloud Hosting & CI/CD</span>
+        </div>
+        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <svg class="h-10 mb-2 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          <span class="font-semibold text-gray-700 dark:text-gray-300">GitHub</span>
+          <span class="text-xs text-gray-500">Control de Versiones</span>
+        </div>
       </div>
     </section>
 
-    <!-- 7. Arquitectura de Ruteo -->
+    <!-- 2. Arquitectura de Base de Datos -->
     <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">7. Arquitectura de Ruteo</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Arquitectura de Base de Datos (ACID)</h2>
+      <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+        Este ERP no depende de llamadas HTTP secuenciales en el frontend. Toda la lógica de negocio crítica se ejecuta directamente en <strong>Supabase (PostgreSQL)</strong> utilizando <strong>Stored Procedures (RPCs)</strong> bajo el patrón <code>SECURITY DEFINER</code>. Esto garantiza que ante cualquier corte de red, las transacciones financieras hagan un rollback automático (Cumplimiento ACID).
+      </p>
       <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-        <li><strong>Estrategia:</strong> Eager Loading (Carga ansiosa).</li>
-        <li><strong>Ruta raíz /:</strong> Redirige a Dashboard.</li>
-        <li><strong>Riesgo:</strong> Bundle inicial pesado. Se recomienda migrar a Lazy Loading
-          (<code>loadComponent</code>).</li>
+        <li><strong>Soft Deletes:</strong> Ningún registro financiero o de usuario se elimina físicamente de la base de datos. Se utiliza un sistema <code>append-only</code> con columnas <code>deleted_at</code>.</li>
+        <li><strong>Row Level Security (RLS):</strong> Todas las tablas están blindadas con políticas de acceso. Un cajero no puede modificar deudas pasadas ni ver auditorías.</li>
+        <li><strong>Triggers Activos:</strong> El stock de inventario, los saldos bancarios y las bitácoras de auditoría se autogestionan a nivel de base de datos.</li>
       </ul>
     </section>
 
-    <!-- 8. Recomendaciones -->
+    <!-- 3. Módulos del Sistema -->
     <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">8. Recomendaciones de Desarrollo</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">Módulos y Funcionalidades del ERP</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800">
-          <h3 class="font-bold text-orange-800 dark:text-orange-200 mb-2">Fase 1: Arquitectura</h3>
-          <ul class="list-disc pl-4 text-sm text-orange-900 dark:text-orange-100">
-            <li>Crear directorio Core para servicios singleton.</li>
-            <li>Implementar Lazy Loading en rutas.</li>
-            <li>Eliminar NgModules remanentes.</li>
+      <div class="space-y-6">
+        
+        <!-- Padrón -->
+        <article class="p-6 border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">1. Gestión de Padrón y Puestos</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Administración del ecosistema humano de la cooperativa. Diferencia estructuralmente a los dueños de los locales frente a quienes los alquilan.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Socios (Titulares):</strong> Registro, edición y baja de dueños.</li>
+            <li><strong>Inquilinos (Arrendatarios):</strong> Registro de ocupantes temporales que asumen deudas operativas.</li>
+            <li><strong>Historial Atómico:</strong> La transferencia de un puesto de un socio a otro guarda un historial intocable (<code>historial_titularidad</code>), permitiendo auditorías de propiedad en el tiempo.</li>
           </ul>
-        </div>
+        </article>
 
-        <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded border border-green-100 dark:border-green-800">
-          <h3 class="font-bold text-green-800 dark:text-green-200 mb-2">Fase 2: Integración Backend</h3>
-          <ul class="list-disc pl-4 text-sm text-green-900 dark:text-green-100">
-            <li>Crear servicios HTTP (SociosService, GastosService).</li>
-            <li>Reemplazar Mocks por llamadas API.</li>
-            <li>Configurar variables de entorno.</li>
+        <!-- Facturación -->
+        <article class="p-6 border-l-4 border-brand-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">2. Facturación y Cuentas por Cobrar</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Motor de emisión de deudas masivas y cálculo automatizado.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Cargos Fijos:</strong> Emisión automática mensual de seguridad, mantenimiento, etc. a todo el padrón.</li>
+            <li><strong>Lectura de Medidores:</strong> Digitación ágil del consumo de Luz y Agua. El sistema multiplica el consumo por la tarifa global parametrizada.</li>
+            <li><strong>Cargos Extraordinarios (Segmentación):</strong> Permite cobrar cuotas excepcionales o aplicar multas segmentando por pasillo, por tipo de persona (Socio/Inquilino) o individualmente.</li>
           </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- 9. Guía Funcional de Vistas -->
-    <section class="mb-10">
-      <h2 class="text-2xl font-semibold text-brand-700 dark:text-brand-500 mb-4">9. Guía Funcional de Vistas</h2>
-      <div class="grid grid-cols-1 gap-8">
-
-        <!-- Métricas Dashboard -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">1. Métricas Dashboard</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: / (EcommerceComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Vista principal que muestra tarjetas de resumen (KPIs) con totales de
-              Ingresos, Gastos y Beneficio Neto del mes en curso.</p>
-            <p><strong>Funcionamiento:</strong> Carga datos simulados para gráficos de línea y barras. Sirve como punto
-              de entrada para visualizar el estado general de la cooperativa.</p>
-          </div>
         </article>
 
-        <!-- Usuario -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">2. Usuario (Perfil)</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /profile (ProfileComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Información detallada del usuario logueado, incluyendo foto de perfil, rol y
-              datos de contacto.</p>
-            <p><strong>Funcionamiento:</strong> Permite visualizar tarjetas de información personal. Actualmente utiliza
-              datos estáticos de ejemplo.</p>
-          </div>
+        <!-- Tesorería -->
+        <article class="p-6 border-l-4 border-green-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">3. Caja Fuerte y Tesorería</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Módulo de cajero de alta velocidad para cobranza física y egresos operativos.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Cobranza Inteligente (Wizard):</strong> Agrupa las deudas del socio o inquilino, permite "abonos parciales" e identifica si el pago es en Efectivo o Transferencia. Todo bajo el paraguas del RPC Atómico (<code>rpc_procesar_pago</code>).</li>
+            <li><strong>Caja Rápida (Ingresos Internos):</strong> Permite ingresar dinero por servicios informales (baños, parqueo temporal) sin necesidad de emitir una boleta nominal.</li>
+            <li><strong>Egresos (Gastos):</strong> Salidas de dinero de la caja física del día para compras operativas, planillas o servicios urgentes.</li>
+          </ul>
         </article>
 
-        <!-- Listado de Socios -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">3. Listado de Socios</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /socios (SocioListComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Tabla con la lista completa de socios (aprox. 100 registros precargados).
-              Muestra ID, Tienda, Nombre, Estado y Deuda Total.</p>
-            <p><strong>Funcionamiento:</strong> Incluye un buscador en tiempo real por nombre, apellido o número de
-              tienda. Permite navegar al detalle de cada socio.</p>
-          </div>
+        <!-- Bancos e Inventario -->
+        <article class="p-6 border-l-4 border-yellow-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">4. Bancos e Inventario Interno</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Control de activos externos e internos separados de la caja chica.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Movimientos Bancarios:</strong> Rastreo de depósitos y gastos en cuentas corrientes corporativas. El saldo se actualiza con triggers en vivo.</li>
+            <li><strong>Almacén Interno (Kardex):</strong> Catálogo de insumos, herramientas y repuestos. Control estricto de Entradas y Salidas con alertas automáticas en el menú cuando hay <strong>Stock Bajo</strong>.</li>
+          </ul>
         </article>
 
-        <!-- Información del Socio -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">4. Información del Socio</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /socios/:id (SocioDetailComponent)
-          </p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Vista detallada de un socio específico. Muestra su historial de pagos, deudas
-              pendientes y estado de habilitación.</p>
-            <p><strong>Funcionamiento:</strong> Recibe el <code>ID</code> por URL, busca al socio en el array estático y
-              muestra sus datos. Incluye botón para "Registrar Pago".</p>
-          </div>
+        <!-- Dashboards -->
+        <article class="p-6 border-l-4 border-purple-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">5. Dashboards y Cierre de Turno</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Herramientas analíticas para gerencia y auditores.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Arqueo de Caja Diario:</strong> El reporte definitivo de cuadre. Calcula matemáticamente: <code>(Recibos + Ingresos Informales) - Gastos = SALDO NETO FÍSICO EN CAJA</code>.</li>
+            <li><strong>Generación PDF:</strong> Emisión automática de reportes de cierre para archivo físico.</li>
+            <li><strong>Central de Reportes Gerenciales:</strong> Cruce de datos multi-módulo (Caja vs Bancos vs Inventario) con filtros rápidos por Hoy, Última Semana, Mes y Año.</li>
+          </ul>
         </article>
 
-        <!-- Registrar Pago -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">5. Registrar Pago</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /pagos/registrar/:id
-            (RegistroPagoComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Wizard de 3 pasos para procesar un pago: 1) Selección de Conceptos, 2)
-              Confirmación de Monto, 3) Generación de Recibo.</p>
-            <p><strong>Funcionamiento:</strong> Valida montos y conceptos. Al finalizar, actualiza (simuladamente) la
-              deuda del socio y genera un registro de transacción.</p>
-          </div>
-        </article>
-
-        <!-- Recaudación Diaria -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">6. Recaudación Diaria</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /pagos/recaudacion-diaria
-            (RecaudacionDiariaComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Resumen de caja del día. Muestra el total recaudado en efectivo y
-              transferencias, desglosado por cajero.</p>
-            <p><strong>Funcionamiento:</strong> Simula el cierre de caja diario, permitiendo visualizar cuadres y
-              diferencias (mock).</p>
-          </div>
-        </article>
-
-        <!-- Reportes -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">7, 8, 9. Reportes (Ingresos, Gastos,
-            Almacén)</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /reportes/* (ReportesComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Vistas gráficas y tabulares para análisis histórico de datos.</p>
-            <p><strong>Funcionamiento:</strong> Componente reutilizable que adapta su contenido según la ruta
-              (`/reportes`, `/gastos`, `/inventario`). Usa gráficos de ApexCharts para visualizar tendencias.</p>
-          </div>
-        </article>
-
-        <!-- Gastos -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">10. Gastos</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /gastos (GastoListComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> CRUD para la gestión de egresos operativos y administrativos.</p>
-            <p><strong>Funcionamiento:</strong> Permite crear, editar y eliminar gastos. Persiste la información en
-              <strong>LocalStorage</strong> para mantener los datos entre recargas.</p>
-          </div>
-        </article>
-
-        <!-- Bancos -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">11. Movimientos Bancarios</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /bancos (BancosComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Registro de depósitos, retiros y conciliaciones bancarias.</p>
-            <p><strong>Funcionamiento:</strong> Interfaz para registrar manualmente operaciones bancarias externas
-              asociadas a la cooperativa.</p>
-          </div>
-        </article>
-
-        <!-- Inventario -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">12. Inventario - Almacén Interno</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /inventario (InventarioListComponent)
-          </p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Control de stock de insumos internos (limpieza, papelería, etc.).</p>
-            <p><strong>Funcionamiento:</strong> Control de kardex básico (entradas y salidas). Alertas visuales de stock
-              bajo.</p>
-          </div>
-        </article>
-
-        <!-- Auditoría -->
-        <article class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-          <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">13. Auditoría de Cambios</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">Path: /auditoria (AuditoriaComponent)</p>
-          <div class="text-gray-700 dark:text-gray-300 space-y-2">
-            <p><strong>Contenido:</strong> Log histórico de acciones críticas realizadas en el sistema (quién hizo qué y
-              cuándo).</p>
-            <p><strong>Funcionamiento:</strong> Lista de solo lectura que registra eventos de modificación de datos
-              sensibles.</p>
-          </div>
+        <!-- Portal Público -->
+        <article class="p-6 border-l-4 border-gray-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">6. Portal Público e Integridad</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Interfaces externas y seguridad de datos.</p>
+          <ul class="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Consultas sin Login:</strong> URL pública (<code>/consultas</code>) para que los socios vean su deuda pendiente desde sus teléfonos móviles.</li>
+            <li><strong>Seguridad Anti-Scraping:</strong> Restricciones de búsqueda y límites de resultados para evitar la extracción de datos masiva o por fuerza bruta.</li>
+            <li><strong>Auditoría de Cambios:</strong> Tabla inmutable donde se registran las inserciones, anulaciones y cambios críticos con fecha, hora y usuario responsable.</li>
+          </ul>
         </article>
 
       </div>
