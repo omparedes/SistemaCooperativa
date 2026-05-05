@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -25,8 +25,6 @@ export class AppHeaderComponent {
   /** Expuesto como `protected` para uso directo en la plantilla HTML del header. */
   protected readonly auth = inject(AuthService);
 
-  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-
   constructor(public sidebarService: SidebarService) {
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
   }
@@ -47,18 +45,4 @@ export class AppHeaderComponent {
     this.isApplicationMenuOpen = !this.isApplicationMenuOpen;
   }
 
-  ngAfterViewInit() {
-    document.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  ngOnDestroy() {
-    document.removeEventListener('keydown', this.handleKeyDown);
-  }
-
-  handleKeyDown = (event: KeyboardEvent) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-      event.preventDefault();
-      this.searchInput?.nativeElement.focus();
-    }
-  };
 }
