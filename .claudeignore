@@ -19,3 +19,11 @@ datos_iniciales/
 # =========================
 .env
 .env.local
+
+# =========================
+# Ignorar migraciones gigantes (CRITICO PARA TOKENS)
+# =========================
+supabase/migrations/00029_historial_pagos_excel.sql
+supabase/migrations/*_log.txt
+scripts/*.cjs
+migracion_coop/

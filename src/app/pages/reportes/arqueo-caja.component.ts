@@ -167,6 +167,9 @@ function fmtFechaCorta(yyyymmdd: string): string {
             </div>
             <p class="mt-1 text-xs text-green-500">
               {{ r.total_dia > 0 ? ((r.total_efectivo / r.total_dia) * 100).toFixed(0) : 0 }}% del total
+              @if (r.cantidad_recaudacion_tarjeta > 0) {
+                · <span class="text-emerald-600 dark:text-emerald-500">incl. {{ r.cantidad_recaudacion_tarjeta }} prepago</span>
+              }
             </p>
           </div>
 
@@ -360,6 +363,9 @@ function fmtFechaCorta(yyyymmdd: string): string {
                 @if (r.cantidad_ingresos_internos > 0) {
                   · <span class="text-violet-500 dark:text-violet-400 font-medium">{{ r.cantidad_ingresos_internos }} sin recibo</span>
                 }
+                @if (r.cantidad_recaudacion_tarjeta > 0) {
+                  · <span class="text-emerald-500 dark:text-emerald-400 font-medium">{{ r.cantidad_recaudacion_tarjeta }} tarjeta prepago</span>
+                }
                 @if (anuladosCount() > 0) {
                   · <span class="text-red-500 dark:text-red-400 font-medium">{{ anuladosCount() }} anulado{{ anuladosCount() !== 1 ? 's' : '' }}</span>
                 }
@@ -399,12 +405,14 @@ function fmtFechaCorta(yyyymmdd: string): string {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                  @for (p of r.recibos; track (p.es_ingreso_interno ? 'ii' : 'pago') + p.id) {
+                  @for (p of r.recibos; track (p.es_recaudacion_tarjeta ? 'rec' : p.es_ingreso_interno ? 'ii' : 'pago') + p.id) {
                     <tr [ngClass]="p.anulado
                         ? 'bg-red-50/60 dark:bg-red-900/10 opacity-70'
-                        : p.es_ingreso_interno
-                          ? 'bg-violet-50/40 dark:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
+                        : p.es_recaudacion_tarjeta
+                          ? 'bg-emerald-50/40 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                          : p.es_ingreso_interno
+                            ? 'bg-violet-50/40 dark:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
                       class="transition">
                       <td class="px-4 py-3 text-xs font-mono whitespace-nowrap"
                         [ngClass]="p.anulado ? 'text-red-400 dark:text-red-500' : 'text-gray-500 dark:text-gray-400'">
@@ -414,13 +422,18 @@ function fmtFechaCorta(yyyymmdd: string): string {
                         <span class="font-mono text-xs whitespace-nowrap"
                           [ngClass]="p.anulado
                             ? 'line-through text-red-400 dark:text-red-500'
-                            : p.es_ingreso_interno
-                              ? 'text-violet-600 dark:text-violet-400'
-                              : 'text-brand-600 dark:text-brand-400'">
+                            : p.es_recaudacion_tarjeta
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : p.es_ingreso_interno
+                                ? 'text-violet-600 dark:text-violet-400'
+                                : 'text-brand-600 dark:text-brand-400'">
                           {{ p.codigo_transaccion }}
                         </span>
                         @if (p.anulado) {
                           <span class="mt-0.5 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Anulado</span>
+                        }
+                        @if (p.es_recaudacion_tarjeta) {
+                          <span class="mt-0.5 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Tarjeta</span>
                         }
                         @if (p.es_ingreso_interno) {
                           <span class="mt-0.5 inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">Sin Recibo</span>
@@ -449,7 +462,9 @@ function fmtFechaCorta(yyyymmdd: string): string {
                             <span class="rounded-full border px-2 py-0.5 text-xs"
                               [ngClass]="p.anulado
                                 ? 'border-red-200 bg-red-50 text-red-400 dark:border-red-800 dark:bg-red-900/20 dark:text-red-500 line-through'
-                                : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'">
+                                : p.es_recaudacion_tarjeta
+                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
+                                  : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'">
                               {{ c }}
                             </span>
                           }
@@ -458,6 +473,8 @@ function fmtFechaCorta(yyyymmdd: string): string {
                       <td class="px-4 py-3 text-center">
                         @if (p.anulado) {
                           <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                        } @else if (p.es_recaudacion_tarjeta) {
+                          <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Prepago</span>
                         } @else if (p.metodo_pago === 'Efectivo') {
                           <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Efectivo</span>
                         } @else {
@@ -484,6 +501,9 @@ function fmtFechaCorta(yyyymmdd: string): string {
                 Recibos: {{ r.cantidad_recibos }}
                 @if (r.cantidad_ingresos_internos > 0) {
                   · <span class="text-violet-400">Sin recibo: {{ r.cantidad_ingresos_internos }}</span>
+                }
+                @if (r.cantidad_recaudacion_tarjeta > 0) {
+                  · <span class="text-emerald-500">Tarjeta: {{ r.cantidad_recaudacion_tarjeta }}</span>
                 }
                 @if (anuladosCount() > 0) {
                   · <span class="text-red-400">Anulados: {{ anuladosCount() }}</span>

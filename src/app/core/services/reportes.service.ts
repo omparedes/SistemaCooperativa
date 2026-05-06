@@ -18,6 +18,7 @@ export interface ArqueoPago {
   anulado: boolean;
   motivo_anulacion: string | null;
   es_ingreso_interno: boolean;    // true → fila de ingresos_internos (sin recibo)
+  es_recaudacion_tarjeta: boolean; // true → abono semanal de recaudación tarjeta
 }
 
 export interface ArqueoConcepto {
@@ -37,16 +38,17 @@ export interface GastoArqueoRow {
 }
 
 export interface ArqueoResumen {
-  fecha: string;                  // YYYY-MM-DD
-  total_dia: number;              // ingresos brutos del día
+  fecha: string;                    // YYYY-MM-DD
+  total_dia: number;                // ingresos brutos del día
   total_efectivo: number;
   total_transferencia: number;
   cantidad_recibos: number;
   cantidad_ingresos_internos: number;
+  cantidad_recaudacion_tarjeta: number; // abonos semanales por tarjeta
   por_concepto: ArqueoConcepto[];
   recibos: ArqueoPago[];
-  total_gastos: number;           // egresos del día
-  saldo_neto: number;             // total_dia - total_gastos
+  total_gastos: number;             // egresos del día
+  saldo_neto: number;               // total_dia - total_gastos
   gastos: GastoArqueoRow[];
 }
 
@@ -98,6 +100,14 @@ interface PerfilResumen {
   id: string;
   nombres: string | null;
   email: string;
+}
+
+interface RecaudacionAbonoArqueoRow {
+  id: number;
+  monto: number;
+  fecha: string;
+  deleted_at: string | null;
+  socio: { apellidos: string; nombres: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -231,21 +241,35 @@ export class ReportesService {
       .lte('fecha', fecha)
       .order('fecha', { ascending: true });
 
+    // recaudacion_abonos: abonos semanales por tarjeta → suma a total_efectivo del día
+    // NO se filtra por cajero (es una operación masiva, no individual de caja)
+    const recaudacionQuery = this.db
+      .from('recaudacion_abonos')
+      .select(`id, monto, fecha, deleted_at, socio:socios(apellidos, nombres)`)
+      .is('deleted_at', null)
+      .gte('fecha', inicio)
+      .lte('fecha', fin)
+      .order('fecha', { ascending: false });
+
     if (userId) {
       pagosQuery  = pagosQuery.eq('created_by', userId);
       iiQuery     = iiQuery.eq('created_by', userId);
-      // gastos: NO se filtra por cajero — son egresos de la cooperativa,
-      // no del operador. Mostrar siempre el total del día para un cuadre correcto.
+      // gastos y recaudacion_abonos: NO se filtran por cajero — el cuadre de caja
+      // debe reflejar todos los ingresos del día, independientemente del operador.
     }
 
-    const [pagosRes, iiRes, gastosRes] = await Promise.all([pagosQuery, iiQuery, gastosQuery]);
-    if (pagosRes.error)  throw new Error(pagosRes.error.message);
-    if (iiRes.error)     throw new Error(iiRes.error.message);
-    if (gastosRes.error) throw new Error(gastosRes.error.message);
+    const [pagosRes, iiRes, gastosRes, recaudacionRes] = await Promise.all([
+      pagosQuery, iiQuery, gastosQuery, recaudacionQuery,
+    ]);
+    if (pagosRes.error)       throw new Error(pagosRes.error.message);
+    if (iiRes.error)          throw new Error(iiRes.error.message);
+    if (gastosRes.error)      throw new Error(gastosRes.error.message);
+    if (recaudacionRes.error) throw new Error(recaudacionRes.error.message);
 
-    const rows      = (pagosRes.data  ?? []) as unknown as PagoArqueoRow[];
-    const ingresos  = (iiRes.data     ?? []) as unknown as IngresoInternoArqueoRow[];
-    const gastosRaw = (gastosRes.data ?? []) as unknown as GastoArqueoRawRow[];
+    const rows         = (pagosRes.data       ?? []) as unknown as PagoArqueoRow[];
+    const ingresos     = (iiRes.data          ?? []) as unknown as IngresoInternoArqueoRow[];
+    const gastosRaw    = (gastosRes.data      ?? []) as unknown as GastoArqueoRawRow[];
+    const recaudaciones = (recaudacionRes.data ?? []) as unknown as RecaudacionAbonoArqueoRow[];
 
     // ── Batch de perfiles para nombres de cajeros ────────────────────────────
     const idsSet = new Set<string>();
@@ -263,7 +287,7 @@ export class ReportesService {
       }
     }
 
-    return this.construirResumen(fecha, rows, ingresos, perfilMap, gastosRaw);
+    return this.construirResumen(fecha, rows, ingresos, perfilMap, gastosRaw, recaudaciones);
   }
 
   // ── Construcción del resumen ──────────────────────────────────────────────
@@ -273,6 +297,7 @@ export class ReportesService {
     ingresos: IngresoInternoArqueoRow[],
     perfilMap: Map<string, PerfilResumen>,
     gastosRaw: GastoArqueoRawRow[],
+    recaudaciones: RecaudacionAbonoArqueoRow[] = [],
   ): ArqueoResumen {
     let totalEfectivo = 0;
     let totalTransferencia = 0;
@@ -328,6 +353,7 @@ export class ReportesService {
         anulado: esAnulado,
         motivo_anulacion: row.motivo_anulacion,
         es_ingreso_interno: false,
+        es_recaudacion_tarjeta: false,
       };
     });
 
@@ -368,11 +394,46 @@ export class ReportesService {
         anulado: false,
         motivo_anulacion: null,
         es_ingreso_interno: true,
+        es_recaudacion_tarjeta: false,
+      };
+    });
+
+    // ── Recaudación por Tarjeta (abonos semanales → saldo_a_favor) ───────────
+    const CONCEPTO_TARJETA = 'Recaudación Tarjeta';
+    const filasRecaudacion: ArqueoPago[] = recaudaciones.map(row => {
+      const monto = Number(row.monto);
+      totalEfectivo += monto;  // se acumula como efectivo (prepago físico)
+
+      const prev = conceptoMap.get(CONCEPTO_TARJETA) ?? { monto: 0, cantidad: 0 };
+      conceptoMap.set(CONCEPTO_TARJETA, {
+        monto:    prev.monto + monto,
+        cantidad: prev.cantidad + 1,
+      });
+
+      const pagador = row.socio
+        ? `${row.socio.apellidos}, ${row.socio.nombres}`
+        : '—';
+
+      return {
+        id:                      row.id,
+        codigo_transaccion:      `REC-${String(row.id).padStart(6, '0')}`,
+        fecha_pago:              row.fecha,
+        monto_total:             monto,
+        metodo_pago:             'Efectivo' as const,
+        comprobante:             null,
+        codigo_puesto:           '—',
+        pagador,
+        cajero_nombre:           '—',
+        conceptos:               [CONCEPTO_TARJETA],
+        anulado:                 false,
+        motivo_anulacion:        null,
+        es_ingreso_interno:      false,
+        es_recaudacion_tarjeta:  true,
       };
     });
 
     // ── Mezclar recibos por fecha desc ───────────────────────────────────────
-    const todosRecibos = [...recibos, ...filasInternas].sort(
+    const todosRecibos = [...recibos, ...filasInternas, ...filasRecaudacion].sort(
       (a, b) => new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime(),
     );
 
@@ -407,13 +468,14 @@ export class ReportesService {
     return {
       fecha,
       total_dia,
-      total_efectivo:              round2(totalEfectivo),
-      total_transferencia:         round2(totalTransferencia),
-      cantidad_recibos:            recibos.filter(r => !r.anulado).length,
-      cantidad_ingresos_internos:  filasInternas.length,
+      total_efectivo:                round2(totalEfectivo),
+      total_transferencia:           round2(totalTransferencia),
+      cantidad_recibos:              recibos.filter(r => !r.anulado).length,
+      cantidad_ingresos_internos:    filasInternas.length,
+      cantidad_recaudacion_tarjeta:  filasRecaudacion.length,
       por_concepto,
-      recibos:                     todosRecibos,
-      total_gastos:                totalGastos,
+      recibos:                       todosRecibos,
+      total_gastos:                  totalGastos,
       saldo_neto,
       gastos,
     };
@@ -428,7 +490,7 @@ export class ReportesService {
   async cargarReporteConsolidado(rango: RangoReporte): Promise<ReporteConsolidado> {
     const { desde, hasta, desdeISO, hastaISO } = calcularRango(rango);
 
-    const [pagosRes, iiRes, gastosRes, bancosRes] = await Promise.all([
+    const [pagosRes, iiRes, gastosRes, bancosRes, recaudacionRes] = await Promise.all([
       // Pagos de caja (recibos emitidos, no anulados)
       this.db.from('pagos')
         .select('monto_total')
@@ -456,18 +518,28 @@ export class ReportesService {
         .is('deleted_at', null)
         .gte('fecha_operacion', desde)
         .lte('fecha_operacion', hasta),
+
+      // Recaudación semanal por tarjeta (prepago → saldo_a_favor)
+      this.db.from('recaudacion_abonos')
+        .select('monto')
+        .is('deleted_at', null)
+        .gte('fecha', desdeISO)
+        .lte('fecha', hastaISO),
     ]);
 
-    if (pagosRes.error)  throw new Error(pagosRes.error.message);
-    if (iiRes.error)     throw new Error(iiRes.error.message);
-    if (gastosRes.error) throw new Error(gastosRes.error.message);
-    if (bancosRes.error) throw new Error(bancosRes.error.message);
+    if (pagosRes.error)       throw new Error(pagosRes.error.message);
+    if (iiRes.error)          throw new Error(iiRes.error.message);
+    if (gastosRes.error)      throw new Error(gastosRes.error.message);
+    if (bancosRes.error)      throw new Error(bancosRes.error.message);
+    if (recaudacionRes.error) throw new Error(recaudacionRes.error.message);
 
-    const totalPagos  = ((pagosRes.data  ?? []) as Array<{ monto_total: unknown }>)
+    const totalPagos       = ((pagosRes.data       ?? []) as Array<{ monto_total: unknown }>)
       .reduce((s, r) => s + Number(r.monto_total), 0);
-    const totalII     = ((iiRes.data     ?? []) as Array<{ monto: unknown }>)
+    const totalII          = ((iiRes.data           ?? []) as Array<{ monto: unknown }>)
       .reduce((s, r) => s + Number(r.monto), 0);
-    const totalGastos = ((gastosRes.data ?? []) as Array<{ monto: unknown }>)
+    const totalGastos      = ((gastosRes.data       ?? []) as Array<{ monto: unknown }>)
+      .reduce((s, r) => s + Number(r.monto), 0);
+    const totalRecaudacion = ((recaudacionRes.data  ?? []) as Array<{ monto: unknown }>)
       .reduce((s, r) => s + Number(r.monto), 0);
 
     const movBancos = (bancosRes.data ?? []) as Array<{ tipo: string; monto: unknown }>;
@@ -478,7 +550,7 @@ export class ReportesService {
       .filter(m => m.tipo === 'Egreso')
       .reduce((s, m) => s + Number(m.monto), 0);
 
-    const caja_ingresos = round2(totalPagos + totalII);
+    const caja_ingresos = round2(totalPagos + totalII + totalRecaudacion);
     const caja_egresos  = round2(totalGastos);
 
     return {
