@@ -361,6 +361,64 @@
           </ul>
         </article>
 
+        <!-- 11. Panel de Notificaciones -->
+        <article class="p-6 border-l-4 border-violet-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold text-sm">11</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Panel de Notificaciones — Campana del Header</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Sistema de alertas en tiempo real visible desde el ícono de campana en la barra superior. Combina eventos persistidos en base de datos con alertas dinámicas calculadas en el cliente. El badge rojo muestra el conteo de notificaciones no leídas de forma inmediata al cargar la sesión.
+          </p>
+
+          <!-- Grid de los 4 tipos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-11 mb-4">
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+              <span class="text-2xl flex-shrink-0">🚨</span>
+              <div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-400">Auditoría</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Se genera automáticamente vía trigger de BD cuando se anula un <strong>pago</strong> o un <strong>cargo</strong>. Muestra el monto y el motivo de la anulación. Persiste en la tabla <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">notificaciones</code>.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800">
+              <span class="text-2xl flex-shrink-0">📦</span>
+              <div>
+                <p class="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Inventario</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Trigger AFTER INSERT en <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">inventario_movimientos</code>: si una Salida deja el <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">stock_actual ≤ 2</code> o por debajo del mínimo configurado, se inserta una alerta de stock crítico (deduplicada cada 24 h).
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800">
+              <span class="text-2xl flex-shrink-0">💸</span>
+              <div>
+                <p class="text-sm font-semibold text-orange-700 dark:text-orange-400">Morosidad</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Alerta dinámica (en memoria, no persiste). Al abrir la campana, el servicio consulta <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">montos_por_cobrar</code> y calcula cuántos puestos acumulan más de 3 cuotas en estado <em>Pendiente</em>.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+              <span class="text-2xl flex-shrink-0">📊</span>
+              <div>
+                <p class="text-sm font-semibold text-blue-700 dark:text-blue-400">Caja</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Alerta dinámica (en memoria). A partir de las 18:00 h, el servicio inyecta automáticamente el recordatorio de revisar el Arqueo de Caja del día antes de cerrar.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Persistentes vs. dinámicas:</strong> Las alertas de Auditoría e Inventario se guardan en BD y sobreviven entre sesiones. Las de Morosidad y Caja se calculan en el cliente al abrir la campana y no generan registros.</li>
+            <li><strong>Marcar como leídas:</strong> El botón "Limpiar" del panel hace UPDATE en BD para las notificaciones persistentes y descarta las dinámicas de la vista. Solo los roles Administrador y Caja tienen permiso de UPDATE.</li>
+            <li><strong>Seguridad:</strong> Los triggers de BD son <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">SECURITY DEFINER</code>, por lo que insertan en la tabla <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">notificaciones</code> con privilegios del owner (postgres) sin necesitar un grant INSERT para el usuario de sesión.</li>
+            <li><strong>Skeleton de carga:</strong> Mientras el servicio consulta Supabase se muestran 3 placeholders animados en lugar de una pantalla en blanco.</li>
+          </ul>
+        </article>
+
       </div>
     </section>
 
