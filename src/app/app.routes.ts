@@ -205,6 +205,27 @@ export const routes: Routes = [
         title: 'Cargos Fijos del Mes | Cooperativa Primero de Mayo',
       },
       {
+        path: 'recaudacion',
+        loadComponent: () =>
+          import('./pages/recaudacion/recaudacion.component')
+            .then(m => m.RecaudacionComponent),
+        title: 'Recaudación por Tarjeta | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'cuenta-corriente',
+        loadComponent: () =>
+          import('./pages/cuenta-corriente/cuenta-corriente-list.component')
+            .then(m => m.CuentaCorrienteListComponent),
+        title: 'Cuenta Corriente | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'cuenta-corriente/:tipo/:id',
+        loadComponent: () =>
+          import('./pages/cuenta-corriente/cuenta-corriente-detail.component')
+            .then(m => m.CuentaCorrienteDetailComponent),
+        title: 'Detalle de Cuenta | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'gastos',
         component: GastoListComponent,
         title: 'Gastos | TailAdmin'

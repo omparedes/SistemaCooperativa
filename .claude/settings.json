@@ -5,7 +5,9 @@
       "Bash(node -e ' *)",
       "Bash(xargs ls *)",
       "Bash(grep -E \"\\\\.ts$\")",
-      "mcp__supabase__list_projects"
+      "mcp__supabase__list_projects",
+      "Bash(Get-ChildItem -Path \"src/app/core/services\" -Filter \"pagos.service.ts\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }

@@ -37,21 +37,26 @@ export class AppSidebarComponent {
     },
 
     {
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7614 0 5-2.2386 5-5s-2.2386-5-5-5-5 2.2386-5 5 2.2386 5 5 5zm0 2c-3.866 0-7 3.134-7 7h2c0-2.7614 2.2386-5 5-5s5 2.2386 5 5h2c0-3.866-3.134-7-7-7z" fill="currentColor"/></svg>`,
-      name: "Usuario",
-      path: "/profile",
-    },
-
-
-
-    {
-      name: 'Socios',
+      name: 'Padrón',
       icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7614 0 5-2.2386 5-5s-2.2386-5-5-5-5 2.2386-5 5 2.2386 5 5 5zm0 2c-3.866 0-7 3.134-7 7h2c0-2.7614 2.2386-5 5-5s5 2.2386 5 5h2c0-3.866-3.134-7-7-7z" fill="currentColor"/></svg>`,
       subItems: [
-        { name: 'Listado de Socios',    path: '/socios',                    pro: false },
+        { name: 'Listado de Personas',    path: '/socios', pro: false },
+      ]
+    },
+    {
+      name: 'Caja e Ingresos',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
+      subItems: [
         { name: 'Registrar Pago',       path: '/pagos/registrar',           pro: false },
-        { name: 'Recaudación Diaria',   path: '/pagos/recaudacion-diaria',  pro: false },
+        { name: 'Recaudación Tarjeta',  path: '/recaudacion',               pro: false },
         { name: 'Caja Rápida',          path: '/pagos/ingresos-internos',   pro: false },
+      ]
+    },
+    {
+      name: 'Cuenta Corriente',
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M2 10h20M6 15h4M14 15h4"/></svg>`,
+      subItems: [
+        { name: 'Gestión Financiera',   path: '/cuenta-corriente', pro: false },
       ]
     },
     {

@@ -156,9 +156,17 @@ function formatSoles(n: number): string {
                       {{ seleccionado()!.tipo === 'socio' ? 'Socio titular' : 'Inquilino' }}
                     </p>
                   </div>
-                  <div class="text-right">
-                    <p class="text-xs text-gray-400 dark:text-gray-500">Deuda total</p>
-                    <p class="text-xl font-bold text-red-500">{{ formatSoles(totalDeuda()) }}</p>
+                  <div class="flex gap-4 text-right">
+                    @if (saldoAFavor() > 0) {
+                      <div>
+                        <p class="text-xs text-emerald-500 dark:text-emerald-400">Saldo a favor</p>
+                        <p class="text-base font-bold text-emerald-600 dark:text-emerald-300">{{ formatSoles(saldoAFavor()) }}</p>
+                      </div>
+                    }
+                    <div>
+                      <p class="text-xs text-gray-400 dark:text-gray-500">Deuda total</p>
+                      <p class="text-xl font-bold text-red-500">{{ formatSoles(totalDeuda()) }}</p>
+                    </div>
                   </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -190,7 +198,7 @@ function formatSoles(n: number): string {
         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-dark">
 
           <!-- Datos del pagador (resumen compacto) -->
-          <div class="mb-5 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-700/50">
+          <div class="mb-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-700/50">
             <div>
               <p class="text-sm font-medium text-gray-800 dark:text-white">{{ seleccionado()!.nombre_completo }}</p>
               <p class="text-xs text-gray-400">Puesto {{ seleccionado()!.codigo_puesto }} · {{ seleccionado()!.tipo === 'socio' ? 'Socio' : 'Inquilino' }}</p>
@@ -198,19 +206,40 @@ function formatSoles(n: number): string {
             <p class="text-sm font-bold text-red-500">Debe: {{ formatSoles(totalDeuda()) }}</p>
           </div>
 
+          <!-- Banner: Saldo a Favor disponible -->
+          @if (saldoAFavor() > 0) {
+            <div class="mb-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-800/50 dark:bg-emerald-900/20">
+              <svg class="h-5 w-5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Saldo a Favor Disponible</p>
+                <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">{{ formatSoles(saldoAFavor()) }}</p>
+              </div>
+              @if (saldoUtilizado() > 0) {
+                <div class="text-right">
+                  <p class="text-xs text-emerald-600 dark:text-emerald-400">Se utilizará</p>
+                  <p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">{{ formatSoles(saldoUtilizado()) }}</p>
+                </div>
+              }
+            </div>
+          }
+
           <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white">Monto recibido y método de pago</h3>
 
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <!-- Monto -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Monto recibido <span class="text-red-500">*</span>
+                Monto recibido
+                @if (saldoAFavor() === 0) { <span class="text-red-500">*</span> }
+                @if (saldoAFavor() > 0) { <span class="ml-1 text-xs font-normal text-emerald-500">(puede ser 0 si el saldo cubre la deuda)</span> }
               </label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500">S/</span>
                 <input
                   type="number"
-                  min="0.01"
+                  [attr.min]="saldoAFavor() > 0 ? '0' : '0.01'"
                   step="0.01"
                   placeholder="0.00"
                   class="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 pl-8 pr-4 text-sm text-gray-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -218,6 +247,11 @@ function formatSoles(n: number): string {
                   (input)="onMontoInput($event)"
                 />
               </div>
+              @if (!puedeContinuarPaso2() && (montoRecibido() + saldoAFavor()) > 0) {
+                <p class="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
+                  El monto recibido más el saldo a favor ({{ formatSoles(montoRecibido() + saldoAFavor()) }}) debe cubrir al menos una deuda.
+                </p>
+              }
             </div>
 
             <!-- Método de pago -->
@@ -253,7 +287,7 @@ function formatSoles(n: number): string {
           }
 
           <!-- Tabla FIFO — reactiva con computed() -->
-          @if (montoRecibido() > 0) {
+          @if (montoRecibido() > 0 || saldoAFavor() > 0) {
             <div class="mt-6">
               <h4 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Distribución FIFO <span class="font-normal text-gray-400">(más antigua → más reciente)</span>
@@ -303,22 +337,27 @@ function formatSoles(n: number): string {
               </div>
 
               <!-- Resumen totales -->
-              <div class="mt-3 flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700/50">
-                <div class="flex gap-6 text-sm">
+              <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-700/50">
+                <div class="flex flex-wrap gap-4 text-sm">
                   <div>
                     <span class="text-gray-400">Aplicado:</span>
                     <span class="ml-1.5 font-bold text-brand-600 dark:text-brand-400">{{ formatSoles(totalAplicado()) }}</span>
                   </div>
-                  <div>
-                    <span class="text-gray-400">Saldo a favor:</span>
-                    <span class="ml-1.5 font-bold"
-                          [class]="saldoRestante() > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500'">
-                      {{ formatSoles(saldoRestante()) }}
-                    </span>
-                  </div>
+                  @if (saldoUtilizado() > 0) {
+                    <div>
+                      <span class="text-gray-400">Saldo usado:</span>
+                      <span class="ml-1.5 font-bold text-emerald-600 dark:text-emerald-400">{{ formatSoles(saldoUtilizado()) }}</span>
+                    </div>
+                  }
+                  @if (saldoRestante() > 0) {
+                    <div>
+                      <span class="text-gray-400">Excedente → saldo:</span>
+                      <span class="ml-1.5 font-bold text-green-600 dark:text-green-400">{{ formatSoles(saldoRestante()) }}</span>
+                    </div>
+                  }
                 </div>
                 <div class="text-right">
-                  <p class="text-xs text-gray-400">Total recibido</p>
+                  <p class="text-xs text-gray-400">Efectivo recibido</p>
                   <p class="text-lg font-bold text-gray-800 dark:text-white">{{ formatSoles(montoRecibido()) }}</p>
                 </div>
               </div>
@@ -334,7 +373,8 @@ function formatSoles(n: number): string {
           <button
             (click)="irPaso3()"
             [disabled]="!puedeContinuarPaso2()"
-            class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed">
+            class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            [title]="!puedeContinuarPaso2() ? 'El monto recibido + saldo a favor debe cubrir al menos una deuda' : ''">
             Confirmar →
           </button>
         </div>
@@ -387,6 +427,11 @@ function formatSoles(n: number): string {
                 Nuevo Pago
               </button>
             </div>
+            @if (errorPdf()) {
+              <p class="mt-3 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                Error al generar PDF: {{ errorPdf() }}
+              </p>
+            }
           </div>
         } @else {
           <!-- Resumen antes de confirmar -->
@@ -531,6 +576,7 @@ export class PagoWizardComponent {
   readonly cargandoDeudas = signal(false);
   readonly errorDeudas = signal<string | null>(null);
   readonly deudas = signal<DeudaItem[]>([]);
+  readonly saldoAFavor = signal<number>(0);
 
   readonly totalDeuda = computed(() =>
     Math.round(this.deudas().reduce((s, d) => s + d.saldo_pendiente, 0) * 100) / 100,
@@ -542,7 +588,7 @@ export class PagoWizardComponent {
   readonly comprobante = signal('');
 
   readonly distribucionFifo = computed<LineaFifo[]>(() => {
-    let restante = this.montoRecibido();
+    let restante = Math.round((this.montoRecibido() + this.saldoAFavor()) * 100) / 100;
     return this.deudas().map(d => {
       if (restante <= 0) {
         return {
@@ -574,20 +620,30 @@ export class PagoWizardComponent {
   );
 
   readonly saldoRestante = computed(() =>
-    Math.round((this.montoRecibido() - this.totalAplicado()) * 100) / 100,
+    Math.round((this.montoRecibido() + this.saldoAFavor() - this.totalAplicado()) * 100) / 100,
   );
 
-  readonly puedeContinuarPaso2 = computed(() =>
-    this.montoRecibido() > 0 &&
-    this.totalAplicado() > 0 &&
-    (this.metodoPago() === 'Efectivo' || this.comprobante().trim().length > 0),
-  );
+  readonly saldoUtilizado = computed(() => {
+    const util = Math.round((this.totalAplicado() - this.montoRecibido()) * 100) / 100;
+    return Math.max(0, Math.min(util, this.saldoAFavor()));
+  });
+
+  readonly puedeContinuarPaso2 = computed(() => {
+    const montoDisponible = Math.round((this.montoRecibido() + this.saldoAFavor()) * 100) / 100;
+    return (
+      montoDisponible > 0 &&
+      this.montoRecibido() >= 0 &&
+      this.totalAplicado() > 0 &&
+      (this.metodoPago() === 'Efectivo' || this.comprobante().trim().length > 0)
+    );
+  });
 
   // --- Paso 3 ---
   readonly guardando = signal(false);
   readonly errorGuardado = signal<string | null>(null);
   readonly codigoTransaccion = signal<string | null>(null);
   readonly generandoPdf = signal(false);
+  readonly errorPdf = signal<string | null>(null);
 
   // --- Handlers ---
   onQueryInput(ev: Event): void {
@@ -624,11 +680,16 @@ export class PagoWizardComponent {
   async seleccionar(r: BusquedaResultado): Promise<void> {
     this.seleccionado.set(r);
     this.deudas.set([]);
+    this.saldoAFavor.set(0);
     this.errorDeudas.set(null);
     this.cargandoDeudas.set(true);
     try {
-      const items = await this.pagosService.cargarDeudasPuesto(r.puesto_id, r.persona_id, r.tipo);
+      const [items, saldo] = await Promise.all([
+        this.pagosService.cargarDeudasPuesto(r.puesto_id, r.persona_id, r.tipo),
+        this.pagosService.obtenerSaldoAFavor(r.persona_id, r.tipo),
+      ]);
       this.deudas.set(items);
+      this.saldoAFavor.set(saldo);
     } catch (e: unknown) {
       this.errorDeudas.set(e instanceof Error ? e.message : 'Error al cargar deudas');
     } finally {
@@ -664,6 +725,8 @@ export class PagoWizardComponent {
       const resultado = await this.pagosService.procesarPago({
         resultado: sel,
         distribucion: this.distribucionFifo(),
+        monto_recibido: this.montoRecibido(),
+        saldo_utilizado: this.saldoUtilizado(),
         metodo_pago: this.metodoPago(),
         comprobante: this.comprobante(),
         observacion: '',
@@ -705,10 +768,11 @@ export class PagoWizardComponent {
     };
 
     this.generandoPdf.set(true);
+    this.errorPdf.set(null);
     try {
       await this.pdfService.generarYAbrir(datos);
     } catch (e: unknown) {
-      console.error('Error al generar PDF:', e);
+      this.errorPdf.set(e instanceof Error ? e.message : 'Error al generar el PDF');
     } finally {
       this.generandoPdf.set(false);
     }
@@ -720,6 +784,7 @@ export class PagoWizardComponent {
     this.resultados.set([]);
     this.seleccionado.set(null);
     this.deudas.set([]);
+    this.saldoAFavor.set(0);
     this.busquedaRealizada.set(false);
     this.montoRecibido.set(0);
     this.metodoPago.set('Efectivo');

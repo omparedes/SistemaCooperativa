@@ -208,9 +208,22 @@ export class PagosService {
       .filter(d => d.saldo_pendiente > 0);
   }
 
+  async obtenerSaldoAFavor(personaId: number, tipo: 'socio' | 'inquilino'): Promise<number> {
+    const tabla = tipo === 'socio' ? 'socios' : 'inquilinos';
+    const { data, error } = await this.db
+      .from(tabla)
+      .select('saldo_a_favor')
+      .eq('id', personaId)
+      .single();
+    if (error) throw new Error(error.message);
+    return Number((data as { saldo_a_favor: number } | null)?.saldo_a_favor ?? 0);
+  }
+
   async procesarPago(params: {
     resultado: BusquedaResultado;
     distribucion: LineaFifo[];
+    monto_recibido: number;
+    saldo_utilizado?: number;
     metodo_pago: MetodoPago;
     comprobante: string;
     observacion: string;
@@ -219,31 +232,32 @@ export class PagosService {
     const { data: authData } = await this.db.auth.getUser();
     const userId = authData.user?.id ?? null;
 
-    const lineasActivas = params.distribucion.filter(l => l.monto_aplicado > 0);
-    const monto_total = Math.round(
-      lineasActivas.reduce((s, l) => s + l.monto_aplicado, 0) * 100,
-    ) / 100;
+    const saldoUtil = params.saldo_utilizado ?? 0;
+    const montoDisponible = Math.round((params.monto_recibido + saldoUtil) * 100) / 100;
 
-    if (monto_total <= 0) throw new Error('El monto total debe ser mayor a cero');
+    if (montoDisponible <= 0) throw new Error('El monto disponible debe ser mayor a cero');
 
     const tipoPagador: TipoPagador = params.resultado.tipo;
 
-    const distribucion = lineasActivas.map(l => ({
-      monto_id:          l.monto_id,
-      monto_aplicado:    l.monto_aplicado,
-      cubierto_completo: l.cubierto_completo,
-    }));
+    const distribucion = params.distribucion
+      .filter(l => l.monto_aplicado > 0)
+      .map(l => ({
+        monto_id:          l.monto_id,
+        monto_aplicado:    l.monto_aplicado,
+        cubierto_completo: l.cubierto_completo,
+      }));
 
     const { data, error } = await this.db.rpc('rpc_procesar_pago', {
-      p_puesto_id:    params.resultado.puesto_id,
-      p_socio_id:     tipoPagador === 'socio'     ? params.resultado.persona_id : null,
-      p_inquilino_id: tipoPagador === 'inquilino' ? params.resultado.persona_id : null,
-      p_monto_total:  monto_total,
-      p_metodo_pago:  params.metodo_pago,
-      p_comprobante:  params.comprobante || null,
-      p_observacion:  params.observacion || null,
-      p_usuario_id:   userId,
-      p_distribucion: distribucion,
+      p_puesto_id:       params.resultado.puesto_id,
+      p_socio_id:        tipoPagador === 'socio'     ? params.resultado.persona_id : null,
+      p_inquilino_id:    tipoPagador === 'inquilino' ? params.resultado.persona_id : null,
+      p_monto_total:     params.monto_recibido,
+      p_metodo_pago:     params.metodo_pago,
+      p_comprobante:     params.comprobante || null,
+      p_observacion:     params.observacion || null,
+      p_usuario_id:      userId,
+      p_distribucion:    distribucion,
+      p_saldo_utilizado: saldoUtil,
     });
 
     if (error) throw new Error(error.message);
