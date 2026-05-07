@@ -1,4 +1,8 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import {
+  ConfiguracionRecibos,
+  ConfiguracionRecibosService,
+} from './configuracion-recibos.service';
 import type { ArqueoConcepto, ArqueoPago, ArqueoResumen, GastoArqueoRow } from './reportes.service';
 // @types/pdfmake no re-exporta TDocumentDefinitions ni TVirtualFileSystem desde
 // su API pública, pero sí las usa en las firmas de sus funciones exportadas.
@@ -71,7 +75,7 @@ function formatHoraISO(iso: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Colores del recibo
+// Colores del ARQUEO (azul institucional — no cambia con la config)
 // ---------------------------------------------------------------------------
 const C = {
   azul:      '#1E40AF',
@@ -86,23 +90,79 @@ const C = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Colores del RECIBO (verde/dorado — derivados de la config corporativa)
+// Se construyen por función para que reflejen color_principal dinámico.
+// ---------------------------------------------------------------------------
+interface ColoresRecibo {
+  primario:   string;   // = color_principal (verde #166534 por defecto)
+  acento:     string;   // verde intermedio para tablas
+  dorado:     string;   // #D97706 amber-600 — acento cálido
+  bordeOro:   string;   // #FBBF24 amber-400 — doble línea
+  fondoVerde: string;   // #F0FDF4 green-50  — filas pares
+  grisTxt:    string;
+  grisBorde:  string;
+  negro:      string;
+  grisOsc:    string;
+}
+
+function coloresRecibo(colorPrincipal: string): ColoresRecibo {
+  return {
+    primario:   colorPrincipal,
+    acento:     '#15803D',  // green-700 — headers de tabla
+    dorado:     '#D97706',
+    bordeOro:   '#FBBF24',
+    fondoVerde: '#F0FDF4',
+    grisTxt:    '#6B7280',
+    grisBorde:  '#D1D5DB',
+    negro:      '#111827',
+    grisOsc:    '#374151',
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Servicio
 // ---------------------------------------------------------------------------
 @Injectable({ providedIn: 'root' })
 export class PdfGeneratorService {
+  private readonly configSvc = inject(ConfiguracionRecibosService);
   private fontsRegistered = false;
 
   /** Genera el recibo y lo abre en nueva pestaña del navegador. */
   async generarYAbrir(datos: ReciboDatos): Promise<void> {
-    const pm = await this.cargarModulo();
-    await pm.createPdf(this.construirDocumento(datos)).open();
+    const [pm, cfg, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.configSvc.cargar(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64)).open();
   }
 
   /** Genera el recibo y lo descarga automáticamente. */
   async descargar(datos: ReciboDatos): Promise<void> {
-    const pm = await this.cargarModulo();
-    await pm.createPdf(this.construirDocumento(datos))
+    const [pm, cfg, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.configSvc.cargar(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64))
       .download(`recibo-${datos.codigo_transaccion}.pdf`);
+  }
+
+  /** Convierte una imagen local en base64 para pdfmake. Devuelve null si falla. */
+  private async fetchImageAsBase64(url: string): Promise<string | null> {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -475,151 +535,168 @@ export class PdfGeneratorService {
   }
 
   // -------------------------------------------------------------------------
-  // Construcción del documento PDF
+  // Construcción del documento PDF (diseño verde/dorado corporativo)
   // -------------------------------------------------------------------------
-  private construirDocumento(d: ReciboDatos): DocDefinition {
-    // ── Layouts de tabla ─────────────────────────────────────────────────────
+  private construirDocumento(
+    d:      ReciboDatos,
+    cfg:    ConfiguracionRecibos,
+    logoB64: string | null,
+  ): DocDefinition {
+    const R = coloresRecibo(cfg.color_principal);
+    const pageSize = cfg.formato_impresion === 'TICKET_80MM'
+      ? ({ width: 226.77, height: 'auto' } as const)   // 80 mm en puntos (1 mm = 2.8346 pt)
+      : ('A4' as const);
+    const margins: [number, number, number, number] =
+      cfg.formato_impresion === 'TICKET_80MM' ? [10, 12, 10, 36] : [48, 48, 48, 72];
+    const lineaAncho = cfg.formato_impresion === 'TICKET_80MM' ? 206 : 499;
+
+    // ── Layouts ────────────────────────────────────────────────────────────────
     const layoutSimple: CustomTableLayout = {
       hLineWidth: (i) => (i === 0 ? 1 : 0.5),
       vLineWidth: () => 0.5,
-      hLineColor: () => C.grisBorde,
-      vLineColor: () => C.grisBorde,
-      fillColor: (row) => (row % 2 === 0 ? C.fondoFila : null),
-      paddingTop: () => 5,
+      hLineColor: () => R.grisBorde,
+      vLineColor: () => R.grisBorde,
+      fillColor: (row) => (row % 2 === 0 ? R.fondoVerde : null),
+      paddingTop:    () => 5,
       paddingBottom: () => 5,
-      paddingLeft: () => 8,
-      paddingRight: () => 8,
+      paddingLeft:   () => 8,
+      paddingRight:  () => 8,
     };
 
-    // hLineWidth/Color necesitan saber cuántas filas tiene el cuerpo
-    // (encabezado + detalle + fila de total = d.detalle.length + 2)
     const totalFilas = d.detalle.length + 2;
     const layoutDetalle: CustomTableLayout = {
       hLineWidth: (i) => (i === 0 || i === 1 || i === totalFilas ? 1.5 : 0.5),
       vLineWidth: () => 0.5,
-      hLineColor: (i) => (i === 0 || i === totalFilas ? C.azul : C.grisBorde),
-      vLineColor: () => C.grisBorde,
-      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
-      paddingTop: () => 5,
+      hLineColor: (i) => (i === 0 || i === totalFilas ? R.primario : R.grisBorde),
+      vLineColor: () => R.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? R.fondoVerde : null),
+      paddingTop:    () => 5,
       paddingBottom: () => 5,
-      paddingLeft: () => 8,
-      paddingRight: () => 8,
+      paddingLeft:   () => 8,
+      paddingRight:  () => 8,
     };
 
-    // ── Filas de datos del pagador ────────────────────────────────────────────
+    // ── Encabezado del documento (logo + textos dinámicos) ────────────────────
+    const stackEncabezado: DocDefinition[] = [];
+    if (logoB64) {
+      stackEncabezado.push(
+        { image: logoB64, width: 72, alignment: 'center', margin: [0, 0, 0, 6] } as unknown as DocDefinition,
+      );
+    }
+    stackEncabezado.push(
+      { text: cfg.nombre_institucion, fontSize: 13, bold: true, color: R.primario, alignment: 'center' } as unknown as DocDefinition,
+      { text: cfg.subtitulo, fontSize: 9, color: R.grisTxt, alignment: 'center', margin: [0, 2, 0, 0] } as unknown as DocDefinition,
+    );
+
+    // ── Tabla de datos del pagador ────────────────────────────────────────────
     const filasPagador = [
-      [etq('Nombre completo'), val(d.nombre_pagador)],
-      [etq('DNI'), val(d.dni_pagador)],
-      [etq('Condición'), val(d.tipo_pagador)],
-      [etq('Puesto / Módulo'), val(d.codigo_puesto)],
-      [etq('Método de pago'), val(d.comprobante ? `${d.metodo_pago}  —  Ref: ${d.comprobante}` : d.metodo_pago)],
+      [etqR('Nombre completo', R), valR(d.nombre_pagador, R)],
+      [etqR('DNI',             R), valR(d.dni_pagador, R)],
+      [etqR('Condición',       R), valR(d.tipo_pagador, R)],
+      [etqR('Puesto / Módulo', R), valR(d.codigo_puesto, R)],
+      [etqR('Método de pago',  R), valR(
+        d.comprobante ? `${d.metodo_pago}  —  Ref: ${d.comprobante}` : d.metodo_pago, R,
+      )],
     ];
 
-    // ── Filas de detalle de cobros ────────────────────────────────────────────
+    // ── Tabla detalle FIFO ────────────────────────────────────────────────────
     const filasDetalle = d.detalle.map(linea => [
-      { text: linea.concepto, fontSize: 9, color: C.grisOsc },
-      { text: linea.periodo, fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
-      { text: linea.saldo_original.toFixed(2), fontSize: 9, color: C.grisOsc, alignment: 'right' as const },
-      { text: linea.aplicado.toFixed(2), fontSize: 9, bold: true, color: C.negro, alignment: 'right' as const },
+      { text: linea.concepto,                     fontSize: 9,  color: R.grisOsc },
+      { text: linea.periodo,                       fontSize: 9,  color: R.grisOsc,  alignment: 'center' as const },
+      { text: linea.saldo_original.toFixed(2),    fontSize: 9,  color: R.grisOsc,  alignment: 'right'  as const },
+      { text: linea.aplicado.toFixed(2),           fontSize: 9,  bold: true, color: R.negro, alignment: 'right' as const },
       {
         text: linea.cubierto_completo ? '✓ Cancelado' : '~ Parcial',
-        fontSize: 8,
-        alignment: 'center' as const,
-        color: linea.cubierto_completo ? C.verde : C.amber,
+        fontSize: 8, alignment: 'center' as const,
+        color: linea.cubierto_completo ? R.primario : R.dorado,
       },
     ]);
 
     const filaTotalDetalle = [
-      { text: 'TOTAL COBRADO', fontSize: 10, bold: true, color: C.azul, colSpan: 3, alignment: 'right' as const },
-      {},
-      {},
-      { text: d.total_pagado.toFixed(2), fontSize: 13, bold: true, color: C.azulClaro, alignment: 'right' as const },
+      { text: 'TOTAL COBRADO', fontSize: 10, bold: true, color: R.primario, colSpan: 3, alignment: 'right' as const },
+      {}, {},
+      { text: d.total_pagado.toFixed(2), fontSize: 13, bold: true, color: R.acento, alignment: 'right' as const },
       {},
     ];
 
-    // ── Bloque condicional: saldo a favor ─────────────────────────────────────
     const bloquesSaldoFavor = d.saldo_a_favor > 0
-      ? [{ text: `Saldo a favor del pagador: S/ ${d.saldo_a_favor.toFixed(2)} (excedente no aplicado en esta operación)`, fontSize: 8.5, italics: true, color: '#1D4ED8', margin: [0, 0, 0, 24] as [number, number, number, number] }]
+      ? [{ text: `Saldo a favor del pagador: S/ ${d.saldo_a_favor.toFixed(2)} (excedente no aplicado en esta operación)`, fontSize: 8.5, italics: true, color: R.primario, margin: [0, 0, 0, 24] as [number, number, number, number] }]
       : [];
+
+    // ── Helpers de celda con color dinámico ───────────────────────────────────
+    function encTH_R(text: string, al: 'left' | 'center' | 'right' = 'left'): TableCell {
+      return { text, fontSize: 8, bold: true, color: 'white', fillColor: R.acento, alignment: al };
+    }
 
     // ── Documento ─────────────────────────────────────────────────────────────
     return {
-      pageSize: 'A4',
-      pageMargins: [48, 48, 48, 72],
+      pageSize,
+      pageMargins: margins,
       defaultStyle: { font: 'Roboto', fontSize: 10, lineHeight: 1.35 },
 
       content: [
 
-        // ════════════════════════════════════════════════════════════════════
-        // ENCABEZADO
-        // ════════════════════════════════════════════════════════════════════
+        // ════ ENCABEZADO (logo + nombre institución + subtítulo) ══════════════
+        { alignment: 'center', stack: stackEncabezado },
+
+        // Doble línea decorativa: verde primario + dorada
         {
-          alignment: 'center',
-          stack: [
-            { text: 'COOPERATIVA DE COMERCIANTES', fontSize: 13, color: C.grisTxt },
-            { text: 'PRIMERO DE MAYO', fontSize: 22, bold: true, color: C.azul, margin: [0, 2, 0, 3] },
-            { text: 'Mercado Municipal — Sistema de Recaudación', fontSize: 9, color: C.grisTxt },
+          canvas: [
+            { type: 'line', x1: 0, y1: 3,   x2: lineaAncho, y2: 3,   lineWidth: 3,   lineColor: R.primario },
+            { type: 'line', x1: 0, y1: 8.5, x2: lineaAncho, y2: 8.5, lineWidth: 1.5, lineColor: R.bordeOro },
           ],
-        },
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 4, x2: 499, y2: 4, lineWidth: 2.5, lineColor: C.azulClaro }],
           margin: [0, 10, 0, 12],
         },
 
-        // ════════════════════════════════════════════════════════════════════
-        // TÍTULO
-        // ════════════════════════════════════════════════════════════════════
+        // ════ BANNER DE TÍTULO ════════════════════════════════════════════════
         {
           table: {
             widths: ['*'],
             body: [[{
               text: 'R E C I B O   D E   P A G O',
-              fontSize: 16, bold: true, alignment: 'center',
-              color: 'white', fillColor: C.azulClaro,
-              margin: [0, 10, 0, 10],
+              fontSize: 15, bold: true, alignment: 'center',
+              color: 'white', fillColor: R.primario,
+              margin: [0, 9, 0, 9],
             }]],
           },
-          layout: 'noBorders',
-          margin: [60, 0, 60, 12],
+          layout: {
+            hLineWidth: () => 2, vLineWidth: () => 2,
+            hLineColor: () => R.bordeOro, vLineColor: () => R.bordeOro,
+          },
+          margin: [50, 0, 50, 14],
         },
 
-        // ════════════════════════════════════════════════════════════════════
-        // CÓDIGO DE TRANSACCIÓN Y FECHA
-        // ════════════════════════════════════════════════════════════════════
+        // ════ CÓDIGO DE TRANSACCIÓN ═══════════════════════════════════════════
         {
           alignment: 'center',
           stack: [
-            { text: d.codigo_transaccion, fontSize: 16, bold: true, color: C.azulClaro },
-            { text: formatFechaLarga(d.fecha_pago), fontSize: 9, color: C.grisTxt, margin: [0, 3, 0, 0] },
+            { text: d.codigo_transaccion, fontSize: 15, bold: true, color: R.primario },
+            { text: formatFechaLarga(d.fecha_pago), fontSize: 9, color: R.grisTxt, margin: [0, 3, 0, 0] },
           ],
           margin: [0, 0, 0, 20],
         },
 
-        // ════════════════════════════════════════════════════════════════════
-        // DATOS DEL PAGADOR
-        // ════════════════════════════════════════════════════════════════════
-        { text: 'DATOS DEL PAGADOR', fontSize: 10, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 6] },
+        // ════ DATOS DEL PAGADOR ═══════════════════════════════════════════════
+        { text: 'DATOS DEL PAGADOR', fontSize: 10, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 6] },
         {
           table: { widths: ['33%', '67%'], body: filasPagador },
           layout: layoutSimple,
           margin: [0, 0, 0, 20],
         },
 
-        // ════════════════════════════════════════════════════════════════════
-        // DETALLE DE COBROS (tabla FIFO)
-        // ════════════════════════════════════════════════════════════════════
-        { text: 'DETALLE DE COBROS APLICADOS', fontSize: 10, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 6] },
+        // ════ DETALLE DE COBROS ═══════════════════════════════════════════════
+        { text: 'DETALLE DE COBROS APLICADOS', fontSize: 10, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 6] },
         {
           table: {
             headerRows: 1,
             widths: ['*', '12%', '15%', '15%', '13%'],
             body: [
               [
-                encTH('Concepto'),
-                encTH('Período', 'center'),
-                encTH('Deuda S/', 'right'),
-                encTH('Abonado S/', 'right'),
-                encTH('Estado', 'center'),
+                encTH_R('Concepto'),
+                encTH_R('Período',    'center'),
+                encTH_R('Deuda S/',   'right'),
+                encTH_R('Abonado S/', 'right'),
+                encTH_R('Estado',     'center'),
               ],
               ...filasDetalle,
               filaTotalDetalle,
@@ -629,12 +706,9 @@ export class PdfGeneratorService {
           margin: [0, 0, 0, d.saldo_a_favor > 0 ? 8 : 24],
         },
 
-        // Saldo a favor (condicional)
         ...bloquesSaldoFavor,
 
-        // ════════════════════════════════════════════════════════════════════
-        // FIRMA Y SELLO "PAGADO"
-        // ════════════════════════════════════════════════════════════════════
+        // ════ FIRMA Y SELLO "PAGADO" ══════════════════════════════════════════
         {
           columns: [
             {
@@ -643,7 +717,7 @@ export class PdfGeneratorService {
                 { text: '\n\n' },
                 { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 195, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 4 } }] },
                 { text: 'Firma / Sello del cajero responsable', fontSize: 7.5, color: '#9CA3AF', margin: [0, 3, 0, 0] },
-                { text: d.cajero, fontSize: 9, bold: true, color: C.grisOsc, margin: [0, 2, 0, 0] },
+                { text: d.cajero, fontSize: 9, bold: true, color: R.grisOsc, margin: [0, 2, 0, 0] },
               ],
             },
             {
@@ -654,15 +728,16 @@ export class PdfGeneratorService {
                   widths: ['*'],
                   body: [[{
                     stack: [
-                      { text: '✓', fontSize: 28, bold: true, color: C.verde, alignment: 'center' },
-                      { text: 'P  A  G  A  D  O', fontSize: 12, bold: true, color: C.verde, alignment: 'center', margin: [0, 0, 0, 0] },
+                      { text: '✓', fontSize: 26, bold: true, color: R.primario, alignment: 'center' },
+                      { text: 'P  A  G  A  D  O', fontSize: 13, bold: true, color: R.primario, alignment: 'center' },
                     ],
-                    margin: [12, 8, 12, 8],
+                    margin: [12, 10, 12, 10],
                   }]],
                 },
                 layout: {
-                  hLineWidth: () => 2, vLineWidth: () => 2,
-                  hLineColor: () => C.verde, vLineColor: () => C.verde,
+                  hLineWidth: () => 2.5, vLineWidth: () => 2.5,
+                  // Borde del sello en dorado (identidad corporativa)
+                  hLineColor: () => R.bordeOro, vLineColor: () => R.bordeOro,
                 },
                 margin: [20, 0, 0, 0],
               }],
@@ -671,34 +746,30 @@ export class PdfGeneratorService {
         },
       ],
 
-      // ── Footer ─────────────────────────────────────────────────────────────
+      // ── Footer dinámico ────────────────────────────────────────────────────
       footer: (currentPage: number, pageCount: number, _pageSize: unknown) => ({
         stack: [
-          { canvas: [{ type: 'line', x1: 48, y1: 0, x2: 547, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          { canvas: [{ type: 'line', x1: margins[0], y1: 0, x2: 595 - margins[2], y2: 0, lineWidth: 0.5, lineColor: R.grisBorde }] },
           {
-            text: 'Este documento es un comprobante válido de pago emitido por la Cooperativa de Comerciantes Primero de Mayo. Consérvelo para sus registros.',
-            fontSize: 7.5, color: '#9CA3AF', alignment: 'center', margin: [48, 4, 48, 0],
+            text: cfg.mensaje_pie,
+            fontSize: 7.5, color: '#9CA3AF', alignment: 'center',
+            margin: [margins[0], 4, margins[2], 0],
           },
           {
             columns: [
-              { text: 'Cooperativa Primero de Mayo — Sistema de Recaudación', fontSize: 7, color: '#9CA3AF', margin: [48, 2, 0, 0] },
-              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 2, 48, 0] },
+              { text: cfg.nombre_institucion, fontSize: 7, color: '#9CA3AF', margin: [margins[0], 2, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 2, margins[2], 0] },
             ],
           },
         ],
       }),
 
     } as unknown as DocDefinition;
-    // `as unknown as DocDefinition`: el tipo Content de pdfmake es un union muy
-    // amplio; la estructura es correcta en runtime pero TypeScript no puede
-    // verificar la compatibilidad estática de cada nodo inline sin hacer cada
-    // elemento explícito. No se usa `any` en ningún punto.
   }
 }
 
 // ---------------------------------------------------------------------------
-// Helpers privados de celda para reducir repetición en el template
-// Tipados con TableCell para que el compilador valide la estructura.
+// Helpers de celda — ARQUEO (azul fijo)
 // ---------------------------------------------------------------------------
 function etq(text: string): TableCell {
   return { text, fontSize: 8.5, bold: true, color: C.grisTxt };
@@ -708,4 +779,14 @@ function val(text: string): TableCell {
 }
 function encTH(text: string, alignment: 'left' | 'center' | 'right' = 'left'): TableCell {
   return { text, fontSize: 8, bold: true, color: 'white', fillColor: C.azulClaro, alignment };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers de celda — RECIBO (colores dinámicos desde ColoresRecibo)
+// ---------------------------------------------------------------------------
+function etqR(text: string, R: ColoresRecibo): TableCell {
+  return { text, fontSize: 8.5, bold: true, color: R.grisTxt };
+}
+function valR(text: string, R: ColoresRecibo): TableCell {
+  return { text, fontSize: 10, color: R.negro };
 }

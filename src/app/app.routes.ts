@@ -3,6 +3,7 @@ import { adminGuard, authGuard, noAuthGuard } from './core/guards/auth.guard';
 import { FacturacionMedidoresComponent } from './pages/facturacion/facturacion-medidores.component';
 import { FacturacionFijaComponent } from './pages/facturacion/facturacion-fija.component';
 import { TarifasComponent } from './pages/config/tarifas.component';
+import { RecibosConfigComponent } from './pages/config/recibos-config.component';
 import { CargosExtraordinariosComponent } from './pages/facturacion/cargos-extraordinarios.component';
 import { LoginComponent } from './pages/auth-pages/login/login.component';
 import { EcommerceComponent } from './pages/dashboard/ecommerce/ecommerce.component';
@@ -184,6 +185,12 @@ export const routes: Routes = [
         component: TarifasComponent,
         canActivate: [adminGuard],
         title: 'Configuración de Tarifas | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'configuracion/recibos',
+        component: RecibosConfigComponent,
+        canActivate: [adminGuard],
+        title: 'Ajustes de Recibos | Cooperativa Primero de Mayo',
       },
       // ── Facturación (solo Administrador) ────────────────────────────────
       {
