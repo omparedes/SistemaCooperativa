@@ -7,7 +7,8 @@
       "Bash(grep -E \"\\\\.ts$\")",
       "mcp__supabase__list_projects",
       "Bash(Get-ChildItem -Path \"src/app/core/services\" -Filter \"pagos.service.ts\" -ErrorAction SilentlyContinue)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(node -e \"require\\('xlsx'\\); console.log\\('xlsx ok'\\)\")"
     ]
   }
 }
