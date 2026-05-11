@@ -31,9 +31,10 @@ export class GastosService {
         this.db.from('gastos')
           .select('id, categoria_gasto_id, fecha, monto, descripcion, comprobante_ref, responsable, created_at, updated_at, created_by, deleted_at, anulado_por, motivo_anulacion')
           .is('deleted_at', null)
-          .order('fecha', { ascending: false }),
+          .order('fecha', { ascending: false })
+          .limit(500),
         this.db.from('categorias_gasto')
-          .select('*')
+          .select('id, nombre')
           .eq('activo', true)
           .order('nombre'),
       ]);

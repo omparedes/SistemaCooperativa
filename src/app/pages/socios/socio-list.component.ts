@@ -161,7 +161,6 @@ type Tab = 'socios' | 'inquilinos';
                   <th class="px-4 py-3 text-left font-medium">DNI</th>
                   <th class="px-4 py-3 text-left font-medium">Apellidos y nombres</th>
                   <th class="px-4 py-3 text-left font-medium">Puesto arrendado</th>
-                  <th class="px-4 py-3 text-left font-medium">Titular del puesto</th>
                   <th class="px-4 py-3 text-right font-medium">Arriendo (S/)</th>
                   <th class="px-4 py-3 text-left font-medium">Desde</th>
                   <th class="px-4 py-3 text-right font-medium">Acciones</th>
@@ -183,19 +182,6 @@ type Tab = 'socios' | 'inquilinos';
                         <span class="text-xs text-gray-400 dark:text-gray-500">— sin arriendo vigente —</span>
                       }
                     </td>
-                    <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                      @if (i.titular) {
-                        @if (i.titular.dni === 'COOP-00000') {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                            Cooperativa
-                          </span>
-                        } @else {
-                          <span class="text-xs">{{ i.titular.apellidos }}</span>
-                        }
-                      } @else {
-                        <span class="text-xs text-gray-400">—</span>
-                      }
-                    </td>
                     <td class="px-4 py-3 text-right tabular-nums text-gray-700 dark:text-gray-300">
                       {{ i.puesto?.monto_arriendo ? (i.puesto?.monto_arriendo | number:'1.2-2') : '—' }}
                     </td>
@@ -211,7 +197,7 @@ type Tab = 'socios' | 'inquilinos';
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="7" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                    <td colspan="6" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                       No se encontraron inquilinos.
                     </td>
                   </tr>
@@ -263,8 +249,7 @@ export class SocioListComponent implements OnInit {
       i.apellidos.toLowerCase().includes(q) ||
       i.nombres.toLowerCase().includes(q) ||
       i.dni.toLowerCase().includes(q) ||
-      (i.puesto?.codigo.toLowerCase().includes(q) ?? false) ||
-      (i.titular?.apellidos.toLowerCase().includes(q) ?? false)
+      (i.puesto?.codigo.toLowerCase().includes(q) ?? false)
     );
   });
 

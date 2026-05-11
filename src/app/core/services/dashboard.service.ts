@@ -173,21 +173,24 @@ export class DashboardService {
   // Query 3 — vw_socios_morosos (KPI conteo + tabla top 10)
   // -------------------------------------------------------------------------
   private async cargarMorosos(): Promise<void> {
-    const { data, error } = await this.db
+    // count:'exact' devuelve el total sin traer todas las filas; limit(10) trae solo la tabla.
+    const { data, count, error } = await this.db
       .from('vw_socios_morosos')
       .select(
         'socio_id, dni, apellidos, nombres, puesto_actual_codigo, ' +
         'cantidad_deudas_vencidas, monto_total_vencido, periodo_mas_antiguo_yyyymm',
+        { count: 'exact' },
       )
-      .order('monto_total_vencido', { ascending: false });
+      .order('monto_total_vencido', { ascending: false })
+      .limit(10);
 
     if (error) throw new Error(error.message);
 
     const rows = (data ?? []) as unknown as MorosoRow[];
-    this._cantidadMorosos.set(rows.length);
+    this._cantidadMorosos.set(count ?? rows.length);
 
     this._morosos.set(
-      rows.slice(0, 10).map(r => ({
+      rows.map(r => ({
         socio_id:         r.socio_id,
         dni:              r.dni,
         nombre_completo:  `${r.apellidos}, ${r.nombres}`,

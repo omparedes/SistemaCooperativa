@@ -292,7 +292,8 @@ export class PagosService {
       `)
       .eq(campo, id)
       // Sin filtro deleted_at: incluimos anulados para mostrarlos con estilo distinto
-      .order('fecha_pago', { ascending: false });
+      .order('fecha_pago', { ascending: false })
+      .limit(100);
 
     if (error) throw new Error(error.message);
 

@@ -3,6 +3,7 @@ import { SUPABASE_CLIENT } from '../../core/services/supabase.client';
 import { AuthService } from '../../core/services/auth.service';
 import {
   EditarPagoForm,
+  ModificarCargoForm,
   NuevoAbonoForm,
   NuevoCargoForm,
   PersonaDetalle,
@@ -134,6 +135,20 @@ export class CuentaCorrienteService {
       p_comprobante: form.comprobante || null,
       p_fecha_pago:  fechaPago,
     });
+    if (error) throw new Error(error.message);
+  }
+
+  // ── Modificar cargo ───────────────────────────────────────────────────────
+  async modificarCargo(montoId: number, form: ModificarCargoForm, yaPagado: number): Promise<void> {
+    if (form.monto <= 0) throw new Error('El monto debe ser mayor a cero.');
+    if (form.monto < yaPagado) {
+      throw new Error(`El monto no puede ser menor al importe ya pagado (S/ ${yaPagado.toFixed(2)}).`);
+    }
+    const { error } = await this.db
+      .from('montos_por_cobrar')
+      .update({ monto: form.monto, observacion: form.observacion || null })
+      .eq('id', montoId)
+      .is('deleted_at', null);
     if (error) throw new Error(error.message);
   }
 

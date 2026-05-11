@@ -27,9 +27,8 @@ interface NotificacionRow {
   created_at: string;
 }
 
-interface MontoPendienteRow {
-  puesto_id: number | null;
-  socio_id: number | null;
+interface MorosoViewRow {
+  cantidad_deudas_vencidas: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,37 +105,24 @@ export class NotificacionesService {
     const ahora = new Date().toISOString();
 
     // -- Alerta Morosidad --
-    // Cuenta puestos/socios con más de 3 cuotas Pendientes acumuladas.
+    // Usa la vista pre-agregada en lugar de escanear montos_por_cobrar completa.
     try {
-      const { data: deudas } = await this.db
-        .from('montos_por_cobrar')
-        .select('puesto_id, socio_id')
-        .eq('estado', 'Pendiente')
-        .is('deleted_at', null);
+      const { data: morososData } = await this.db
+        .from('vw_socios_morosos')
+        .select('cantidad_deudas_vencidas')
+        .gt('cantidad_deudas_vencidas', 3);
 
-      if (deudas && deudas.length > 0) {
-        const rows = deudas as MontoPendienteRow[];
-        const countMap = new Map<string, number>();
-
-        for (const d of rows) {
-          const key = d.puesto_id != null
-            ? `p-${d.puesto_id}`
-            : `s-${d.socio_id}`;
-          countMap.set(key, (countMap.get(key) ?? 0) + 1);
-        }
-
-        const morosos = [...countMap.values()].filter(c => c > 3).length;
-        if (morosos > 0) {
-          dinamicas.push({
-            id: 'dyn-morosidad',
-            titulo: 'Morosidad Crítica',
-            mensaje: `Hay ${morosos} puesto${morosos > 1 ? 's' : ''} con más de 3 cuotas pendientes acumuladas.`,
-            tipo: 'morosidad',
-            leido: false,
-            created_at: ahora,
-            persistente: false,
-          });
-        }
+      const morosos = ((morososData ?? []) as MorosoViewRow[]).length;
+      if (morosos > 0) {
+        dinamicas.push({
+          id: 'dyn-morosidad',
+          titulo: 'Morosidad Crítica',
+          mensaje: `Hay ${morosos} puesto${morosos > 1 ? 's' : ''} con más de 3 cuotas pendientes acumuladas.`,
+          tipo: 'morosidad',
+          leido: false,
+          created_at: ahora,
+          persistente: false,
+        });
       }
     } catch {
       // Alerta dinámica opcional — silencioso si falla la consulta

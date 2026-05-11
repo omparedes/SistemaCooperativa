@@ -66,6 +66,11 @@ export interface EditarPagoForm {
   fecha_pago: string;  // ISO date string YYYY-MM-DD
 }
 
+export interface ModificarCargoForm {
+  monto: number;
+  observacion: string;
+}
+
 export const MESES_NOMBRES = [
   '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',

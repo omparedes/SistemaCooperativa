@@ -5,6 +5,7 @@ import {
   DeudaItem,
   EditarPagoForm,
   MESES_NOMBRES,
+  ModificarCargoForm,
   NuevoAbonoForm,
   NuevoCargoForm,
   PagoResumen,
@@ -216,15 +217,20 @@ type Tab = 'deudas' | 'pagos';
                         </span>
                       </td>
                       <td class="px-5 py-3.5 text-center">
-                        @if (d.ya_pagado === 0) {
-                          <button (click)="confirmarAnularCargo(d)"
-                                  class="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600
-                                         hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20">
-                            Anular
+                        <div class="flex items-center justify-center gap-1.5">
+                          <button (click)="abrirModificarCargo(d)"
+                                  class="rounded-lg border border-blue-200 px-3 py-1 text-xs font-medium text-blue-600
+                                         hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/20">
+                            Modificar
                           </button>
-                        } @else {
-                          <span class="text-xs text-gray-400">Con pagos</span>
-                        }
+                          @if (d.ya_pagado === 0) {
+                            <button (click)="confirmarAnularCargo(d)"
+                                    class="rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600
+                                           hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20">
+                              Anular
+                            </button>
+                          }
+                        </div>
                       </td>
                     </tr>
                   } @empty {
@@ -569,6 +575,53 @@ type Tab = 'deudas' | 'pagos';
         </div>
       </div>
     }
+    <!-- Modal: Modificar Cargo -->
+    @if (modalModificarCargo()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" (click)="cerrarModales()">
+        <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-dark" (click)="$event.stopPropagation()">
+          <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white">Modificar Cargo</h3>
+          <div class="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700/40">
+            <p class="text-sm font-medium text-gray-800 dark:text-white">{{ modalModificarCargo()!.concepto }}</p>
+            <p class="text-xs text-gray-400">{{ formatPeriodo(modalModificarCargo()!.periodo_anio, modalModificarCargo()!.periodo_mes) }}</p>
+            @if (modalModificarCargo()!.ya_pagado > 0) {
+              <p class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                Ya pagado: {{ formatSoles(modalModificarCargo()!.ya_pagado) }} — el nuevo monto no puede ser menor.
+              </p>
+            }
+          </div>
+          @if (errorModal()) {
+            <p class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">{{ errorModal() }}</p>
+          }
+          <div class="space-y-4">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Monto (S/) *</label>
+              <input type="number" min="0.01" step="0.01"
+                     class="h-10 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                     [value]="modificarCargoForm().monto || ''"
+                     (input)="setModMonto($event)"/>
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Observación</label>
+              <input type="text" placeholder="Motivo de la corrección…"
+                     class="h-10 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 text-sm text-gray-800 outline-none focus:border-brand-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                     [value]="modificarCargoForm().observacion"
+                     (input)="setModObservacion($event)"/>
+            </div>
+          </div>
+          <div class="mt-5 flex justify-end gap-2">
+            <button (click)="cerrarModales()"
+                    class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+              Cancelar
+            </button>
+            <button (click)="guardarModificarCargo()" [disabled]="guardando()"
+                    class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+              @if (guardando()) { Guardando… } @else { Guardar Cambios }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Modal: Editar Pago -->
     @if (modalEditarPago()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" (click)="cerrarModales()">
@@ -652,6 +705,10 @@ export class CuentaCorrienteDetailComponent implements OnInit {
   readonly modalEditarPago = signal<PagoResumen | null>(null);
   readonly editarPagoForm  = signal<EditarPagoForm>({ comprobante: '', fecha_pago: todayIso() });
 
+  // ── Modificar cargo ───────────────────────────────────────────────────────
+  readonly modalModificarCargo = signal<DeudaItem | null>(null);
+  readonly modificarCargoForm  = signal<ModificarCargoForm>({ monto: 0, observacion: '' });
+
   // Computed
   readonly persona          = computed(() => this.detalle()?.persona ?? null);
   readonly deudasPendientes = computed(() =>
@@ -718,6 +775,14 @@ export class CuentaCorrienteDetailComponent implements OnInit {
     const v = (ev.target as HTMLInputElement).value;
     this.editarPagoForm.update(f => ({ ...f, fecha_pago: v }));
   }
+  setModMonto(ev: Event): void {
+    const v = +(ev.target as HTMLInputElement).value;
+    this.modificarCargoForm.update(f => ({ ...f, monto: v }));
+  }
+  setModObservacion(ev: Event): void {
+    const v = (ev.target as HTMLInputElement).value;
+    this.modificarCargoForm.update(f => ({ ...f, observacion: v }));
+  }
 
   async ngOnInit(): Promise<void> {
     const tipoParam = this.route.snapshot.paramMap.get('tipo');
@@ -782,6 +847,12 @@ export class CuentaCorrienteDetailComponent implements OnInit {
     this.modalEditarPago.set(pg);
   }
 
+  abrirModificarCargo(d: DeudaItem): void {
+    this.errorModal.set(null);
+    this.modificarCargoForm.set({ monto: d.monto, observacion: d.observacion ?? '' });
+    this.modalModificarCargo.set(d);
+  }
+
   confirmarAnularCargo(d: DeudaItem): void {
     this.motivoAnulacion.set('');
     this.errorModal.set(null);
@@ -801,6 +872,7 @@ export class CuentaCorrienteDetailComponent implements OnInit {
     this.modalAnularCargo.set(null);
     this.modalAnularPago.set(null);
     this.modalEditarPago.set(null);
+    this.modalModificarCargo.set(null);
     this.errorModal.set(null);
   }
 
@@ -853,6 +925,22 @@ export class CuentaCorrienteDetailComponent implements OnInit {
       await this.cargarDetalle();
     } catch (e: unknown) {
       this.errorModal.set(e instanceof Error ? e.message : 'Error al editar el pago');
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  async guardarModificarCargo(): Promise<void> {
+    const d = this.modalModificarCargo();
+    if (!d) return;
+    this.errorModal.set(null);
+    this.guardando.set(true);
+    try {
+      await this.svc.modificarCargo(d.id, this.modificarCargoForm(), d.ya_pagado);
+      this.modalModificarCargo.set(null);
+      await this.cargarDetalle();
+    } catch (e: unknown) {
+      this.errorModal.set(e instanceof Error ? e.message : 'Error al modificar el cargo');
     } finally {
       this.guardando.set(false);
     }
