@@ -51,3 +51,5 @@ Thumbs.db
 /supabase/.branches
 /supabase/.temp
 /supabase/.env
+
+/migracion_coop
