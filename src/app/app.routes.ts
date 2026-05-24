@@ -39,6 +39,7 @@ import { ArqueoCajaComponent } from './pages/reportes/arqueo-caja.component';
 import { GastoListComponent } from './pages/gastos/gasto-list.component';
 import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
 import { DocumentationComponent } from './pages/documentation/documentation.component';
+import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 
 export const routes: Routes = [
   {
@@ -270,6 +271,13 @@ export const routes: Routes = [
         path: 'documentacion',
         component: DocumentationComponent,
         title: 'Documentación Técnica | TailAdmin'
+      },
+      // ── Administración de usuarios (solo Administrador) ──────────────────
+      {
+        path: 'admin/usuarios',
+        component: UsuariosComponent,
+        canActivate: [adminGuard],
+        title: 'Gestión de Usuarios | Cooperativa Primero de Mayo',
       },
       {
         path: 'pagos/registrar/:id',

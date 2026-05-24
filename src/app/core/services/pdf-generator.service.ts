@@ -36,6 +36,7 @@ export interface ReciboDatos {
   codigo_puesto: string;
   metodo_pago: 'Efectivo' | 'Transferencia';
   comprobante: string | null;
+  observacion?: string | null;
   detalle: LinhaRecibo[];
   total_pagado: number;
   saldo_a_favor: number;
@@ -597,6 +598,7 @@ export class PdfGeneratorService {
       [etqR('Método de pago',  R), valR(
         d.comprobante ? `${d.metodo_pago}  —  Ref: ${d.comprobante}` : d.metodo_pago, R,
       )],
+      ...(d.observacion ? [[etqR('Observaciones', R), valR(d.observacion, R)]] : []),
     ];
 
     // ── Tabla detalle FIFO ────────────────────────────────────────────────────

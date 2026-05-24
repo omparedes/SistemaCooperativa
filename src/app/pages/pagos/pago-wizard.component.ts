@@ -286,6 +286,24 @@ function formatSoles(n: number): string {
             </div>
           }
 
+          <!-- Notas u Observaciones (opcional) -->
+          <div class="mt-4">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Notas u Observaciones
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">(opcional)</span>
+            </label>
+            <textarea
+              rows="2"
+              placeholder="Ej. Agua Nov 2025, Cuota Santa Rosa, Saldo Inicial parcial…"
+              class="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              [value]="observacionPago()"
+              (input)="onObservacionInput($event)"
+            ></textarea>
+            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+              Se guardará en el recibo y en el historial de pagos.
+            </p>
+          </div>
+
           <!-- Tabla FIFO — reactiva con computed() -->
           @if (montoRecibido() > 0 || saldoAFavor() > 0) {
             <div class="mt-6">
@@ -465,6 +483,13 @@ function formatSoles(n: number): string {
               </p>
             }
 
+            @if (observacionPago()) {
+              <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800/40 dark:bg-amber-900/20">
+                <p class="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">Observaciones</p>
+                <p class="mt-0.5 text-sm text-amber-800 dark:text-amber-200">{{ observacionPago() }}</p>
+              </div>
+            }
+
             <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
               <table class="w-full text-sm">
                 <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -586,6 +611,7 @@ export class PagoWizardComponent {
   readonly montoRecibido = signal(0);
   readonly metodoPago = signal<MetodoPago>('Efectivo');
   readonly comprobante = signal('');
+  readonly observacionPago = signal('');
 
   readonly distribucionFifo = computed<LineaFifo[]>(() => {
     let restante = Math.round((this.montoRecibido() + this.saldoAFavor()) * 100) / 100;
@@ -659,6 +685,10 @@ export class PagoWizardComponent {
     this.comprobante.set((ev.target as HTMLInputElement).value);
   }
 
+  onObservacionInput(ev: Event): void {
+    this.observacionPago.set((ev.target as HTMLTextAreaElement).value);
+  }
+
   async buscar(): Promise<void> {
     if (!this.query().trim()) return;
     this.buscando.set(true);
@@ -705,6 +735,7 @@ export class PagoWizardComponent {
     if (!this.seleccionado() || this.deudas().length === 0) return;
     this.montoRecibido.set(0);
     this.comprobante.set('');
+    this.observacionPago.set('');
     this.paso.set(2);
   }
 
@@ -729,7 +760,7 @@ export class PagoWizardComponent {
         saldo_utilizado: this.saldoUtilizado(),
         metodo_pago: this.metodoPago(),
         comprobante: this.comprobante(),
-        observacion: '',
+        observacion: this.observacionPago(),
       });
       this.codigoTransaccion.set(resultado.codigo_transaccion);
     } catch (e: unknown) {
@@ -754,6 +785,7 @@ export class PagoWizardComponent {
       codigo_puesto: sel.codigo_puesto,
       metodo_pago: this.metodoPago(),
       comprobante: this.comprobante() || null,
+      observacion: this.observacionPago() || null,
       detalle: this.distribucionFifo()
         .filter(l => l.monto_aplicado > 0)
         .map(l => ({
@@ -789,6 +821,7 @@ export class PagoWizardComponent {
     this.montoRecibido.set(0);
     this.metodoPago.set('Efectivo');
     this.comprobante.set('');
+    this.observacionPago.set('');
     this.codigoTransaccion.set(null);
     this.errorGuardado.set(null);
   }

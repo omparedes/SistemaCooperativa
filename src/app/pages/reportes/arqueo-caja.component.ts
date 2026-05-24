@@ -7,6 +7,8 @@ import {
   ReportesService,
 } from '../../core/services/reportes.service';
 
+type AjusteTipo = 'FALTANTE' | 'SOBRANTE';
+
 // ---------------------------------------------------------------------------
 // Helpers de formato
 // ---------------------------------------------------------------------------
@@ -94,6 +96,17 @@ function fmtFechaCorta(yyyymmdd: string): string {
             Actualizar
           </button>
 
+          @if (auth.esAdmin() && resumen()) {
+            <button
+              (click)="abrirModalAjuste()"
+              class="flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 text-sm font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Ajuste (Faltante/Sobrante)
+            </button>
+          }
+
           <button
             (click)="imprimirArqueo()"
             [disabled]="!resumen() || cargando() || generandoPdf()"
@@ -133,6 +146,83 @@ function fmtFechaCorta(yyyymmdd: string): string {
         </div>
       }
 
+      <!-- ── APERTURA DE CAJA (barra siempre visible si hay datos) ────────── -->
+      @if (resumen()) {
+        <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-xl border px-4 py-3"
+          [class]="resumen()!.apertura
+            ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800/50 dark:bg-emerald-900/20'
+            : 'border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20'">
+
+          @if (!editandoApertura()) {
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-lg"
+                [class]="resumen()!.apertura ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-amber-100 dark:bg-amber-900/40'">
+                <svg class="h-5 w-5" [class]="resumen()!.apertura ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'"
+                  fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider"
+                  [class]="resumen()!.apertura ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                  Apertura de Caja
+                </p>
+                @if (resumen()!.apertura) {
+                  <p class="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                    {{ fmtSoles(resumen()!.apertura_monto) }}
+                  </p>
+                } @else {
+                  <p class="text-sm font-medium text-amber-700 dark:text-amber-300">
+                    Sin apertura registrada para esta fecha
+                  </p>
+                }
+              </div>
+            </div>
+            @if (auth.esAdmin()) {
+              <button
+                (click)="abrirEdicionApertura()"
+                class="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition"
+                [class]="resumen()!.apertura
+                  ? 'border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/40'
+                  : 'border-amber-300 bg-amber-100 text-amber-800 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/60'">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                {{ resumen()!.apertura ? 'Editar apertura' : 'Registrar apertura' }}
+              </button>
+            }
+          } @else {
+            <!-- Formulario inline de edición de apertura -->
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-emerald-700 dark:text-emerald-300">Saldo inicial S/</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [value]="montoAperturaInput()"
+                (input)="onMontoAperturaInput($event)"
+                class="h-9 w-32 rounded-lg border border-emerald-300 bg-white px-3 text-sm text-gray-800 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-emerald-700 dark:bg-gray-800 dark:text-white"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                (click)="guardarApertura()"
+                [disabled]="guardandoApertura()"
+                class="flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60">
+                @if (guardandoApertura()) { Guardando… } @else { Guardar }
+              </button>
+              <button
+                (click)="cancelarEdicionApertura()"
+                [disabled]="guardandoApertura()"
+                class="h-9 rounded-lg border border-gray-300 px-4 text-sm text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                Cancelar
+              </button>
+            </div>
+          }
+        </div>
+      }
+
       @if (resumen(); as r) {
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
@@ -152,12 +242,12 @@ function fmtFechaCorta(yyyymmdd: string): string {
             </p>
           </div>
 
-          <!-- Efectivo -->
+          <!-- Efectivo Físico Real en Gaveta -->
           <div class="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm dark:border-green-800 dark:bg-green-900/20">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400">Efectivo (Gaveta)</p>
-                <p class="mt-2 text-2xl font-bold text-green-700 dark:text-green-300">{{ fmtSoles(r.total_efectivo) }}</p>
+                <p class="text-xs font-medium uppercase tracking-wider text-green-600 dark:text-green-400">Efectivo en Gaveta</p>
+                <p class="mt-2 text-2xl font-bold text-green-700 dark:text-green-300">{{ fmtSoles(r.efectivo_fisico_caja) }}</p>
               </div>
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/40">
                 <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -166,14 +256,17 @@ function fmtFechaCorta(yyyymmdd: string): string {
               </div>
             </div>
             <p class="mt-1 text-xs text-green-500">
-              {{ r.total_dia > 0 ? ((r.total_efectivo / r.total_dia) * 100).toFixed(0) : 0 }}% del total
-              @if (r.cantidad_recaudacion_tarjeta > 0) {
-                · <span class="text-emerald-600 dark:text-emerald-500">incl. {{ r.cantidad_recaudacion_tarjeta }} prepago</span>
+              Cobrado S/ {{ fmtSoles(r.total_efectivo) }}
+              @if (r.apertura_monto > 0) {
+                · Apertura S/ {{ fmtSoles(r.apertura_monto) }}
+              }
+              @if (r.total_faltantes > 0 || r.total_sobrantes > 0) {
+                · <span class="text-amber-600 dark:text-amber-400">ajustes aplicados</span>
               }
             </p>
           </div>
 
-          <!-- Transferencia -->
+          <!-- Transferencia / QR — NO cuenta en caja física -->
           <div class="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm dark:border-blue-800 dark:bg-blue-900/20">
             <div class="flex items-start justify-between">
               <div>
@@ -188,6 +281,7 @@ function fmtFechaCorta(yyyymmdd: string): string {
             </div>
             <p class="mt-1 text-xs text-blue-500">
               {{ r.total_dia > 0 ? ((r.total_transferencia / r.total_dia) * 100).toFixed(0) : 0 }}% del total
+              · <span class="font-medium">No entra a gaveta</span>
             </p>
           </div>
 
@@ -326,26 +420,49 @@ function fmtFechaCorta(yyyymmdd: string): string {
                 </div>
                 <p class="mt-1 text-right text-xs text-gray-400 dark:text-gray-500">{{ transferenciaPct() }}%</p>
               </div>
-              <!-- Resumen financiero -->
+              <!-- Desglose efectivo físico en gaveta -->
               <div class="border-t border-gray-100 pt-4 dark:border-gray-700 space-y-1.5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Cálculo Efectivo Físico</p>
+                @if (r.apertura_monto > 0) {
+                  <div class="flex justify-between text-sm">
+                    <span class="text-emerald-600 dark:text-emerald-400">(+) Apertura</span>
+                    <span class="font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ fmtSoles(r.apertura_monto) }}</span>
+                  </div>
+                }
                 <div class="flex justify-between text-sm">
-                  <span class="text-gray-500 dark:text-gray-400">Total recaudado</span>
-                  <span class="font-semibold text-gray-900 dark:text-white tabular-nums">{{ fmtSoles(r.total_dia) }}</span>
+                  <span class="text-green-600 dark:text-green-400">(+) Cobros efectivo</span>
+                  <span class="font-semibold text-green-600 dark:text-green-400 tabular-nums">{{ fmtSoles(r.total_efectivo) }}</span>
                 </div>
                 @if (r.total_gastos > 0) {
                   <div class="flex justify-between text-sm">
                     <span class="text-orange-600 dark:text-orange-400">(−) Egresos</span>
                     <span class="font-semibold text-orange-600 dark:text-orange-400 tabular-nums">{{ fmtSoles(r.total_gastos) }}</span>
                   </div>
-                  <div class="flex justify-between text-sm border-t border-dashed border-gray-200 dark:border-gray-700 pt-1.5">
-                    <span class="font-bold"
-                      [ngClass]="r.saldo_neto >= 0 ? 'text-brand-600 dark:text-brand-400' : 'text-red-600 dark:text-red-400'">
-                      (=) Saldo Neto
-                    </span>
-                    <span class="font-bold tabular-nums"
-                      [ngClass]="r.saldo_neto >= 0 ? 'text-brand-700 dark:text-brand-300' : 'text-red-700 dark:text-red-300'">
-                      {{ fmtSoles(r.saldo_neto) }}
-                    </span>
+                }
+                @if (r.total_faltantes > 0) {
+                  <div class="flex justify-between text-sm">
+                    <span class="text-red-500 dark:text-red-400">(−) Faltantes</span>
+                    <span class="font-semibold text-red-500 dark:text-red-400 tabular-nums">{{ fmtSoles(r.total_faltantes) }}</span>
+                  </div>
+                }
+                @if (r.total_sobrantes > 0) {
+                  <div class="flex justify-between text-sm">
+                    <span class="text-teal-600 dark:text-teal-400">(+) Sobrantes</span>
+                    <span class="font-semibold text-teal-600 dark:text-teal-400 tabular-nums">{{ fmtSoles(r.total_sobrantes) }}</span>
+                  </div>
+                }
+                <div class="flex justify-between text-sm border-t border-dashed border-gray-200 dark:border-gray-700 pt-1.5">
+                  <span class="font-bold text-green-700 dark:text-green-300">(=) Gaveta real</span>
+                  <span class="font-bold tabular-nums text-green-700 dark:text-green-300">{{ fmtSoles(r.efectivo_fisico_caja) }}</span>
+                </div>
+                @if (r.total_transferencia > 0) {
+                  <div class="flex justify-between text-xs border-t border-gray-100 dark:border-gray-700 pt-1.5 mt-1">
+                    <span class="text-blue-500 dark:text-blue-400">+ Transferencias (banco)</span>
+                    <span class="tabular-nums text-blue-500 dark:text-blue-400">{{ fmtSoles(r.total_transferencia) }}</span>
+                  </div>
+                  <div class="flex justify-between text-xs">
+                    <span class="font-semibold text-gray-500 dark:text-gray-400">Total contable</span>
+                    <span class="font-semibold tabular-nums text-gray-700 dark:text-gray-200">{{ fmtSoles(r.saldo_neto) }}</span>
                   </div>
                 }
               </div>
@@ -594,7 +711,175 @@ function fmtFechaCorta(yyyymmdd: string): string {
           }
         </div>
 
+        <!-- ── FILA 5: Ajustes (Faltantes / Sobrantes) ────────────────── -->
+        @if (r.ajustes.length > 0) {
+          <div class="mt-6 rounded-2xl border border-amber-200 bg-white shadow-sm dark:border-amber-800/50 dark:bg-gray-dark">
+            <div class="flex items-center justify-between border-b border-amber-100 bg-amber-50/60 px-5 py-4 dark:border-amber-900/30 dark:bg-amber-900/10 rounded-t-2xl">
+              <div>
+                <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Ajustes de Cuadre Físico</h3>
+                <p class="mt-0.5 text-xs text-amber-500 dark:text-amber-400">
+                  {{ r.ajustes.length }} ajuste{{ r.ajustes.length !== 1 ? 's' : '' }}
+                  @if (r.total_faltantes > 0) {
+                    · <span class="text-red-500">Faltantes: {{ fmtSoles(r.total_faltantes) }}</span>
+                  }
+                  @if (r.total_sobrantes > 0) {
+                    · <span class="text-teal-600">Sobrantes: {{ fmtSoles(r.total_sobrantes) }}</span>
+                  }
+                </p>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700/40">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Descripción</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Monto</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                  @for (a of r.ajustes; track a.id) {
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase"
+                          [ngClass]="a.tipo === 'FALTANTE'
+                            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            : 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'">
+                          {{ a.tipo === 'FALTANTE' ? '− Faltante' : '+ Sobrante' }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ a.descripcion || '—' }}</td>
+                      <td class="px-4 py-3 text-right font-bold tabular-nums"
+                        [ngClass]="a.tipo === 'FALTANTE' ? 'text-red-600 dark:text-red-400' : 'text-teal-600 dark:text-teal-400'">
+                        {{ a.tipo === 'FALTANTE' ? '−' : '+' }} {{ fmtSoles(a.monto) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
       }
+
+      <!-- ── MODAL: Registrar Faltante / Sobrante ─────────────────────────── -->
+      @if (mostrarModalAjuste()) {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          (click)="cerrarModalAjuste()">
+          <div class="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-dark"
+            (click)="$event.stopPropagation()">
+            <!-- Header del modal -->
+            <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+              <h3 class="text-base font-semibold text-gray-800 dark:text-white">Registrar Ajuste de Caja</h3>
+              <button (click)="cerrarModalAjuste()"
+                class="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Body del modal -->
+            <div class="space-y-4 p-5">
+              <!-- Tipo -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de ajuste</label>
+                <div class="flex gap-2">
+                  <button
+                    (click)="ajusteTipo.set('FALTANTE')"
+                    class="flex-1 rounded-lg border py-2 text-sm font-medium transition"
+                    [ngClass]="ajusteTipo() === 'FALTANTE'
+                      ? 'border-red-500 bg-red-500 text-white'
+                      : 'border-gray-300 bg-gray-50 text-gray-600 hover:border-red-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+                    − Faltante
+                  </button>
+                  <button
+                    (click)="ajusteTipo.set('SOBRANTE')"
+                    class="flex-1 rounded-lg border py-2 text-sm font-medium transition"
+                    [ngClass]="ajusteTipo() === 'SOBRANTE'
+                      ? 'border-teal-500 bg-teal-500 text-white'
+                      : 'border-gray-300 bg-gray-50 text-gray-600 hover:border-teal-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+                    + Sobrante
+                  </button>
+                </div>
+                <p class="mt-1 text-xs"
+                  [ngClass]="ajusteTipo() === 'FALTANTE' ? 'text-red-500' : 'text-teal-600'">
+                  @if (ajusteTipo() === 'FALTANTE') {
+                    Dinero que debería estar en gaveta pero no está.
+                  } @else {
+                    Dinero de más encontrado en la gaveta.
+                  }
+                </p>
+              </div>
+
+              <!-- Monto -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Monto <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500">S/</span>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="0.00"
+                    [value]="ajusteMonto()"
+                    (input)="onAjusteMontoInput($event)"
+                    class="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 pl-8 pr-4 text-sm text-gray-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <!-- Descripción -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Descripción <span class="text-xs font-normal text-gray-400">(opcional)</span>
+                </label>
+                <textarea
+                  rows="2"
+                  placeholder="Ej. Billete de S/50 faltó al contar, error en vuelto, etc."
+                  class="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  [value]="ajusteDesc()"
+                  (input)="onAjusteDescInput($event)"
+                ></textarea>
+              </div>
+
+              @if (errorAjuste()) {
+                <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                  {{ errorAjuste() }}
+                </p>
+              }
+            </div>
+
+            <!-- Footer del modal -->
+            <div class="flex justify-end gap-2 border-t border-gray-200 px-5 py-4 dark:border-gray-700">
+              <button (click)="cerrarModalAjuste()"
+                [disabled]="guardandoAjuste()"
+                class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 transition hover:bg-gray-50 disabled:opacity-40 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                Cancelar
+              </button>
+              <button
+                (click)="guardarAjuste()"
+                [disabled]="guardandoAjuste()"
+                class="flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium text-white transition disabled:opacity-60"
+                [ngClass]="ajusteTipo() === 'FALTANTE'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-teal-600 hover:bg-teal-700'">
+                @if (guardandoAjuste()) {
+                  <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Guardando…
+                } @else {
+                  Registrar {{ ajusteTipo() === 'FALTANTE' ? 'Faltante' : 'Sobrante' }}
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
     </div>
   `,
 })
@@ -631,6 +916,98 @@ export class ArqueoCajaComponent implements OnInit {
     if (!r || r.total_dia === 0) return '0';
     return ((r.total_transferencia / r.total_dia) * 100).toFixed(0);
   });
+
+  // ── Apertura de caja ──────────────────────────────────────────────────────
+  readonly editandoApertura  = signal(false);
+  readonly guardandoApertura = signal(false);
+  readonly montoAperturaInput = signal('');
+  readonly errorApertura      = signal<string | null>(null);
+
+  // ── Ajustes (faltante/sobrante) ───────────────────────────────────────────
+  readonly mostrarModalAjuste = signal(false);
+  readonly ajusteTipo         = signal<AjusteTipo>('FALTANTE');
+  readonly ajusteMonto        = signal('');
+  readonly ajusteDesc         = signal('');
+  readonly guardandoAjuste    = signal(false);
+  readonly errorAjuste        = signal<string | null>(null);
+
+  // ── Handlers de apertura ─────────────────────────────────────────────────
+  onMontoAperturaInput(ev: Event): void {
+    this.montoAperturaInput.set((ev.target as HTMLInputElement).value);
+  }
+
+  abrirEdicionApertura(): void {
+    this.montoAperturaInput.set(String(this.resumen()?.apertura_monto ?? 0));
+    this.errorApertura.set(null);
+    this.editandoApertura.set(true);
+  }
+
+  cancelarEdicionApertura(): void {
+    this.editandoApertura.set(false);
+    this.errorApertura.set(null);
+  }
+
+  async guardarApertura(): Promise<void> {
+    const monto = parseFloat(this.montoAperturaInput());
+    if (isNaN(monto) || monto < 0) {
+      this.errorApertura.set('Ingresa un monto válido (≥ 0).');
+      return;
+    }
+    this.guardandoApertura.set(true);
+    this.errorApertura.set(null);
+    try {
+      await this.reportesSvc.upsertApertura(this.fecha(), monto);
+      this.editandoApertura.set(false);
+      await this.cargar();
+    } catch (e: unknown) {
+      this.errorApertura.set(e instanceof Error ? e.message : 'Error al guardar');
+    } finally {
+      this.guardandoApertura.set(false);
+    }
+  }
+
+  // ── Handlers de ajustes ───────────────────────────────────────────────────
+  onAjusteMontoInput(ev: Event): void {
+    this.ajusteMonto.set((ev.target as HTMLInputElement).value);
+  }
+
+  onAjusteDescInput(ev: Event): void {
+    this.ajusteDesc.set((ev.target as HTMLTextAreaElement).value);
+  }
+
+  abrirModalAjuste(): void {
+    this.ajusteTipo.set('FALTANTE');
+    this.ajusteMonto.set('');
+    this.ajusteDesc.set('');
+    this.errorAjuste.set(null);
+    this.mostrarModalAjuste.set(true);
+  }
+
+  cerrarModalAjuste(): void {
+    this.mostrarModalAjuste.set(false);
+    this.errorAjuste.set(null);
+  }
+
+  async guardarAjuste(): Promise<void> {
+    const monto = parseFloat(this.ajusteMonto());
+    if (isNaN(monto) || monto <= 0) {
+      this.errorAjuste.set('Ingresa un monto mayor a 0.');
+      return;
+    }
+    this.guardandoAjuste.set(true);
+    this.errorAjuste.set(null);
+    try {
+      await this.reportesSvc.registrarAjuste(
+        this.fecha(), this.ajusteTipo(), monto, this.ajusteDesc(),
+      );
+      this.cerrarModalAjuste();
+      await this.cargar();
+    } catch (e: unknown) {
+      this.errorAjuste.set(e instanceof Error ? e.message : 'Error al guardar');
+    } finally {
+      this.guardandoAjuste.set(false);
+    }
+  }
 
   ngOnInit(): void {
     void this.cargar();

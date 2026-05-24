@@ -37,19 +37,42 @@ export interface GastoArqueoRow {
   categoria_nombre: string;
 }
 
+export interface CajaApertura {
+  id: number;
+  fecha: string;
+  monto_inicial: number;
+  user_id: string | null;
+}
+
+export interface CajaAjuste {
+  id: number;
+  fecha: string;
+  tipo: 'FALTANTE' | 'SOBRANTE';
+  monto: number;
+  descripcion: string | null;
+  user_id: string | null;
+}
+
 export interface ArqueoResumen {
   fecha: string;                    // YYYY-MM-DD
   total_dia: number;                // ingresos brutos del día
-  total_efectivo: number;
-  total_transferencia: number;
+  total_efectivo: number;           // solo cobros en efectivo
+  total_transferencia: number;      // cobros por transferencia/QR (no entran al físico)
   cantidad_recibos: number;
   cantidad_ingresos_internos: number;
-  cantidad_recaudacion_tarjeta: number; // abonos semanales por tarjeta
+  cantidad_recaudacion_tarjeta: number;
   por_concepto: ArqueoConcepto[];
   recibos: ArqueoPago[];
-  total_gastos: number;             // egresos del día
-  saldo_neto: number;               // total_dia - total_gastos
+  total_gastos: number;             // egresos del día (salen de caja física)
+  saldo_neto: number;               // total_dia - total_gastos (contable total)
   gastos: GastoArqueoRow[];
+  // ── Caja física ─────────────────────────────────────────────────────────
+  apertura_monto: number;           // saldo inicial del día (0 si no registrado)
+  apertura: CajaApertura | null;    // fila completa de caja_aperturas
+  total_faltantes: number;          // suma de ajustes tipo FALTANTE
+  total_sobrantes: number;          // suma de ajustes tipo SOBRANTE
+  efectivo_fisico_caja: number;     // apertura + efectivo - gastos - faltantes + sobrantes
+  ajustes: CajaAjuste[];
 }
 
 // ---------------------------------------------------------------------------
@@ -258,13 +281,28 @@ export class ReportesService {
       // debe reflejar todos los ingresos del día, independientemente del operador.
     }
 
-    const [pagosRes, iiRes, gastosRes, recaudacionRes] = await Promise.all([
-      pagosQuery, iiQuery, gastosQuery, recaudacionQuery,
+    const aperturaQuery = this.db
+      .from('caja_aperturas')
+      .select('id, fecha, monto_inicial, user_id')
+      .eq('fecha', fecha)
+      .maybeSingle();
+
+    const ajustesQuery = this.db
+      .from('caja_ajustes')
+      .select('id, fecha, tipo, monto, descripcion, user_id')
+      .eq('fecha', fecha)
+      .order('created_at');
+
+    const [pagosRes, iiRes, gastosRes, recaudacionRes, aperturaRes, ajustesRes] = await Promise.all([
+      pagosQuery, iiQuery, gastosQuery, recaudacionQuery, aperturaQuery, ajustesQuery,
     ]);
     if (pagosRes.error)       throw new Error(pagosRes.error.message);
     if (iiRes.error)          throw new Error(iiRes.error.message);
     if (gastosRes.error)      throw new Error(gastosRes.error.message);
     if (recaudacionRes.error) throw new Error(recaudacionRes.error.message);
+    // apertura y ajustes son opcionales: si fallan no bloquean el arqueo
+    const aperturaRow = aperturaRes.error ? null : (aperturaRes.data as CajaApertura | null);
+    const ajustesRows = ajustesRes.error  ? []   : (ajustesRes.data  as CajaAjuste[]);
 
     const rows         = (pagosRes.data       ?? []) as unknown as PagoArqueoRow[];
     const ingresos     = (iiRes.data          ?? []) as unknown as IngresoInternoArqueoRow[];
@@ -287,7 +325,7 @@ export class ReportesService {
       }
     }
 
-    return this.construirResumen(fecha, rows, ingresos, perfilMap, gastosRaw, recaudaciones);
+    return this.construirResumen(fecha, rows, ingresos, perfilMap, gastosRaw, recaudaciones, aperturaRow, ajustesRows);
   }
 
   // ── Construcción del resumen ──────────────────────────────────────────────
@@ -298,6 +336,8 @@ export class ReportesService {
     perfilMap: Map<string, PerfilResumen>,
     gastosRaw: GastoArqueoRawRow[],
     recaudaciones: RecaudacionAbonoArqueoRow[] = [],
+    apertura: CajaApertura | null = null,
+    ajustes: CajaAjuste[] = [],
   ): ArqueoResumen {
     let totalEfectivo = 0;
     let totalTransferencia = 0;
@@ -465,6 +505,14 @@ export class ReportesService {
     const total_dia  = round2(totalEfectivo + totalTransferencia);
     const saldo_neto = round2(total_dia - totalGastos);
 
+    // ── Caja física ──────────────────────────────────────────────────────────
+    const apertura_monto   = apertura ? Number(apertura.monto_inicial) : 0;
+    const total_faltantes  = round2(ajustes.filter(a => a.tipo === 'FALTANTE').reduce((s, a) => s + Number(a.monto), 0));
+    const total_sobrantes  = round2(ajustes.filter(a => a.tipo === 'SOBRANTE').reduce((s, a) => s + Number(a.monto), 0));
+    // Efectivo físico real = lo que debería haber en la gaveta al cierre:
+    // Apertura + Cobros en efectivo − Gastos pagados en efectivo − Faltantes + Sobrantes
+    const efectivo_fisico_caja = round2(apertura_monto + totalEfectivo - totalGastos - total_faltantes + total_sobrantes);
+
     return {
       fecha,
       total_dia,
@@ -478,7 +526,41 @@ export class ReportesService {
       total_gastos:                  totalGastos,
       saldo_neto,
       gastos,
+      apertura_monto,
+      apertura,
+      total_faltantes,
+      total_sobrantes,
+      efectivo_fisico_caja,
+      ajustes,
     };
+  }
+
+  /** Registra o actualiza el saldo inicial del día (upsert por fecha). */
+  async upsertApertura(fecha: string, monto: number): Promise<void> {
+    const { data: authData } = await this.db.auth.getUser();
+    const userId = authData.user?.id ?? null;
+    const { error } = await this.db
+      .from('caja_aperturas')
+      .upsert(
+        { fecha, monto_inicial: monto, user_id: userId },
+        { onConflict: 'fecha' },
+      );
+    if (error) throw new Error(error.message);
+  }
+
+  /** Registra un ajuste de faltante o sobrante para la fecha indicada. */
+  async registrarAjuste(
+    fecha: string,
+    tipo: 'FALTANTE' | 'SOBRANTE',
+    monto: number,
+    descripcion: string,
+  ): Promise<void> {
+    const { data: authData } = await this.db.auth.getUser();
+    const userId = authData.user?.id ?? null;
+    const { error } = await this.db
+      .from('caja_ajustes')
+      .insert({ fecha, tipo, monto, descripcion: descripcion.trim() || null, user_id: userId });
+    if (error) throw new Error(error.message);
   }
 
   // ── Reporte Consolidado ───────────────────────────────────────────────────
