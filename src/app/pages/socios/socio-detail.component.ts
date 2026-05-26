@@ -105,19 +105,39 @@ const MOTIVOS_ANULACION = [
               </div>
             </dl>
 
-            <div class="border-t border-gray-100 dark:border-gray-700 mt-4 pt-4">
-              <dt class="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wide mb-2">Puesto vigente</dt>
-              @if (d.puesto_vigente; as pv) {
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
-                    {{ pv.codigo }}
-                  </span>
-                  @if (pv.giro) {
-                    <span class="text-xs text-gray-500 dark:text-gray-400">· {{ pv.giro }}</span>
-                  }
+            <div class="border-t border-gray-100 dark:border-gray-700 mt-4 pt-4 space-y-3">
+              <div>
+                <dt class="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wide mb-2">Puesto Principal</dt>
+                @if (d.puesto_vigente; as pv) {
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
+                      {{ pv.codigo }}
+                    </span>
+                    @if (pv.giro) {
+                      <span class="text-xs text-gray-500 dark:text-gray-400">· {{ pv.giro }}</span>
+                    }
+                  </div>
+                } @else {
+                  <p class="text-sm text-gray-400 dark:text-gray-500 italic">Sin puesto asignado</p>
+                }
+              </div>
+              @if (d.almacenes_vigentes.length > 0) {
+                <div>
+                  <dt class="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wide mb-2">
+                    Almacenes adicionales
+                    <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                      {{ d.almacenes_vigentes.length }}
+                    </span>
+                  </dt>
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (alm of d.almacenes_vigentes; track alm.id) {
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            title="Almacén: {{ alm.giro }}">
+                        {{ alm.codigo }}
+                      </span>
+                    }
+                  </div>
                 </div>
-              } @else {
-                <p class="text-sm text-gray-400 dark:text-gray-500 italic">Sin puesto asignado</p>
               }
             </div>
 

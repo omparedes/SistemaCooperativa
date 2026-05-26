@@ -272,6 +272,14 @@ export const routes: Routes = [
         component: DocumentationComponent,
         title: 'Documentación Técnica | TailAdmin'
       },
+      // ── Gestión de Espacios (Puestos + Almacenes) ───────────────────────
+      {
+        path: 'espacios',
+        loadComponent: () =>
+          import('./pages/espacios/gestion-espacios.component')
+            .then(m => m.GestionEspaciosComponent),
+        title: 'Gestión de Espacios | Cooperativa Primero de Mayo',
+      },
       // ── Administración de usuarios (solo Administrador) ──────────────────
       {
         path: 'admin/usuarios',

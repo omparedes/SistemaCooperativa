@@ -112,13 +112,21 @@ type Tab = 'socios' | 'inquilinos';
                       }
                     </td>
                     <td class="px-4 py-3">
-                      @if (s.puesto) {
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
-                          {{ s.puesto.codigo }}
-                        </span>
-                      } @else {
-                        <span class="text-xs text-gray-400 dark:text-gray-500">— sin puesto —</span>
-                      }
+                      <div class="flex flex-wrap items-center gap-1">
+                        @if (s.puesto) {
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
+                            {{ s.puesto.codigo }}
+                          </span>
+                        } @else {
+                          <span class="text-xs text-gray-400 dark:text-gray-500">— sin puesto —</span>
+                        }
+                        @for (alm of s.almacenes; track alm.id) {
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                title="Almacén adicional">
+                            {{ alm.codigo }}
+                          </span>
+                        }
+                      </div>
                     </td>
                     <td class="px-4 py-3">
                       <span [ngClass]="s.estado === 'Activo'

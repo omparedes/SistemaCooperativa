@@ -52,6 +52,7 @@ interface SocioListaRow {
       id: number;
       codigo_puesto: string;
       estado: string;
+      tipo_espacio: 'Principal' | 'Almacen';
     } | null;
   }>;
 }
@@ -76,6 +77,7 @@ interface SocioDetalleRow {
       id: number;
       codigo_puesto: string;
       estado: string;
+      tipo_espacio: 'Principal' | 'Almacen';
       giro: { nombre: string } | null;
     } | null;
   }>;
@@ -105,7 +107,7 @@ export class SociosService {
           fecha_ingreso, estado, habilitado,
           titularidad_vigente:historial_titularidad (
             fecha_inicio, fecha_fin,
-            puesto:puestos ( id, codigo_puesto, estado )
+            puesto:puestos ( id, codigo_puesto, estado, tipo_espacio )
           )
         `)
         .is('deleted_at', null)
@@ -133,7 +135,7 @@ export class SociosService {
         historial_titularidad (
           id, fecha_inicio, fecha_fin, motivo_cambio,
           puesto:puestos (
-            id, codigo_puesto, estado,
+            id, codigo_puesto, estado, tipo_espacio,
             giro:giros ( nombre )
           )
         )
@@ -216,8 +218,11 @@ export class SociosService {
   }
 
   private mapearLista(row: SocioListaRow): SocioConPuesto {
-    const titularidad = row.titularidad_vigente[0] ?? null;
-    const puesto = titularidad?.puesto ?? null;
+    // Separar vigentes por tipo: Principal tiene prioridad en el campo `puesto`
+    const vigentes = (row.titularidad_vigente ?? []).filter(t => t.fecha_fin === null && t.puesto !== null);
+    const tPrincipal = vigentes.find(t => t.puesto!.tipo_espacio === 'Principal') ?? null;
+    const tAlmacenes = vigentes.filter(t => t.puesto!.tipo_espacio === 'Almacen');
+
     return {
       id: row.id,
       dni: row.dni,
@@ -230,14 +235,22 @@ export class SociosService {
       estado: row.estado,
       habilitado: row.habilitado,
       es_institucional: row.dni === DNI_INSTITUCIONAL,
-      puesto: puesto && titularidad
+      puesto: tPrincipal
         ? {
-            id: puesto.id,
-            codigo: puesto.codigo_puesto,
-            estado: puesto.estado,
-            fecha_inicio_titularidad: titularidad.fecha_inicio,
+            id: tPrincipal.puesto!.id,
+            codigo: tPrincipal.puesto!.codigo_puesto,
+            estado: tPrincipal.puesto!.estado,
+            tipo_espacio: 'Principal',
+            fecha_inicio_titularidad: tPrincipal.fecha_inicio,
           }
         : null,
+      almacenes: tAlmacenes.map(t => ({
+        id: t.puesto!.id,
+        codigo: t.puesto!.codigo_puesto,
+        estado: t.puesto!.estado,
+        tipo_espacio: 'Almacen',
+        fecha_inicio_titularidad: t.fecha_inicio,
+      })),
     };
   }
 
@@ -254,12 +267,15 @@ export class SociosService {
           id: t.puesto!.id,
           codigo: t.puesto!.codigo_puesto,
           estado: t.puesto!.estado,
+          tipo_espacio: t.puesto!.tipo_espacio,
           giro: t.puesto!.giro?.nombre ?? null,
         },
       }))
       .sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
 
-    const puesto_vigente = titularidades.find(t => t.vigente)?.puesto ?? null;
+    const vigentes = titularidades.filter(t => t.vigente);
+    const puesto_vigente = vigentes.find(t => t.puesto.tipo_espacio === 'Principal')?.puesto ?? null;
+    const almacenes_vigentes = vigentes.filter(t => t.puesto.tipo_espacio === 'Almacen').map(t => t.puesto);
 
     return {
       id: row.id,
@@ -275,6 +291,7 @@ export class SociosService {
       es_institucional: row.dni === DNI_INSTITUCIONAL,
       titularidades,
       puesto_vigente,
+      almacenes_vigentes,
     };
   }
 }
