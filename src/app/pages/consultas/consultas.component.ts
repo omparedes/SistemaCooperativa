@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
+import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
 import type { BusquedaResultado, DeudaItem, PagoHistorial, TipoPagador } from '../pagos/pago.model';
 
 type TabActiva = 'pendientes' | 'realizados';
@@ -37,19 +38,19 @@ const MESES: ReadonlyArray<string> = [
           <h1 class="text-xl sm:text-2xl font-bold text-slate-800 mb-1">Consulta tu Estado de Cuenta</h1>
           <p class="text-slate-500 text-sm mb-6">Ingresa tu DNI, nombre o número de puesto.</p>
 
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               [value]="queryInput()"
               (input)="onQueryInput($event)"
               (keydown.enter)="consultar()"
               placeholder="DNI, nombre o N° de Puesto..."
-              class="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 transition"
+              class="w-full sm:flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 transition"
             />
             <button
               (click)="consultar()"
               [disabled]="buscando()"
-              class="px-5 py-3 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition shrink-0 flex items-center gap-2"
+              class="w-full sm:w-auto px-5 py-3 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition shrink-0 flex items-center justify-center gap-2"
             >
               @if (buscando()) {
                 <svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -181,8 +182,6 @@ const MESES: ReadonlyArray<string> = [
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepto</th>
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Período</th>
                           <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Monto</th>
-                          <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Ya Pagado</th>
-                          <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Saldo</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -190,15 +189,13 @@ const MESES: ReadonlyArray<string> = [
                           <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="px-5 py-3 font-medium text-slate-800">{{ d.concepto }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</td>
-                            <td class="px-5 py-3 text-right text-slate-600">{{ moneda(d.monto_original) }}</td>
-                            <td class="px-5 py-3 text-right text-green-600">{{ moneda(d.ya_pagado) }}</td>
                             <td class="px-5 py-3 text-right font-bold text-red-600">{{ moneda(d.saldo_pendiente) }}</td>
                           </tr>
                         }
                       </tbody>
                       <tfoot>
                         <tr class="bg-slate-50 border-t-2 border-slate-200">
-                          <td colspan="4" class="px-5 py-3 text-right text-sm font-semibold text-slate-700">Total por pagar:</td>
+                          <td colspan="2" class="px-5 py-3 text-right text-sm font-semibold text-slate-700">Total por pagar:</td>
                           <td class="px-5 py-3 text-right font-bold text-red-700 text-base">{{ moneda(totalDeuda()) }}</td>
                         </tr>
                       </tfoot>
@@ -212,7 +209,7 @@ const MESES: ReadonlyArray<string> = [
                 @if (historial().length === 0) {
                   <div class="flex flex-col items-center gap-2 py-16 text-slate-400">
                     <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                     <p class="text-sm font-medium">Sin pagos registrados</p>
                   </div>
@@ -222,10 +219,9 @@ const MESES: ReadonlyArray<string> = [
                       <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Fecha</th>
-                          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">N° Transacción</th>
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Método</th>
                           <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Monto</th>
-                          <th class="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Estado</th>
+                          <th class="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Recibo</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -233,7 +229,6 @@ const MESES: ReadonlyArray<string> = [
                           <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                               [class.opacity-60]="p.anulado">
                             <td class="px-5 py-3 text-slate-600" [class.line-through]="p.anulado">{{ fecha(p.fecha_pago) }}</td>
-                            <td class="px-5 py-3 font-mono text-xs text-slate-700" [class.line-through]="p.anulado">{{ p.codigo_transaccion }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ p.metodo_pago }}</td>
                             <td class="px-5 py-3 text-right font-semibold"
                                 [class.text-slate-400]="p.anulado"
@@ -242,13 +237,27 @@ const MESES: ReadonlyArray<string> = [
                               {{ moneda(p.monto_total) }}
                             </td>
                             <td class="px-5 py-3 text-center">
-                              @if (p.anulado) {
-                                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-                                  ANULADO
-                                </span>
+                              @if (!p.anulado) {
+                                <button
+                                  (click)="abrirReciboPdf(p)"
+                                  [disabled]="generandoPdfId() === p.id"
+                                  title="Descargar Recibo"
+                                  class="text-brand-600 hover:text-brand-800 disabled:opacity-50 transition p-1 rounded hover:bg-brand-50 inline-flex items-center justify-center"
+                                >
+                                  @if (generandoPdfId() === p.id) {
+                                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                    </svg>
+                                  } @else {
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                  }
+                                </button>
                               } @else {
-                                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                  Pagado
+                                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                  Anulado
                                 </span>
                               }
                             </td>
@@ -276,6 +285,7 @@ const MESES: ReadonlyArray<string> = [
 })
 export class ConsultasComponent {
   private readonly pagosSvc = inject(ConsultasPublicasService);
+  private readonly pdfSvc = inject(PdfGeneratorService);
 
   readonly currentYear = new Date().getFullYear();
 
@@ -288,6 +298,7 @@ export class ConsultasComponent {
   readonly deudas = signal<DeudaItem[]>([]);
   readonly historial = signal<PagoHistorial[]>([]);
   readonly tab = signal<TabActiva>('pendientes');
+  readonly generandoPdfId = signal<number | null>(null);
 
   readonly totalDeuda = computed(() =>
     this.deudas().reduce((s, d) => s + d.saldo_pendiente, 0),
@@ -381,5 +392,41 @@ export class ConsultasComponent {
 
   moneda(monto: number): string {
     return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto);
+  }
+
+  async abrirReciboPdf(pago: PagoHistorial): Promise<void> {
+    const sel = this.seleccionado();
+    if (!sel) return;
+
+    this.generandoPdfId.set(pago.id);
+    try {
+      const datos: ReciboDatos = {
+        codigo_transaccion: pago.codigo_transaccion,
+        fecha_pago:         new Date(pago.fecha_pago),
+        cajero:             'Sistema de Recaudación',
+        nombre_pagador:     sel.nombre_completo,
+        tipo_pagador:       sel.tipo === 'socio' ? 'Socio titular' : 'Inquilino',
+        dni_pagador:        sel.dni,
+        codigo_puesto:      pago.codigo_puesto || sel.codigo_puesto,
+        metodo_pago:        pago.metodo_pago,
+        comprobante:        pago.comprobante,
+        observacion:        null,
+        detalle: (pago.detalle || []).map(det => ({
+          concepto:           det.concepto,
+          periodo:            `${MESES[det.periodo_mes - 1] ?? det.periodo_mes}-${det.periodo_anio}`,
+          saldo_original:     det.monto_original,
+          aplicado:           det.monto_aplicado,
+          cubierto_completo:  det.monto_aplicado >= det.monto_original * 0.99,
+        })),
+        total_pagado:  pago.monto_total,
+        saldo_a_favor: 0,
+      };
+      await this.pdfSvc.generarYAbrir(datos);
+    } catch (e: unknown) {
+      console.error(e);
+      alert('No se pudo generar el PDF del recibo.');
+    } finally {
+      this.generandoPdfId.set(null);
+    }
   }
 }

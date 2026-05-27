@@ -1,5 +1,5 @@
 export type EstadoSocio = 'Activo' | 'Inactivo';
-export type TipoEspacioPuesto = 'Principal' | 'Almacen';
+export type TipoEspacioPuesto = 'Regular' | 'Pequeño' | 'Almacen';
 
 export interface Socio {
   id: number;
@@ -12,6 +12,8 @@ export interface Socio {
   fecha_ingreso: string;
   estado: EstadoSocio;
   habilitado: boolean;
+  cobro_admin_activo: boolean;
+  cobro_prev_social_activo: boolean;
 }
 
 export interface PuestoVigente {
@@ -58,3 +60,14 @@ export interface SocioDetalle extends Socio {
 }
 
 export const DNI_INSTITUCIONAL = 'COOP-00000';
+
+export interface DeudaPendiente {
+  id: number;
+  concepto: string;
+  periodo_anio: number;
+  periodo_mes: number;
+  monto: number;
+  monto_pagado: number;
+  saldo: number;
+  origen: string;
+}

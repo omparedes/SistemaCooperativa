@@ -103,7 +103,7 @@ const DNI_RE   = /^\d{8}$/;
             <!-- DNI -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                DNI <span class="text-red-500">*</span>
+                DNI
               </label>
               <input type="text" [value]="dni()" (input)="dni.set(inp($event))"
                 placeholder="12345678" maxlength="8"
@@ -297,8 +297,7 @@ export class InquilinoFormComponent implements OnInit {
     if (!this.apellidos().trim()) e.apellidos = 'Los apellidos son obligatorios.';
     if (!this.nombres().trim())   e.nombres   = 'Los nombres son obligatorios.';
     const d = this.dni().trim();
-    if (!d)                   e.dni = 'El DNI es obligatorio.';
-    else if (!DNI_RE.test(d)) e.dni = 'El DNI debe tener 8 dígitos numéricos.';
+    if (d && !DNI_RE.test(d)) e.dni = 'El DNI debe tener 8 dígitos numéricos.';
     const em = this.email().trim();
     if (em && !EMAIL_RE.test(em)) e.email = 'Formato de correo inválido.';
     if (this.puestoId() !== null) {
@@ -378,10 +377,11 @@ export class InquilinoFormComponent implements OnInit {
     this.guardando.set(true);
     this.errorGlobal.set(null);
     try {
+      const generatedDni = this.dni().trim() || ('TEMP_' + Math.floor(10000000 + Math.random() * 90000000).toString());
       const params = {
         apellidos: this.apellidos().trim(),
         nombres:   this.nombres().trim(),
-        dni:       this.dni().trim(),
+        dni:       generatedDni,
         email:     this.email().trim() || null,
         telefono:  this.telefono().trim() || null,
         direccion: this.direccion().trim() || null,

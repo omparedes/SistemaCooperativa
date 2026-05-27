@@ -1,12 +1,15 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { SUPABASE_CLIENT } from './supabase.client';
 import {
+  DeudaPendiente,
   DNI_INSTITUCIONAL,
   EstadoSocio,
   SocioConPuesto,
   SocioDetalle,
   TitularidadHistorial,
+  TipoEspacioPuesto,
 } from '../../pages/socios/socio.model';
+import { esEspacioPrincipal } from '../../pages/espacios/espacios.model';
 
 // ---------------------------------------------------------------------------
 // Parámetros de mutación
@@ -45,6 +48,8 @@ interface SocioListaRow {
   fecha_ingreso: string;
   estado: 'Activo' | 'Inactivo';
   habilitado: boolean;
+  cobro_admin_activo: boolean;
+  cobro_prev_social_activo: boolean;
   titularidad_vigente: Array<{
     fecha_inicio: string;
     fecha_fin: string | null;
@@ -52,7 +57,7 @@ interface SocioListaRow {
       id: number;
       codigo_puesto: string;
       estado: string;
-      tipo_espacio: 'Principal' | 'Almacen';
+      tipo_espacio: TipoEspacioPuesto;
     } | null;
   }>;
 }
@@ -68,6 +73,8 @@ interface SocioDetalleRow {
   fecha_ingreso: string;
   estado: 'Activo' | 'Inactivo';
   habilitado: boolean;
+  cobro_admin_activo: boolean;
+  cobro_prev_social_activo: boolean;
   historial_titularidad: Array<{
     id: number;
     fecha_inicio: string;
@@ -77,7 +84,7 @@ interface SocioDetalleRow {
       id: number;
       codigo_puesto: string;
       estado: string;
-      tipo_espacio: 'Principal' | 'Almacen';
+      tipo_espacio: TipoEspacioPuesto;
       giro: { nombre: string } | null;
     } | null;
   }>;
@@ -105,6 +112,7 @@ export class SociosService {
         .select(`
           id, dni, nombres, apellidos, direccion, telefono, email,
           fecha_ingreso, estado, habilitado,
+          cobro_admin_activo, cobro_prev_social_activo,
           titularidad_vigente:historial_titularidad (
             fecha_inicio, fecha_fin,
             puesto:puestos ( id, codigo_puesto, estado, tipo_espacio )
@@ -132,6 +140,7 @@ export class SociosService {
       .select(`
         id, dni, nombres, apellidos, direccion, telefono, email,
         fecha_ingreso, estado, habilitado,
+        cobro_admin_activo, cobro_prev_social_activo,
         historial_titularidad (
           id, fecha_inicio, fecha_fin, motivo_cambio,
           puesto:puestos (
@@ -217,10 +226,85 @@ export class SociosService {
     if (error) throw new Error(error.message);
   }
 
+  /** Activa/desactiva el cargo de admin o previsión social para un socio. */
+  async toggleCargoSocio(
+    socioId: number,
+    cargo: 'admin' | 'prev_social',
+    activo: boolean,
+  ): Promise<void> {
+    const { data: auth } = await this.db.auth.getUser();
+    const { error } = await this.db.rpc('toggle_cargo_socio', {
+      p_socio_id: socioId,
+      p_cargo:    cargo,
+      p_activo:   activo,
+      p_usuario:  auth.user?.id ?? null,
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  /** Deudas pendientes de un socio, incluyendo cargos personales y de todos sus espacios asignados. */
+  async cargarDeudasVigentes(socioId: number, puestoIds: number[]): Promise<DeudaPendiente[]> {
+    let query = this.db
+      .from('montos_por_cobrar')
+      .select(`
+        id, monto, estado, periodo_anio, periodo_mes, puesto_id, socio_id,
+        concepto:conceptos ( nombre ),
+        puesto:puestos ( codigo_puesto ),
+        detalle_pagos ( monto_aplicado, deleted_at )
+      `)
+      .eq('estado', 'Pendiente')
+      .is('deleted_at', null);
+
+    if (puestoIds.length > 0) {
+      query = query.or(`socio_id.eq.${socioId},puesto_id.in.(${puestoIds.join(',')})`);
+    } else {
+      query = query.eq('socio_id', socioId);
+    }
+
+    const { data, error } = await query
+      .order('periodo_anio', { ascending: true })
+      .order('periodo_mes',  { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    return ((data ?? []) as unknown as Array<{
+      id: number;
+      monto: number;
+      estado: string;
+      periodo_anio: number;
+      periodo_mes: number;
+      puesto_id: number | null;
+      socio_id: number | null;
+      concepto: { nombre: string } | null;
+      puesto: { codigo_puesto: string } | null;
+      detalle_pagos: Array<{ monto_aplicado: number; deleted_at: string | null }>;
+    }>).map(row => {
+      const pagado = (row.detalle_pagos ?? [])
+        .filter(d => d.deleted_at === null)
+        .reduce((acc, d) => acc + d.monto_aplicado, 0);
+
+      let origen = 'Personal';
+      if (row.puesto?.codigo_puesto) {
+        origen = `Puesto ${row.puesto.codigo_puesto}`;
+      }
+
+      return {
+        id:           row.id,
+        concepto:     row.concepto?.nombre ?? '—',
+        periodo_anio: row.periodo_anio,
+        periodo_mes:  row.periodo_mes,
+        monto:        row.monto,
+        monto_pagado: pagado,
+        saldo:        row.monto - pagado,
+        origen:       origen,
+      };
+    });
+  }
+
   private mapearLista(row: SocioListaRow): SocioConPuesto {
     // Separar vigentes por tipo: Principal tiene prioridad en el campo `puesto`
     const vigentes = (row.titularidad_vigente ?? []).filter(t => t.fecha_fin === null && t.puesto !== null);
-    const tPrincipal = vigentes.find(t => t.puesto!.tipo_espacio === 'Principal') ?? null;
+    const tPrincipal = vigentes.find(t => esEspacioPrincipal(t.puesto!.tipo_espacio)) ?? null;
     const tAlmacenes = vigentes.filter(t => t.puesto!.tipo_espacio === 'Almacen');
 
     return {
@@ -234,13 +318,15 @@ export class SociosService {
       fecha_ingreso: row.fecha_ingreso,
       estado: row.estado,
       habilitado: row.habilitado,
+      cobro_admin_activo: row.cobro_admin_activo,
+      cobro_prev_social_activo: row.cobro_prev_social_activo,
       es_institucional: row.dni === DNI_INSTITUCIONAL,
       puesto: tPrincipal
         ? {
             id: tPrincipal.puesto!.id,
             codigo: tPrincipal.puesto!.codigo_puesto,
             estado: tPrincipal.puesto!.estado,
-            tipo_espacio: 'Principal',
+            tipo_espacio: tPrincipal.puesto!.tipo_espacio,
             fecha_inicio_titularidad: tPrincipal.fecha_inicio,
           }
         : null,
@@ -274,7 +360,7 @@ export class SociosService {
       .sort((a, b) => b.fecha_inicio.localeCompare(a.fecha_inicio));
 
     const vigentes = titularidades.filter(t => t.vigente);
-    const puesto_vigente = vigentes.find(t => t.puesto.tipo_espacio === 'Principal')?.puesto ?? null;
+    const puesto_vigente = vigentes.find(t => esEspacioPrincipal(t.puesto.tipo_espacio))?.puesto ?? null;
     const almacenes_vigentes = vigentes.filter(t => t.puesto.tipo_espacio === 'Almacen').map(t => t.puesto);
 
     return {
@@ -288,6 +374,8 @@ export class SociosService {
       fecha_ingreso: row.fecha_ingreso,
       estado: row.estado,
       habilitado: row.habilitado,
+      cobro_admin_activo: row.cobro_admin_activo,
+      cobro_prev_social_activo: row.cobro_prev_social_activo,
       es_institucional: row.dni === DNI_INSTITUCIONAL,
       titularidades,
       puesto_vigente,

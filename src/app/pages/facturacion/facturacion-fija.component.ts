@@ -1,13 +1,17 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   FacturacionService,
   ResultadoGeneracionFija,
 } from '../../core/services/facturacion.service';
-import { ConfiguracionService } from '../../core/services/configuracion.service';
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// Admin por defecto: S/ 56.00 en Febrero, S/ 60.00 el resto del año
+function montoAdminDefault(mes: number): number {
+  return mes === 2 ? 56.00 : 60.00;
+}
 
 @Component({
   selector: 'app-facturacion-fija',
@@ -20,8 +24,8 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
       <div class="mb-8">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Generación de Cargos Fijos</h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Genera masivamente los cargos fijos del mes para todos los puestos activos.
-          La operación es idempotente: puestos que ya tengan el cargo del período serán omitidos.
+          Genera los cargos fijos del mes para todos los puestos activos.
+          Solo puede ejecutarse una vez por período.
         </p>
       </div>
 
@@ -46,16 +50,18 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                 Cargos generados para {{ MESES[mes - 1] }} {{ anio }}
               </p>
               <p class="text-xs text-green-600 dark:text-green-400">
-                {{ resultado()!.puestos_elegibles }} puestos elegibles
+                {{ resultado()!.puestos_elegibles }} espacios elegibles procesados
               </p>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             @for (item of resumenItems(); track item.label) {
               <div class="rounded-lg bg-white px-3 py-2.5 dark:bg-gray-800">
                 <p class="text-xs text-gray-400 dark:text-gray-500">{{ item.label }}</p>
                 <p class="mt-0.5 text-lg font-bold text-gray-900 dark:text-white">{{ item.value }}</p>
-                <p class="text-xs text-gray-400">S/ {{ item.monto.toFixed(2) }} c/u</p>
+                @if (item.monto > 0) {
+                  <p class="text-xs text-gray-400">S/ {{ item.monto.toFixed(2) }} c/u</p>
+                }
               </div>
             }
           </div>
@@ -76,11 +82,12 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Año</label>
             <input type="number" [(ngModel)]="anio" min="2020" max="2100"
+              (change)="onMesChange()"
               class="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-500 focus:outline-none"/>
           </div>
           <div>
             <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Mes</label>
-            <select [(ngModel)]="mes"
+            <select [(ngModel)]="mes" (change)="onMesChange()"
               class="h-11 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-500 focus:outline-none">
               @for (m of mesesArr; track m.n) {
                 <option [value]="m.n">{{ m.nombre }}</option>
@@ -89,37 +96,66 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
           </div>
         </div>
 
+        <!-- Alerta especial de Febrero -->
+        @if (mes === 2) {
+          <div class="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
+            <p class="text-xs text-amber-700 dark:text-amber-300">
+              <strong>Febrero:</strong> El monto de Gastos Administrativos es <strong>S/ 56.00</strong>
+              (en lugar del valor habitual de S/ 60.00).
+            </p>
+          </div>
+        }
+
         <!-- Montos por concepto -->
         <h3 class="mb-4 text-base font-semibold text-gray-800 dark:text-white">
-          2. Define los montos (S/ por puesto)
+          2. Confirma los montos (S/ por espacio)
         </h3>
         <div class="mb-6 space-y-4">
 
-          @for (item of conceptosFijos; track item.campo) {
-            <div class="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
-              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                   [class]="item.color">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon"/>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-800 dark:text-white">{{ item.label }}</p>
-                <p class="text-xs text-gray-400 dark:text-gray-500">{{ item.desc }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400">S/</span>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  [(ngModel)]="item.monto"
-                  [name]="item.campo"
-                  class="h-9 w-24 rounded-lg border border-gray-300 bg-white px-3 text-sm text-right tabular-nums dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-500 focus:outline-none"
-                />
-              </div>
+          <!-- Gastos Administrativos -->
+          <div class="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
             </div>
-          }
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-800 dark:text-white">Gastos Administrativos</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500">
+                Cuota mensual de administración
+                @if (mes === 2) { <span class="text-amber-500">(Febrero: tarifa especial)</span> }
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-500 dark:text-gray-400">S/</span>
+              <input type="number" min="0.01" step="0.01"
+                [(ngModel)]="montoAdmin" name="monto_admin"
+                class="h-9 w-24 rounded-lg border border-gray-300 bg-white px-3 text-sm text-right tabular-nums dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-500 focus:outline-none"/>
+            </div>
+          </div>
+
+          <!-- Previsión Social -->
+          <div class="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-800 dark:text-white">Previsión Social</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500">Aporte mensual al fondo de previsión</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-500 dark:text-gray-400">S/</span>
+              <input type="number" min="0.01" step="0.01"
+                [(ngModel)]="montoPrevision" name="monto_prevision"
+                class="h-9 w-24 rounded-lg border border-gray-300 bg-white px-3 text-sm text-right tabular-nums dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-brand-500 focus:outline-none"/>
+            </div>
+          </div>
+
         </div>
 
         <!-- Botón principal -->
@@ -142,8 +178,7 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
         </button>
 
         <p class="mt-3 text-center text-xs text-gray-400 dark:text-gray-500">
-          Solo se generan cargos para puestos con titular socio Activo.
-          Los que ya tienen cargo en el período serán omitidos (idempotente).
+          Solo puestos con titular socio Activo. Un período solo puede generarse una vez.
         </p>
       </div>
 
@@ -151,11 +186,14 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
   `,
 })
 export class FacturacionFijaComponent implements OnInit {
-  private readonly svc       = inject(FacturacionService);
-  private readonly configSvc = inject(ConfiguracionService);
+  private readonly svc = inject(FacturacionService);
 
   anio = new Date().getFullYear();
   mes  = new Date().getMonth() + 1;
+
+  // Montos reactivos con defaults automáticos
+  montoAdmin    = montoAdminDefault(this.mes);
+  montoPrevision = 5.00;
 
   readonly generando = signal(false);
   readonly error     = signal<string | null>(null);
@@ -164,68 +202,33 @@ export class FacturacionFijaComponent implements OnInit {
   protected readonly MESES    = MESES;
   protected readonly mesesArr = MESES.map((nombre, i) => ({ n: i + 1, nombre }));
 
-  conceptosFijos = [
-    {
-      campo:  'monto_admin',
-      label:  'Gastos Administrativos',
-      desc:   'Cuota mensual para gastos de administración',
-      monto:  8.00,
-      color:  'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400',
-      icon:   'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-    },
-    {
-      campo:  'monto_prevision',
-      label:  'Previsión Social',
-      desc:   'Aporte mensual al fondo de previsión social',
-      monto:  5.00,
-      color:  'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
-      icon:   'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
-    },
-    {
-      campo:  'monto_mantenimiento',
-      label:  'Mantenimiento',
-      desc:   'Mantenimiento de áreas comunes y servicios',
-      monto:  10.00,
-      color:  'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400',
-      icon:   'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
-    },
-  ];
-
   readonly periodoValido = () =>
     this.anio >= 2020 &&
     this.anio <= 2100 &&
     this.mes >= 1 &&
     this.mes <= 12 &&
-    this.conceptosFijos.every(c => c.monto > 0);
+    this.montoAdmin > 0 &&
+    this.montoPrevision > 0;
 
-  readonly resumenItems = () => {
+  readonly resumenItems = computed(() => {
     const r = this.resultado();
     if (!r) return [];
     return [
-      { label: 'G. Administrativos', value: r.gastos_administrativos, monto: this.conceptosFijos[0].monto },
-      { label: 'Previsión Social',    value: r.prevision_social,       monto: this.conceptosFijos[1].monto },
-      { label: 'Mantenimiento',       value: r.mantenimiento,          monto: this.conceptosFijos[2].monto },
+      { label: 'G. Administrativos', value: r.gastos_administrativos, monto: this.montoAdmin },
+      { label: 'Previsión Social',    value: r.prevision_social,       monto: this.montoPrevision },
       { label: 'Total insertados',    value: r.total_insertados,        monto: 0 },
     ];
-  };
+  });
 
   ngOnInit(): void {
-    void this.cargarConfiguracion();
+    this.onMesChange();
   }
 
-  private async cargarConfiguracion(): Promise<void> {
-    try {
-      const [admin, prevision, mant] = await Promise.all([
-        this.configSvc.getValor('MONTO_GASTOS_ADMIN'),
-        this.configSvc.getValor('MONTO_PREVISION_SOCIAL'),
-        this.configSvc.getValor('MONTO_MANTENIMIENTO'),
-      ]);
-      this.conceptosFijos[0].monto = admin;
-      this.conceptosFijos[1].monto = prevision;
-      this.conceptosFijos[2].monto = mant;
-    } catch {
-      // Mantiene los defaults locales si la DB no está disponible
-    }
+  // Actualiza el default de admin cuando cambia el mes
+  onMesChange(): void {
+    this.montoAdmin = montoAdminDefault(this.mes);
+    this.resultado.set(null);
+    this.error.set(null);
   }
 
   async generar(): Promise<void> {
@@ -236,11 +239,10 @@ export class FacturacionFijaComponent implements OnInit {
     this.resultado.set(null);
     try {
       const res = await this.svc.generarCargosFijosMes({
-        anio:                this.anio,
-        mes:                 this.mes,
-        monto_admin:         this.conceptosFijos[0].monto,
-        monto_prevision:     this.conceptosFijos[1].monto,
-        monto_mantenimiento: this.conceptosFijos[2].monto,
+        anio:            this.anio,
+        mes:             this.mes,
+        monto_admin:     this.montoAdmin,
+        monto_prevision: this.montoPrevision,
       });
       this.resultado.set(res);
     } catch (e: unknown) {

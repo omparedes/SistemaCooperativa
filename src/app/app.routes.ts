@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { adminGuard, authGuard, noAuthGuard } from './core/guards/auth.guard';
 import { FacturacionMedidoresComponent } from './pages/facturacion/facturacion-medidores.component';
 import { FacturacionFijaComponent } from './pages/facturacion/facturacion-fija.component';
+import { FacturacionDistribucionComponent } from './pages/facturacion/facturacion-distribucion.component';
 import { TarifasComponent } from './pages/config/tarifas.component';
 import { RecibosConfigComponent } from './pages/config/recibos-config.component';
 import { CargosExtraordinariosComponent } from './pages/facturacion/cargos-extraordinarios.component';
@@ -195,6 +196,20 @@ export const routes: Routes = [
       },
       // ── Facturación (solo Administrador) ────────────────────────────────
       {
+        path: 'facturacion/luz',
+        component: FacturacionDistribucionComponent,
+        canActivate: [adminGuard],
+        data: { servicio: 'Luz' },
+        title: 'Facturación de Luz | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'facturacion/agua',
+        component: FacturacionDistribucionComponent,
+        canActivate: [adminGuard],
+        data: { servicio: 'Agua' },
+        title: 'Facturación de Agua | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'facturacion/cargos-extraordinarios',
         component: CargosExtraordinariosComponent,
         canActivate: [adminGuard],
@@ -279,6 +294,19 @@ export const routes: Routes = [
           import('./pages/espacios/gestion-espacios.component')
             .then(m => m.GestionEspaciosComponent),
         title: 'Gestión de Espacios | Cooperativa Primero de Mayo',
+      },
+      // ── Gestión de Giros Comerciales ────────────────────────────────────
+      {
+        path: 'giros',
+        loadComponent: () =>
+          import('./pages/giros/giro-list.component').then(m => m.GiroListComponent),
+        title: 'Catálogo de Giros Comerciales | Cooperativa Primero de Mayo',
+      },
+      {
+        path: 'giros/:id',
+        loadComponent: () =>
+          import('./pages/giros/giro-detail.component').then(m => m.GiroDetailComponent),
+        title: 'Relación de Puestos por Giro | Cooperativa Primero de Mayo',
       },
       // ── Administración de usuarios (solo Administrador) ──────────────────
       {

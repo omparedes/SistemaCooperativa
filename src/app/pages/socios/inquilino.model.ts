@@ -37,6 +37,7 @@ export interface ArriendoHistorial {
     id: number;
     codigo: string;
     estado: string;
+    giro: string | null;
   };
   titular: TitularReferencia | null;
   vigente: boolean;

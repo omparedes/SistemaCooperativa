@@ -70,6 +70,7 @@ interface InquilinoDetalleRow {
       id: number;
       codigo_puesto: string;
       estado: string;
+      giro: { nombre: string } | null;
     } | null;
     titular: {
       id: number;
@@ -129,7 +130,7 @@ export class InquilinosService {
         id, dni, nombres, apellidos, direccion, telefono, email,
         historial_arriendos (
           id, fecha_inicio, fecha_fin, motivo_termino, monto_arriendo,
-          puesto:puestos ( id, codigo_puesto, estado ),
+          puesto:puestos ( id, codigo_puesto, estado, giro:giros(nombre) ),
           titular:socios!socio_titular_id ( id, apellidos, dni )
         )
       `)
@@ -264,9 +265,10 @@ export class InquilinosService {
         monto_arriendo: a.monto_arriendo,
         vigente: a.fecha_fin === null,
         puesto: {
-          id: a.puesto!.id,
+          id:     a.puesto!.id,
           codigo: a.puesto!.codigo_puesto,
           estado: a.puesto!.estado,
+          giro:   (a.puesto as unknown as { giro?: { nombre: string } | null }).giro?.nombre ?? null,
         },
         titular: a.titular
           ? { id: a.titular.id, apellidos: a.titular.apellidos, dni: a.titular.dni }

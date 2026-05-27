@@ -192,7 +192,7 @@ function formatSoles(n: number): string {
       }
 
       <!-- ================================================================ -->
-      <!-- PASO 2 — DISTRIBUCIÓN FIFO                                       -->
+      <!-- PASO 2 — DISTRIBUCIÓN                                            -->
       <!-- ================================================================ -->
       @if (paso() === 2) {
         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-dark">
@@ -304,12 +304,49 @@ function formatSoles(n: number): string {
             </p>
           </div>
 
-          <!-- Tabla FIFO — reactiva con computed() -->
+          <!-- Tabla de distribución — reactiva -->
           @if (montoRecibido() > 0 || saldoAFavor() > 0) {
             <div class="mt-6">
+
+              <!-- Selector de modo de asignación -->
+              <div class="mb-4 flex items-center justify-between rounded-xl bg-gray-50 p-4 dark:bg-gray-700/30">
+                <div>
+                  <p class="text-sm font-semibold text-gray-800 dark:text-white">Asignación de Pagos</p>
+                  <p class="text-xs text-gray-400">Distribuye el dinero en los conceptos correspondientes</p>
+                </div>
+                <div class="flex gap-2">
+                  <button type="button" (click)="cambiarModoDistribucion('automatico')"
+                    [class]="modoDistribucion() === 'automatico'
+                      ? 'rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white'
+                      : 'rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'">
+                    Automático (FIFO)
+                  </button>
+                  <button type="button" (click)="cambiarModoDistribucion('manual')"
+                    [class]="modoDistribucion() === 'manual'
+                      ? 'rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white'
+                      : 'rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'">
+                    Manual
+                  </button>
+                </div>
+              </div>
+
               <h4 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Distribución FIFO <span class="font-normal text-gray-400">(más antigua → más reciente)</span>
+                @if (modoDistribucion() === 'automatico') {
+                  Distribución FIFO <span class="font-normal text-gray-400">(más antigua → más reciente)</span>
+                } @else {
+                  Distribución Manual <span class="font-normal text-gray-400">— ingresa el monto a aplicar en cada concepto</span>
+                }
               </h4>
+
+              <!-- Error de cuadre en modo manual -->
+              @if (errorManual()) {
+                <div class="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800/50 dark:bg-red-900/20">
+                  <p class="text-sm text-red-600 dark:text-red-400">
+                    <strong>Error de cuadre:</strong> {{ errorManual() }}
+                  </p>
+                </div>
+              }
+
               <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                 <table class="w-full text-sm">
                   <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -321,10 +358,10 @@ function formatSoles(n: number): string {
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                    @for (linea of distribucionFifo(); track linea.monto_id) {
-                      <tr [class]="linea.monto_aplicado > 0
-                        ? 'bg-white dark:bg-gray-800'
-                        : 'bg-gray-50/50 dark:bg-gray-800/50 opacity-50'">
+                    @for (linea of distribucionFinal(); track linea.monto_id) {
+                      <tr [class]="modoDistribucion() === 'automatico' && linea.monto_aplicado <= 0
+                        ? 'bg-gray-50/50 dark:bg-gray-800/50 opacity-50'
+                        : 'bg-white dark:bg-gray-800'">
                         <td class="px-4 py-3">
                           <p class="font-medium text-gray-800 dark:text-white">{{ linea.concepto }}</p>
                           <p class="text-xs text-gray-400">{{ linea.periodo_label }}</p>
@@ -332,9 +369,23 @@ function formatSoles(n: number): string {
                         <td class="px-4 py-3 text-right font-medium text-gray-800 dark:text-white">
                           {{ formatSoles(linea.saldo_pendiente) }}
                         </td>
-                        <td class="px-4 py-3 text-right font-bold"
-                            [class]="linea.monto_aplicado > 0 ? 'text-brand-600 dark:text-brand-400' : 'text-gray-300 dark:text-gray-600'">
-                          {{ formatSoles(linea.monto_aplicado) }}
+                        <td class="px-4 py-3 text-right">
+                          @if (modoDistribucion() === 'manual') {
+                            <input
+                              type="number"
+                              min="0"
+                              [attr.max]="linea.saldo_pendiente"
+                              step="0.01"
+                              [value]="getMontoManual(linea.monto_id)"
+                              (input)="setMontoManual(linea.monto_id, $event)"
+                              class="w-24 rounded border border-gray-300 bg-white py-1 pl-2 pr-2 text-right text-sm font-bold text-brand-600 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-brand-400"
+                            />
+                          } @else {
+                            <span class="font-bold"
+                                  [class]="linea.monto_aplicado > 0 ? 'text-brand-600 dark:text-brand-400' : 'text-gray-300 dark:text-gray-600'">
+                              {{ formatSoles(linea.monto_aplicado) }}
+                            </span>
+                          }
                         </td>
                         <td class="px-4 py-3 text-center">
                           @if (linea.cubierto_completo) {
@@ -500,7 +551,7 @@ function formatSoles(n: number): string {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                  @for (linea of distribucionFifo(); track linea.monto_id) {
+                  @for (linea of distribucionFinal(); track linea.monto_id) {
                     @if (linea.monto_aplicado > 0) {
                       <tr>
                         <td class="px-4 py-3">
@@ -613,6 +664,9 @@ export class PagoWizardComponent {
   readonly comprobante = signal('');
   readonly observacionPago = signal('');
 
+  readonly modoDistribucion = signal<'automatico' | 'manual'>('automatico');
+  readonly distribucionManualMap = signal<Map<number, number>>(new Map());
+
   readonly distribucionFifo = computed<LineaFifo[]>(() => {
     let restante = Math.round((this.montoRecibido() + this.saldoAFavor()) * 100) / 100;
     return this.deudas().map(d => {
@@ -639,9 +693,40 @@ export class PagoWizardComponent {
     });
   });
 
+  readonly distribucionFinal = computed<LineaFifo[]>(() => {
+    if (this.modoDistribucion() === 'automatico') {
+      return this.distribucionFifo();
+    }
+    const map = this.distribucionManualMap();
+    return this.deudas().map(d => {
+      const monto_aplicado = map.get(d.monto_id) ?? 0;
+      return {
+        monto_id: d.monto_id,
+        concepto: d.concepto,
+        periodo_label: formatPeriodo(d.periodo_anio, d.periodo_mes),
+        saldo_pendiente: d.saldo_pendiente,
+        monto_aplicado,
+        cubierto_completo: monto_aplicado >= d.saldo_pendiente,
+      };
+    });
+  });
+
+  readonly errorManual = computed<string | null>(() => {
+    if (this.modoDistribucion() !== 'manual') return null;
+    const totalManual = Math.round(
+      this.distribucionFinal().reduce((s, l) => s + l.monto_aplicado, 0) * 100,
+    ) / 100;
+    const disponible = Math.round((this.montoRecibido() + this.saldoAFavor()) * 100) / 100;
+    if (totalManual > disponible) {
+      const diff = Math.round((totalManual - disponible) * 100) / 100;
+      return `El total asignado (${formatSoles(totalManual)}) supera el disponible (${formatSoles(disponible)}) en ${formatSoles(diff)}.`;
+    }
+    return null;
+  });
+
   readonly totalAplicado = computed(() =>
     Math.round(
-      this.distribucionFifo().reduce((s, l) => s + l.monto_aplicado, 0) * 100,
+      this.distribucionFinal().reduce((s, l) => s + l.monto_aplicado, 0) * 100,
     ) / 100,
   );
 
@@ -660,6 +745,7 @@ export class PagoWizardComponent {
       montoDisponible > 0 &&
       this.montoRecibido() >= 0 &&
       this.totalAplicado() > 0 &&
+      this.errorManual() === null &&
       (this.metodoPago() === 'Efectivo' || this.comprobante().trim().length > 0)
     );
   });
@@ -670,6 +756,38 @@ export class PagoWizardComponent {
   readonly codigoTransaccion = signal<string | null>(null);
   readonly generandoPdf = signal(false);
   readonly errorPdf = signal<string | null>(null);
+
+  // --- Helpers de distribución manual ---
+  getMontoManual(montoId: number): number {
+    return this.distribucionManualMap().get(montoId) ?? 0;
+  }
+
+  setMontoManual(montoId: number, valor: any): void {
+    let v: number;
+    if (valor instanceof Event) {
+      v = parseFloat((valor.target as HTMLInputElement).value);
+    } else {
+      v = parseFloat(String(valor));
+    }
+    if (isNaN(v) || v < 0) v = 0;
+    const deuda = this.deudas().find(d => d.monto_id === montoId);
+    const max = deuda?.saldo_pendiente ?? 0;
+    v = Math.round(Math.min(v, max) * 100) / 100;
+    const newMap = new Map(this.distribucionManualMap());
+    newMap.set(montoId, v);
+    this.distribucionManualMap.set(newMap);
+  }
+
+  cambiarModoDistribucion(modo: 'automatico' | 'manual'): void {
+    if (modo === 'manual') {
+      const preload = new Map<number, number>();
+      this.distribucionFifo().forEach(l => preload.set(l.monto_id, l.monto_aplicado));
+      this.distribucionManualMap.set(preload);
+    } else {
+      this.distribucionManualMap.set(new Map());
+    }
+    this.modoDistribucion.set(modo);
+  }
 
   // --- Handlers ---
   onQueryInput(ev: Event): void {
@@ -736,6 +854,8 @@ export class PagoWizardComponent {
     this.montoRecibido.set(0);
     this.comprobante.set('');
     this.observacionPago.set('');
+    this.modoDistribucion.set('automatico');
+    this.distribucionManualMap.set(new Map());
     this.paso.set(2);
   }
 
@@ -755,7 +875,7 @@ export class PagoWizardComponent {
     try {
       const resultado = await this.pagosService.procesarPago({
         resultado: sel,
-        distribucion: this.distribucionFifo(),
+        distribucion: this.distribucionFinal(),
         monto_recibido: this.montoRecibido(),
         saldo_utilizado: this.saldoUtilizado(),
         metodo_pago: this.metodoPago(),
@@ -786,7 +906,7 @@ export class PagoWizardComponent {
       metodo_pago: this.metodoPago(),
       comprobante: this.comprobante() || null,
       observacion: this.observacionPago() || null,
-      detalle: this.distribucionFifo()
+      detalle: this.distribucionFinal()
         .filter(l => l.monto_aplicado > 0)
         .map(l => ({
           concepto: l.concepto,
@@ -822,6 +942,8 @@ export class PagoWizardComponent {
     this.metodoPago.set('Efectivo');
     this.comprobante.set('');
     this.observacionPago.set('');
+    this.modoDistribucion.set('automatico');
+    this.distribucionManualMap.set(new Map());
     this.codigoTransaccion.set(null);
     this.errorGuardado.set(null);
   }

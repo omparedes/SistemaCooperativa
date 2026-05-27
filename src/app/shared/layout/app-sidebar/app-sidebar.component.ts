@@ -42,6 +42,7 @@ export class AppSidebarComponent {
       subItems: [
         { name: 'Listado de Personas',    path: '/socios', pro: false },
         { name: 'Gestión de Espacios',    path: '/espacios', pro: false },
+        { name: 'Gestión de Giros',       path: '/giros', pro: false },
       ]
     },
     {
@@ -72,7 +73,8 @@ export class AppSidebarComponent {
       name: 'Facturación',
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>`,
       subItems: [
-        { name: 'Lectura de Medidores',     path: '/facturacion/medidores',              pro: false },
+        { name: 'Facturación de Luz',       path: '/facturacion/luz',                   pro: false },
+        { name: 'Facturación de Agua',      path: '/facturacion/agua',                  pro: false },
         { name: 'Cargos Fijos del Mes',    path: '/facturacion/cargos-fijos',           pro: false },
         { name: 'Cargos Extraordinarios',  path: '/facturacion/cargos-extraordinarios', pro: false }
       ]

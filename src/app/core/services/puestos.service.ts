@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { SUPABASE_CLIENT } from './supabase.client';
-import { EspacioOcupacion, EspacioJerarquia, TipoEspacio } from '../../pages/espacios/espacios.model';
+import { EspacioOcupacion, EspacioJerarquia, TipoEspacio, esEspacioPrincipal } from '../../pages/espacios/espacios.model';
 
 // ---------------------------------------------------------------------------
 // Tipos públicos — selects simples (formularios de Socio / Inquilino)
@@ -80,7 +80,7 @@ export class PuestosService {
   }> {
     const todos = await this.getEspacios();
 
-    const principales = todos.filter(e => e.tipo_espacio === 'Principal');
+    const principales = todos.filter(e => esEspacioPrincipal(e.tipo_espacio));
     const almacenes   = todos.filter(e => e.tipo_espacio === 'Almacen');
 
     const jerarquias: EspacioJerarquia[] = principales.map(p => ({
@@ -135,7 +135,7 @@ export class PuestosService {
         titularidad_activa:historial_titularidad(socio_id, fecha_fin)
       `)
       .eq('estado', 'Activo')
-      .eq('tipo_espacio', 'Principal')
+      .in('tipo_espacio', ['Regular', 'Pequeño'])
       .is('deleted_at', null)
       .order('codigo_puesto');
 
@@ -192,7 +192,7 @@ export class PuestosService {
         arriendo_activo:historial_arriendos(inquilino_id, fecha_fin)
       `)
       .eq('estado', 'Activo')
-      .eq('tipo_espacio', 'Principal')
+      .in('tipo_espacio', ['Regular', 'Pequeño'])
       .is('deleted_at', null)
       .order('codigo_puesto');
 

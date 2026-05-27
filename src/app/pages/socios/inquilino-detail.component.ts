@@ -8,9 +8,9 @@ import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-genera
 import { AuthService } from '../../core/services/auth.service';
 import { InquilinoDetalle } from './inquilino.model';
 import { DNI_INSTITUCIONAL } from './socio.model';
-import { PagoHistorial } from '../pagos/pago.model';
+import { PagoHistorial, DeudaItem } from '../pagos/pago.model';
 
-type Tab = 'arriendos' | 'pagos';
+type Tab = 'pagos' | 'deudas';
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'] as const;
 
@@ -93,6 +93,9 @@ const MOTIVOS_ANULACION = [
                     <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
                       {{ av.puesto.codigo }}
                     </span>
+                    @if (av.puesto.giro) {
+                      <span class="text-xs text-gray-500 dark:text-gray-400">· {{ av.puesto.giro }}</span>
+                    }
                     @if (av.monto_arriendo) {
                       <span class="text-sm text-gray-700 dark:text-gray-300 tabular-nums">
                         S/ {{ av.monto_arriendo | number:'1.2-2' }}/mes
@@ -144,17 +147,6 @@ const MOTIVOS_ANULACION = [
           <section class="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
             <div class="border-b border-gray-200 dark:border-gray-700 px-4">
               <nav class="flex gap-1" role="tablist">
-                <button (click)="tab.set('arriendos')" role="tab"
-                  [ngClass]="tab() === 'arriendos'
-                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
-                    : 'text-gray-500 border-transparent'"
-                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
-                  Historial de Arriendos
-                  <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                    {{ d.arriendos.length }}
-                  </span>
-                </button>
-
                 <button (click)="tab.set('pagos')" role="tab"
                   [ngClass]="tab() === 'pagos'
                     ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
@@ -169,69 +161,27 @@ const MOTIVOS_ANULACION = [
                     </span>
                   }
                 </button>
+
+                <button (click)="tab.set('deudas'); cargarDeudasTab()" role="tab"
+                  [ngClass]="tab() === 'deudas'
+                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+                    : 'text-gray-500 border-transparent'"
+                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
+                  Deudas Pendientes
+                  @if (deudasLoading()) {
+                    <span class="ml-1.5 inline-block h-3 w-3 rounded-full border border-brand-400 border-t-transparent animate-spin align-middle"></span>
+                  } @else if (deudas().length > 0) {
+                    <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold">
+                      {{ deudas().length }}
+                    </span>
+                  }
+                </button>
               </nav>
             </div>
 
             <div class="p-4">
-              <!-- ─── TAB: ARRIENDOS ────────────────────────────────────────── -->
-              @if (tab() === 'arriendos') {
-                @if (d.arriendos.length === 0) {
-                  <p class="py-12 text-center text-gray-500 dark:text-gray-400">
-                    Este inquilino no tiene arriendos registrados.
-                  </p>
-                } @else {
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
-                        <tr>
-                          <th class="px-3 py-2.5 text-left font-medium">Puesto</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Titular</th>
-                          <th class="px-3 py-2.5 text-right font-medium">Monto/mes</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Inicio</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Fin</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Motivo término</th>
-                          <th class="px-3 py-2.5 text-center font-medium">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @for (a of d.arriendos; track a.id) {
-                          <tr [ngClass]="a.vigente ? 'bg-emerald-50/40 dark:bg-emerald-900/10' : ''">
-                            <td class="px-3 py-2.5">
-                              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
-                                {{ a.puesto.codigo }}
-                              </span>
-                            </td>
-                            <td class="px-3 py-2.5 text-xs text-gray-600 dark:text-gray-300">
-                              @if (a.titular?.dni === DNI_COOP) {
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                                  Cooperativa
-                                </span>
-                              } @else {
-                                {{ a.titular?.apellidos || '—' }}
-                              }
-                            </td>
-                            <td class="px-3 py-2.5 text-right tabular-nums text-gray-700 dark:text-gray-300">
-                              {{ a.monto_arriendo ? (a.monto_arriendo | number:'1.2-2') : '—' }}
-                            </td>
-                            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ a.fecha_inicio | date:'dd/MM/yyyy' }}</td>
-                            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ a.fecha_fin ? (a.fecha_fin | date:'dd/MM/yyyy') : '—' }}</td>
-                            <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400 text-xs">{{ a.motivo_termino || '—' }}</td>
-                            <td class="px-3 py-2.5 text-center">
-                              @if (a.vigente) {
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">Vigente</span>
-                              } @else {
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">Cerrado</span>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                }
-
               <!-- ─── TAB: PAGOS ────────────────────────────────────────────── -->
-              } @else {
+              @if (tab() === 'pagos') {
                 @if (historialLoading()) {
                   <div class="py-12 flex items-center justify-center gap-3 text-gray-400 dark:text-gray-500">
                     <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
@@ -377,6 +327,64 @@ const MOTIVOS_ANULACION = [
                     </table>
                   </div>
                 }
+              <!-- ─── TAB: DEUDAS ───────────────────────────────────────────── -->
+              } @else if (tab() === 'deudas') {
+                @if (deudasLoading()) {
+                  <div class="py-12 flex items-center justify-center gap-3 text-gray-400 dark:text-gray-500">
+                    <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
+                    Cargando deudas vigentes...
+                  </div>
+
+                } @else if (deudasError()) {
+                  <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+                    {{ deudasError() }}
+                  </div>
+
+                } @else if (deudas().length === 0) {
+                  <div class="py-16 flex flex-col items-center text-center text-gray-500 dark:text-gray-400">
+                    <svg class="h-12 w-12 mb-3 opacity-30 text-emerald-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="font-medium text-gray-700 dark:text-gray-300">Inquilino al día</p>
+                    <p class="text-sm mt-1">Este inquilino no tiene deudas pendientes en el puesto.</p>
+                  </div>
+
+                } @else {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
+                        <tr>
+                          <th class="px-3 py-2.5 text-left font-medium">Concepto</th>
+                          <th class="px-3 py-2.5 text-left font-medium">Periodo</th>
+                          <th class="px-3 py-2.5 text-right font-medium">Monto Original</th>
+                          <th class="px-3 py-2.5 text-right font-medium">Pagado</th>
+                          <th class="px-3 py-2.5 text-right font-medium">Saldo Pendiente</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (d of deudas(); track d.monto_id) {
+                          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                            <td class="px-3 py-2.5 font-medium text-gray-900 dark:text-white">{{ d.concepto }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ formatPeriodo(d.periodo_anio, d.periodo_mes) }}</td>
+                            <td class="px-3 py-2.5 text-right tabular-nums text-gray-600 dark:text-gray-400">S/ {{ d.monto_original.toFixed(2) }}</td>
+                            <td class="px-3 py-2.5 text-right tabular-nums text-gray-600 dark:text-gray-400">S/ {{ d.ya_pagado.toFixed(2) }}</td>
+                            <td class="px-3 py-2.5 text-right tabular-nums font-semibold text-red-600 dark:text-red-400">S/ {{ d.saldo_pendiente.toFixed(2) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-900/30 font-semibold border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="4" class="px-3 py-2.5 text-right text-gray-700 dark:text-gray-300">
+                            Total Pendiente:
+                          </td>
+                          <td class="px-3 py-2.5 text-right tabular-nums font-bold text-red-600 dark:text-red-400">
+                            S/ {{ totalDeuda().toFixed(2) }}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                }
               }
             </div>
           </section>
@@ -509,11 +517,20 @@ export class InquilinoDetailComponent implements OnDestroy {
   readonly detalle          = signal<InquilinoDetalle | null>(null);
   readonly loading          = signal(false);
   readonly error            = signal<string | null>(null);
-  readonly tab              = signal<Tab>('arriendos');
+  readonly tab              = signal<Tab>('pagos');
   readonly historial        = signal<PagoHistorial[]>([]);
   readonly historialLoading = signal(false);
   readonly historialError   = signal<string | null>(null);
   readonly generandoPdfId   = signal<number | null>(null);
+
+  // Deudas pendientes
+  readonly deudas        = signal<DeudaItem[]>([]);
+  readonly deudasLoading = signal(false);
+  readonly deudasError   = signal<string | null>(null);
+
+  readonly totalDeuda = computed(() =>
+    this.deudas().reduce((acc, d) => acc + d.saldo_pendiente, 0),
+  );
 
   // Estado del modal de anulación
   readonly modalAnularAbierto  = signal(false);
@@ -560,8 +577,9 @@ export class InquilinoDetailComponent implements OnDestroy {
     this.loading.set(true);
     this.detalle.set(null);
     this.error.set(null);
-    this.tab.set('arriendos');
+    this.tab.set('pagos');
     this.historial.set([]);
+    this.deudas.set([]);
     try {
       const [det] = await Promise.all([
         this.svc.cargarDetalle(id),
@@ -590,6 +608,27 @@ export class InquilinoDetailComponent implements OnDestroy {
       this.historialError.set(e instanceof Error ? e.message : 'Error al cargar historial');
     } finally {
       this.historialLoading.set(false);
+    }
+  }
+
+  protected readonly formatPeriodo = formatPeriodo;
+
+  cargarDeudasTab(): void {
+    const d = this.detalle();
+    if (!d?.arriendo_vigente) return;
+    void this.cargarDeudas(d.arriendo_vigente.puesto.id);
+  }
+
+  private async cargarDeudas(puestoId: number): Promise<void> {
+    this.deudasLoading.set(true);
+    this.deudasError.set(null);
+    try {
+      const lista = await this.pagosSvc.cargarDeudasPuesto(puestoId, this.inquilinoId() ?? undefined, 'inquilino');
+      this.deudas.set(lista);
+    } catch (e: unknown) {
+      this.deudasError.set(e instanceof Error ? e.message : 'Error al cargar deudas');
+    } finally {
+      this.deudasLoading.set(false);
     }
   }
 

@@ -6,10 +6,10 @@ import { SociosService } from '../../core/services/socios.service';
 import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
 import { AuthService } from '../../core/services/auth.service';
-import { SocioDetalle } from './socio.model';
+import { DeudaPendiente, SocioDetalle } from './socio.model';
 import { PagoHistorial } from '../pagos/pago.model';
 
-type Tab = 'puestos' | 'pagos';
+type Tab = 'pagos' | 'deudas' | 'configuracion';
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'] as const;
 
@@ -171,17 +171,6 @@ const MOTIVOS_ANULACION = [
           <section class="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
             <div class="border-b border-gray-200 dark:border-gray-700 px-4">
               <nav class="flex gap-1" role="tablist">
-                <button (click)="tab.set('puestos')" role="tab"
-                  [ngClass]="tab() === 'puestos'
-                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
-                    : 'text-gray-500 border-transparent'"
-                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
-                  Historial de Puestos
-                  <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                    {{ d.titularidades.length }}
-                  </span>
-                </button>
-
                 <button (click)="tab.set('pagos')" role="tab"
                   [ngClass]="tab() === 'pagos'
                     ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
@@ -196,57 +185,37 @@ const MOTIVOS_ANULACION = [
                     </span>
                   }
                 </button>
+
+                <button (click)="tab.set('deudas'); cargarDeudasTab()" role="tab"
+                  [ngClass]="tab() === 'deudas'
+                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+                    : 'text-gray-500 border-transparent'"
+                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
+                  Deudas Pendientes
+                  @if (deudasLoading()) {
+                    <span class="ml-1.5 inline-block h-3 w-3 rounded-full border border-red-400 border-t-transparent animate-spin align-middle"></span>
+                  } @else if (deudas().length > 0) {
+                    <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                      {{ deudas().length }}
+                    </span>
+                  }
+                </button>
+
+                @if (d.estado === 'Activo' && authSvc.esAdmin()) {
+                  <button (click)="tab.set('configuracion')" role="tab"
+                    [ngClass]="tab() === 'configuracion'
+                      ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+                      : 'text-gray-500 border-transparent'"
+                    class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
+                    Configuración
+                  </button>
+                }
               </nav>
             </div>
 
             <div class="p-4">
-              <!-- ─── TAB: PUESTOS ─────────────────────────────────────────── -->
-              @if (tab() === 'puestos') {
-                @if (d.titularidades.length === 0) {
-                  <p class="py-12 text-center text-gray-500 dark:text-gray-400">
-                    Este socio nunca ha tenido un puesto asignado.
-                  </p>
-                } @else {
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
-                        <tr>
-                          <th class="px-3 py-2.5 text-left font-medium">Puesto</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Giro</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Inicio</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Fin</th>
-                          <th class="px-3 py-2.5 text-left font-medium">Motivo</th>
-                          <th class="px-3 py-2.5 text-center font-medium">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        @for (t of d.titularidades; track t.id) {
-                          <tr [ngClass]="t.vigente ? 'bg-emerald-50/40 dark:bg-emerald-900/10' : ''">
-                            <td class="px-3 py-2.5">
-                              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
-                                {{ t.puesto.codigo }}
-                              </span>
-                            </td>
-                            <td class="px-3 py-2.5 text-gray-600 dark:text-gray-300 text-xs">{{ t.puesto.giro || '—' }}</td>
-                            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ t.fecha_inicio | date:'dd/MM/yyyy' }}</td>
-                            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ t.fecha_fin ? (t.fecha_fin | date:'dd/MM/yyyy') : '—' }}</td>
-                            <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400 text-xs">{{ t.motivo_cambio || '—' }}</td>
-                            <td class="px-3 py-2.5 text-center">
-                              @if (t.vigente) {
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">Vigente</span>
-                              } @else {
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">Cerrada</span>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                }
-
-              <!-- ─── TAB: PAGOS ────────────────────────────────────────────── -->
-              } @else {
+              <!-- ─── TAB: PAGOS ─────────────────────────────────────────────── -->
+              @if (tab() === 'pagos') {
                 @if (historialLoading()) {
                   <div class="py-12 flex items-center justify-center gap-3 text-gray-400 dark:text-gray-500">
                     <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
@@ -393,6 +362,123 @@ const MOTIVOS_ANULACION = [
                     </table>
                   </div>
                 }
+
+              <!-- ─── TAB: DEUDAS ──────────────────────────────────────────── -->
+              } @else if (tab() === 'deudas') {
+                @if (deudasLoading()) {
+                  <div class="py-12 flex items-center justify-center gap-3 text-gray-400 dark:text-gray-500">
+                    <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
+                    Cargando deudas...
+                  </div>
+                } @else if (deudasError()) {
+                  <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+                    {{ deudasError() }}
+                  </div>
+                } @else if (deudas().length === 0) {
+                  <div class="py-16 flex flex-col items-center text-center text-gray-500 dark:text-gray-400">
+                    <svg class="h-10 w-10 mb-3 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="font-medium text-gray-700 dark:text-gray-300">Sin deudas pendientes</p>
+                    <p class="text-sm mt-1">Este socio está al día.</p>
+                  </div>
+                } @else {
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
+                        <tr>
+                          <th class="px-3 py-2.5 text-left font-medium">Concepto</th>
+                          <th class="px-3 py-2.5 text-left font-medium">Periodo</th>
+                          <th class="px-3 py-2.5 text-left font-medium">Origen</th>
+                          <th class="px-3 py-2.5 text-right font-medium">Monto</th>
+                          <th class="px-3 py-2.5 text-right font-medium">Saldo</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (deuda of deudas(); track deuda.id) {
+                          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition">
+                            <td class="px-3 py-2.5 font-medium text-gray-900 dark:text-white">{{ deuda.concepto }}</td>
+                            <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                              {{ formatPeriodo(deuda.periodo_anio, deuda.periodo_mes) }}
+                            </td>
+                            <td class="px-3 py-2.5 text-xs text-gray-500 dark:text-gray-400">{{ deuda.origen }}</td>
+                            <td class="px-3 py-2.5 text-right tabular-nums text-gray-700 dark:text-gray-300">
+                              S/ {{ deuda.monto.toFixed(2) }}
+                            </td>
+                            <td class="px-3 py-2.5 text-right tabular-nums font-semibold text-red-600 dark:text-red-400">
+                              S/ {{ deuda.saldo.toFixed(2) }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="border-t-2 border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="4" class="px-3 py-2.5 text-right text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            Total pendiente:
+                          </td>
+                          <td class="px-3 py-2.5 text-right tabular-nums font-bold text-red-600 dark:text-red-400">
+                            S/ {{ totalDeuda().toFixed(2) }}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                }
+
+              <!-- ─── TAB: CONFIGURACIÓN ────────────────────────────────────── -->
+              } @else if (tab() === 'configuracion') {
+                <div class="space-y-5 max-w-md py-2">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Controla qué cargos fijos se generan para este socio en cada período mensual.
+                    Los cambios aplican desde el siguiente ciclo de facturación.
+                  </p>
+
+                  @if (errorCargo()) {
+                    <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+                      {{ errorCargo() }}
+                    </div>
+                  }
+
+                  <!-- Toggle Gastos Administrativos -->
+                  <div class="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">Gastos Administrativos</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Incluir en el cargo fijo mensual</p>
+                    </div>
+                    <button
+                      (click)="onToggleCargo('admin')"
+                      [disabled]="togglingCargo() === 'admin'"
+                      [title]="d.cobro_admin_activo ? 'Desactivar' : 'Activar'"
+                      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      [ngClass]="d.cobro_admin_activo
+                        ? 'bg-brand-600 dark:bg-brand-500'
+                        : 'bg-gray-300 dark:bg-gray-600'">
+                      <span class="inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform"
+                        [ngClass]="d.cobro_admin_activo ? 'translate-x-6' : 'translate-x-1'">
+                      </span>
+                    </button>
+                  </div>
+
+                  <!-- Toggle Previsión Social -->
+                  <div class="flex items-center justify-between p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">Previsión Social</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Incluir en el cargo fijo mensual</p>
+                    </div>
+                    <button
+                      (click)="onToggleCargo('prev_social')"
+                      [disabled]="togglingCargo() === 'prev_social'"
+                      [title]="d.cobro_prev_social_activo ? 'Desactivar' : 'Activar'"
+                      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      [ngClass]="d.cobro_prev_social_activo
+                        ? 'bg-brand-600 dark:bg-brand-500'
+                        : 'bg-gray-300 dark:bg-gray-600'">
+                      <span class="inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform"
+                        [ngClass]="d.cobro_prev_social_activo ? 'translate-x-6' : 'translate-x-1'">
+                      </span>
+                    </button>
+                  </div>
+                </div>
               }
             </div>
           </section>
@@ -520,14 +606,23 @@ export class SocioDetailComponent implements OnDestroy {
     return Number.isFinite(n) ? n : null;
   });
 
-  readonly detalle         = signal<SocioDetalle | null>(null);
-  readonly loading         = signal(false);
-  readonly error           = signal<string | null>(null);
-  readonly tab             = signal<Tab>('puestos');
-  readonly historial       = signal<PagoHistorial[]>([]);
+  readonly detalle          = signal<SocioDetalle | null>(null);
+  readonly loading          = signal(false);
+  readonly error            = signal<string | null>(null);
+  readonly tab              = signal<Tab>('pagos');
+  readonly historial        = signal<PagoHistorial[]>([]);
   readonly historialLoading = signal(false);
-  readonly historialError  = signal<string | null>(null);
-  readonly generandoPdfId  = signal<number | null>(null);
+  readonly historialError   = signal<string | null>(null);
+  readonly generandoPdfId   = signal<number | null>(null);
+
+  // Deudas pendientes
+  readonly deudas        = signal<DeudaPendiente[]>([]);
+  readonly deudasLoading = signal(false);
+  readonly deudasError   = signal<string | null>(null);
+
+  // Configuración de cargos
+  readonly togglingCargo = signal<'admin' | 'prev_social' | null>(null);
+  readonly errorCargo    = signal<string | null>(null);
 
   // Estado del modal de anulación
   readonly modalAnularAbierto  = signal(false);
@@ -543,6 +638,10 @@ export class SocioDetailComponent implements OnDestroy {
     this.motivoSeleccionado() === 'Otro (especificar)'
       ? this.motivoPersonalizado().trim()
       : this.motivoSeleccionado(),
+  );
+
+  readonly totalDeuda = computed(() =>
+    this.deudas().reduce((acc, d) => acc + d.saldo, 0),
   );
 
   readonly iniciales = computed(() => {
@@ -574,8 +673,9 @@ export class SocioDetailComponent implements OnDestroy {
     this.loading.set(true);
     this.detalle.set(null);
     this.error.set(null);
-    this.tab.set('puestos');
+    this.tab.set('pagos');
     this.historial.set([]);
+    this.deudas.set([]);
     try {
       const [det] = await Promise.all([
         this.svc.cargarDetalle(id),
@@ -609,6 +709,49 @@ export class SocioDetailComponent implements OnDestroy {
 
   irARegistrarPago(): void {
     void this.router.navigate(['/pagos/registrar']);
+  }
+
+  protected readonly formatPeriodo = formatPeriodo;
+
+  cargarDeudasTab(): void {
+    const d = this.detalle();
+    const id = this.socioId();
+    if (!d || !id) return;
+    const puestoIds = [d.puesto_vigente?.id, ...d.almacenes_vigentes.map(a => a.id)].filter((pId): pId is number => !!pId);
+    void this.cargarDeudas(id, puestoIds);
+  }
+
+  private async cargarDeudas(socioId: number, puestoIds: number[]): Promise<void> {
+    this.deudasLoading.set(true);
+    this.deudasError.set(null);
+    try {
+      const lista = await this.svc.cargarDeudasVigentes(socioId, puestoIds);
+      this.deudas.set(lista);
+    } catch (e: unknown) {
+      this.deudasError.set(e instanceof Error ? e.message : 'Error al cargar deudas');
+    } finally {
+      this.deudasLoading.set(false);
+    }
+  }
+
+  async onToggleCargo(cargo: 'admin' | 'prev_social'): Promise<void> {
+    const d = this.detalle();
+    const id = this.socioId();
+    if (!d || !id || this.togglingCargo() === cargo) return;
+    this.togglingCargo.set(cargo);
+    this.errorCargo.set(null);
+    const nuevoValor = cargo === 'admin' ? !d.cobro_admin_activo : !d.cobro_prev_social_activo;
+    try {
+      await this.svc.toggleCargoSocio(id, cargo, nuevoValor);
+      const patch = cargo === 'admin'
+        ? { cobro_admin_activo: nuevoValor }
+        : { cobro_prev_social_activo: nuevoValor };
+      this.detalle.update(s => s ? { ...s, ...patch } : s);
+    } catch (e: unknown) {
+      this.errorCargo.set(e instanceof Error ? e.message : 'Error al cambiar configuración');
+    } finally {
+      this.togglingCargo.set(null);
+    }
   }
 
   // ─── Anulación ─────────────────────────────────────────────────────────────
