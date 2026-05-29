@@ -29,8 +29,14 @@ El sistema separa radicalmente el "Ladrillo" (El Espacio) del "Papel" (El Contra
 - **Historial Inmutable:** Cuando alguien transfiere un puesto o libera un almacén, **no se borra su registro**. Se actualiza la `fecha_fin` del contrato actual y se crea una nueva fila de ocupación. El historial de quién ocupó qué puesto en qué fecha es sagrado.
 
 ## 5. Estado Actual del Desarrollo
-* Último Hito: Refactorización del módulo de Puestos (`/espacios`) dividiendo exitosamente la gestión de almacenes complementarios y la activación/desactivación granular de cobros de servicios (Luz/Agua).
-* UI Actualizada: Tablas con Signals, ordenamiento por cabeceras y Toggles de servicios optimistas.
+* **Último Hito (Mayo 2026)**:
+  * Refactorización de **Cargos Fijos** (`00046`): Eliminación definitiva del concepto "Mantenimiento", simplificación de tarifas (Gastos Admin S/ 60 - S/ 56 en Feb; Previsión S/ 5), y protección contra doble facturación mensual.
+  * Módulo de **Distribución Manual y FIFO**: El asistente de pago (`PagoWizardComponent`) ahora permite alternar entre distribución FIFO automática y manual, validando en caliente los montos antes de confirmarse.
+  * Adaptación Celular de **Consultas Públicas** (`/consultas`): Interfaz responsiva que apila el buscador en móviles, simplifica las tablas de pagos/historial, e integra la descarga directa de recibos históricos en PDF mediante `PdfGeneratorService`.
+  * **Casos de Prueba Históricos**: Inyección exitosa del historial de deudas y cobros (Ene/Feb/Mar 2026) con fechas de transacción reales para 3 socios piloto (María Soto, Esthepany Nicho y Oscar Paredes).
+* **Siguiente Hito (En Progreso)**:
+  * Inicio del período de prueba de 1 mes (paralelo contable).
+  * Carga masiva de saldos y padrón inicial de los 288 puestos.
 
 ---
 > **Nota para IAs:** Al implementar un nuevo *feature*, evalúa si rompe alguna de estas reglas de negocio. Una vez finalizado el desarrollo, actualiza la sección 5 de este archivo.
