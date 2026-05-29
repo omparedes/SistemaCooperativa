@@ -104,10 +104,14 @@ export class AuthService {
       .from('perfiles')
       .select('id, email, rol, nombres, activo')
       .eq('id', userId)
+      .eq('activo', true)        // un usuario desactivado no obtiene perfil → los guards lo redirigen
       .single();
 
     if (!error && data) {
       this._perfil.set(data as Perfil);
+    } else {
+      // Sin perfil activo: limpiamos por si quedó uno previo (p. ej. tras desactivación).
+      this._perfil.set(null);
     }
   }
 }

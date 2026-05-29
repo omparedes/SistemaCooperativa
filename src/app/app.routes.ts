@@ -1,229 +1,141 @@
 import { Routes } from '@angular/router';
 import { adminGuard, authGuard, noAuthGuard } from './core/guards/auth.guard';
-import { FacturacionMedidoresComponent } from './pages/facturacion/facturacion-medidores.component';
-import { FacturacionFijaComponent } from './pages/facturacion/facturacion-fija.component';
-import { FacturacionDistribucionComponent } from './pages/facturacion/facturacion-distribucion.component';
-import { TarifasComponent } from './pages/config/tarifas.component';
-import { RecibosConfigComponent } from './pages/config/recibos-config.component';
-import { CargosExtraordinariosComponent } from './pages/facturacion/cargos-extraordinarios.component';
 import { LoginComponent } from './pages/auth-pages/login/login.component';
-import { EcommerceComponent } from './pages/dashboard/ecommerce/ecommerce.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { ProfileComponent } from './pages/profile/profile.component';
-import { FormElementsComponent } from './pages/forms/form-elements/form-elements.component';
-import { BasicTablesComponent } from './pages/tables/basic-tables/basic-tables.component';
-import { BlankComponent } from './pages/blank/blank.component';
 import { NotFoundComponent } from './pages/other-page/not-found/not-found.component';
 import { AppLayoutComponent } from './shared/layout/app-layout/app-layout.component';
-import { InvoicesComponent } from './pages/invoices/invoices.component';
-import { LineChartComponent } from './pages/charts/line-chart/line-chart.component';
-import { BarChartComponent } from './pages/charts/bar-chart/bar-chart.component';
-import { AlertsComponent } from './pages/ui-elements/alerts/alerts.component';
-import { AvatarElementComponent } from './pages/ui-elements/avatar-element/avatar-element.component';
-import { BadgesComponent } from './pages/ui-elements/badges/badges.component';
-import { ButtonsComponent } from './pages/ui-elements/buttons/buttons.component';
-import { ImagesComponent } from './pages/ui-elements/images/images.component';
-import { VideosComponent } from './pages/ui-elements/videos/videos.component';
 import { SignInComponent } from './pages/auth-pages/sign-in/sign-in.component';
 import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
-import { CalenderComponent } from './pages/calender/calender.component';
-import { SocioListComponent } from './pages/socios/socio-list.component';
-import { SocioDetailComponent } from './pages/socios/socio-detail.component';
-import { InquilinoDetailComponent } from './pages/socios/inquilino-detail.component';
-import { RegistroPagoComponent } from './pages/pagos/registro-pago.component';
-import { PagoWizardComponent } from './pages/pagos/pago-wizard.component';
-import { IngresosInternosComponent } from './pages/pagos/ingresos-internos.component';
-import { SocioFormComponent } from './pages/socios/socio-form.component';
-import { InquilinoFormComponent } from './pages/socios/inquilino-form.component';
-import { ReportesComponent } from './pages/reportes/reportes.component';
-import { ArqueoCajaComponent } from './pages/reportes/arqueo-caja.component';
-import { GastoListComponent } from './pages/gastos/gasto-list.component';
-import { RecaudacionDiariaComponent } from './pages/pagos/recaudacion-diaria.component';
 import { DocumentationComponent } from './pages/documentation/documentation.component';
-import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: AppLayoutComponent,
-    canActivate: [authGuard],   // ← protege todas las rutas hijas
+    canActivate: [authGuard],
     children: [
       {
         path: '',
-        component: DashboardComponent,
+        loadComponent: () =>
+          import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
         pathMatch: 'full',
         title: 'Dashboard | Mercado Primero de Mayo',
       },
       {
-        path: 'calendar',
-        component: CalenderComponent,
-        title: 'Angular Calender | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'profile',
-        component: ProfileComponent,
-        title: 'Angular Profile Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'form-elements',
-        component: FormElementsComponent,
-        title: 'Angular Form Elements Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'basic-tables',
-        component: BasicTablesComponent,
-        title: 'Angular Basic Tables Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'blank',
-        component: BlankComponent,
-        title: 'Angular Blank Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      // support tickets
-      {
-        path: 'invoice',
-        component: InvoicesComponent,
-        title: 'Angular Invoice Details Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'line-chart',
-        component: LineChartComponent,
-        title: 'Angular Line Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'bar-chart',
-        component: BarChartComponent,
-        title: 'Angular Bar Chart Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'alerts',
-        component: AlertsComponent,
-        title: 'Angular Alerts Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'avatars',
-        component: AvatarElementComponent,
-        title: 'Angular Avatars Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'badge',
-        component: BadgesComponent,
-        title: 'Angular Badges Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'buttons',
-        component: ButtonsComponent,
-        title: 'Angular Buttons Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'images',
-        component: ImagesComponent,
-        title: 'Angular Images Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
-        path: 'videos',
-        component: VideosComponent,
-        title: 'Angular Videos Dashboard | TailAdmin - Angular Admin Dashboard Template'
-      },
-      {
         path: 'socios',
-        component: SocioListComponent,
+        loadComponent: () =>
+          import('./pages/socios/socio-list.component').then(m => m.SocioListComponent),
         title: 'Listado de Socios | TailAdmin'
       },
       // ── CRUD Socios (solo Administrador) ────────────────────────────────
       {
         path: 'socios/nuevo',
-        component: SocioFormComponent,
+        loadComponent: () =>
+          import('./pages/socios/socio-form.component').then(m => m.SocioFormComponent),
         canActivate: [adminGuard],
         title: 'Nuevo Socio | Cooperativa Primero de Mayo',
       },
       {
         path: 'socios/editar/:id',
-        component: SocioFormComponent,
+        loadComponent: () =>
+          import('./pages/socios/socio-form.component').then(m => m.SocioFormComponent),
         canActivate: [adminGuard],
         title: 'Editar Socio | Cooperativa Primero de Mayo',
       },
       // ── CRUD Inquilinos (solo Administrador) ─────────────────────────────
       {
         path: 'inquilinos/nuevo',
-        component: InquilinoFormComponent,
+        loadComponent: () =>
+          import('./pages/socios/inquilino-form.component').then(m => m.InquilinoFormComponent),
         canActivate: [adminGuard],
         title: 'Nuevo Inquilino | Cooperativa Primero de Mayo',
       },
       {
         path: 'inquilinos/editar/:id',
-        component: InquilinoFormComponent,
+        loadComponent: () =>
+          import('./pages/socios/inquilino-form.component').then(m => m.InquilinoFormComponent),
         canActivate: [adminGuard],
         title: 'Editar Inquilino | Cooperativa Primero de Mayo',
       },
       {
         path: 'pagos/registrar',
-        component: PagoWizardComponent,
+        loadComponent: () =>
+          import('./pages/pagos/pago-wizard.component').then(m => m.PagoWizardComponent),
         title: 'Registrar Pago | Cooperativa Primero de Mayo',
       },
       {
         path: 'pagos/recaudacion-diaria',
-        component: RecaudacionDiariaComponent,
+        loadComponent: () =>
+          import('./pages/pagos/recaudacion-diaria.component').then(m => m.RecaudacionDiariaComponent),
         title: 'Recaudación Diaria | TailAdmin'
       },
       {
         path: 'pagos/ingresos-internos',
-        component: IngresosInternosComponent,
+        loadComponent: () =>
+          import('./pages/pagos/ingresos-internos.component').then(m => m.IngresosInternosComponent),
         title: 'Caja Rápida — Ingresos sin Recibo | Cooperativa Primero de Mayo',
       },
       {
         path: 'reportes',
-        component: ReportesComponent,
+        loadComponent: () =>
+          import('./pages/reportes/reportes.component').then(m => m.ReportesComponent),
         title: 'Central de Reportes | Cooperativa Primero de Mayo'
       },
       {
         path: 'reportes/arqueo-diario',
-        component: ArqueoCajaComponent,
+        loadComponent: () =>
+          import('./pages/reportes/arqueo-caja.component').then(m => m.ArqueoCajaComponent),
         title: 'Arqueo de Caja Diario | Cooperativa Primero de Mayo',
       },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
         path: 'configuracion/tarifas',
-        component: TarifasComponent,
+        loadComponent: () =>
+          import('./pages/config/tarifas.component').then(m => m.TarifasComponent),
         canActivate: [adminGuard],
         title: 'Configuración de Tarifas | Cooperativa Primero de Mayo',
       },
       {
         path: 'configuracion/recibos',
-        component: RecibosConfigComponent,
+        loadComponent: () =>
+          import('./pages/config/recibos-config.component').then(m => m.RecibosConfigComponent),
         canActivate: [adminGuard],
         title: 'Ajustes de Recibos | Cooperativa Primero de Mayo',
       },
       // ── Facturación (solo Administrador) ────────────────────────────────
       {
         path: 'facturacion/luz',
-        component: FacturacionDistribucionComponent,
+        loadComponent: () =>
+          import('./pages/facturacion/facturacion-distribucion.component').then(m => m.FacturacionDistribucionComponent),
         canActivate: [adminGuard],
         data: { servicio: 'Luz' },
         title: 'Facturación de Luz | Cooperativa Primero de Mayo',
       },
       {
         path: 'facturacion/agua',
-        component: FacturacionDistribucionComponent,
+        loadComponent: () =>
+          import('./pages/facturacion/facturacion-distribucion.component').then(m => m.FacturacionDistribucionComponent),
         canActivate: [adminGuard],
         data: { servicio: 'Agua' },
         title: 'Facturación de Agua | Cooperativa Primero de Mayo',
       },
       {
         path: 'facturacion/cargos-extraordinarios',
-        component: CargosExtraordinariosComponent,
+        loadComponent: () =>
+          import('./pages/facturacion/cargos-extraordinarios.component').then(m => m.CargosExtraordinariosComponent),
         canActivate: [adminGuard],
         title: 'Cargos Extraordinarios | Cooperativa Primero de Mayo',
       },
       {
         path: 'facturacion/medidores',
-        component: FacturacionMedidoresComponent,
+        loadComponent: () =>
+          import('./pages/facturacion/facturacion-medidores.component').then(m => m.FacturacionMedidoresComponent),
         canActivate: [adminGuard],
         title: 'Registro de Medidores | Cooperativa Primero de Mayo',
       },
       {
         path: 'facturacion/cargos-fijos',
-        component: FacturacionFijaComponent,
+        loadComponent: () =>
+          import('./pages/facturacion/facturacion-fija.component').then(m => m.FacturacionFijaComponent),
         canActivate: [adminGuard],
         title: 'Cargos Fijos del Mes | Cooperativa Primero de Mayo',
       },
@@ -250,7 +162,8 @@ export const routes: Routes = [
       },
       {
         path: 'gastos',
-        component: GastoListComponent,
+        loadComponent: () =>
+          import('./pages/gastos/gasto-list.component').then(m => m.GastoListComponent),
         title: 'Gastos | TailAdmin'
       },
       {
@@ -274,18 +187,33 @@ export const routes: Routes = [
       },
       {
         path: 'socios/:id',
-        component: SocioDetailComponent,
+        loadComponent: () =>
+          import('./pages/socios/socio-detail.component').then(m => m.SocioDetailComponent),
         title: 'Detalle de Socio | TailAdmin'
       },
       {
         path: 'inquilinos/:id',
-        component: InquilinoDetailComponent,
+        loadComponent: () =>
+          import('./pages/socios/inquilino-detail.component').then(m => m.InquilinoDetailComponent),
         title: 'Detalle de Inquilino | TailAdmin'
       },
       {
         path: 'documentacion',
-        component: DocumentationComponent,
-        title: 'Documentación Técnica | TailAdmin'
+        children: [
+          { path: '', redirectTo: 'manual', pathMatch: 'full' },
+          {
+            path: 'manual',
+            loadComponent: () =>
+              import('./pages/documentation/user-manual.component')
+                .then(m => m.UserManualComponent),
+            title: 'Manual de Usuario | Cooperativa Primero de Mayo'
+          },
+          {
+            path: 'tecnica',
+            component: DocumentationComponent,
+            title: 'Documentación Técnica | Cooperativa Primero de Mayo'
+          }
+        ]
       },
       // ── Gestión de Espacios (Puestos + Almacenes) ───────────────────────
       {
@@ -311,13 +239,15 @@ export const routes: Routes = [
       // ── Administración de usuarios (solo Administrador) ──────────────────
       {
         path: 'admin/usuarios',
-        component: UsuariosComponent,
+        loadComponent: () =>
+          import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent),
         canActivate: [adminGuard],
         title: 'Gestión de Usuarios | Cooperativa Primero de Mayo',
       },
       {
         path: 'pagos/registrar/:id',
-        component: RegistroPagoComponent,
+        loadComponent: () =>
+          import('./pages/pagos/registro-pago.component').then(m => m.RegistroPagoComponent),
         title: 'Registrar Pago | TailAdmin'
       },
     ]
@@ -326,13 +256,13 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
-    canActivate: [noAuthGuard],  // redirige a / si ya hay sesión
+    canActivate: [noAuthGuard],
     title: 'Iniciar sesión | Cooperativa Primero de Mayo',
   },
   {
     path: 'signin',
     component: SignInComponent,
-    canActivate: [noAuthGuard],   // redirige a / si ya hay sesión con perfil
+    canActivate: [noAuthGuard],
     title: 'Iniciar sesión | Cooperativa Primero de Mayo',
   },
   {
@@ -347,10 +277,9 @@ export const routes: Routes = [
       import('./pages/consultas/consultas.component').then(m => m.ConsultasComponent),
     title: 'Consultas | Cooperativa Primero de Mayo',
   },
-  // error pages
   {
     path: '**',
     component: NotFoundComponent,
-    title: 'Angular NotFound Dashboard | TailAdmin - Angular Admin Dashboard Template'
+    title: '404 | Cooperativa Primero de Mayo'
   },
 ];

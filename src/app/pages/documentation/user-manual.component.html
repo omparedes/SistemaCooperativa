@@ -1,0 +1,358 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
+
+    <!-- Header -->
+    <header class="border-b border-gray-200 dark:border-gray-700 pb-6 mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Manual de Usuario</h1>
+      <p class="text-lg text-gray-600 dark:text-gray-400">Guía de Operación General del ERP — Cooperativa Primero de Mayo</p>
+      <div class="mt-4 flex flex-wrap gap-6 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold">Versión:</span> 2.0 (Producción)
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold">Actualización:</span> Mayo 2026
+        </div>
+      </div>
+    </header>
+
+    <!-- ── SECCIÓN 3: Roles de Seguridad ── -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Roles de Seguridad y Permisos</h2>
+      <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200">Acción</th>
+              <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-center">Administrador</th>
+              <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-center">Caja</th>
+              <th class="px-4 py-3 font-semibold text-gray-700 dark:text-gray-200 text-center">Asistente</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+            <tr class="bg-white dark:bg-gray-800">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Ver padrón y deudas</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+            </tr>
+            <tr class="bg-gray-50 dark:bg-gray-700/30">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Registrar pagos y gastos</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+            <tr class="bg-white dark:bg-gray-800">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Anular pagos / cargos</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+            <tr class="bg-gray-50 dark:bg-gray-700/30">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Emitir facturación masiva</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+            <tr class="bg-white dark:bg-gray-800">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Gestionar padrón (alta/baja)</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+            <tr class="bg-gray-50 dark:bg-gray-700/30">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Recaudación tarjeta semanal</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+            <tr class="bg-white dark:bg-gray-800">
+              <td class="px-4 py-3 text-gray-700 dark:text-gray-300">Ver auditoría de cambios</td>
+              <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-bold">✓</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+              <td class="px-4 py-3 text-center text-red-400">✗</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── SECCIÓN 4: Módulos del Sistema ── -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">Módulos del Sistema — Manual de Uso</h2>
+      <div class="space-y-5">
+
+        <!-- 1. Dashboard -->
+        <article class="p-6 border-l-4 border-purple-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-bold text-sm">1</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Dashboard — Métricas Gerenciales</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Pantalla de inicio con indicadores clave de rendimiento: recaudación del mes, deuda total pendiente del padrón, movimientos bancarios recientes y alertas de stock bajo en inventario. Diseñado para que la gerencia tenga un pulso inmediato de la salud financiera de la cooperativa sin necesidad de navegar por módulos.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>Gráficos de recaudación mensual (barras e histórico de líneas).</li>
+            <li>Ranking de socios morosos con mayor deuda acumulada.</li>
+            <li>Indicador de saldo bancario consolidado.</li>
+          </ul>
+        </article>
+
+        <!-- 2. Padrón -->
+        <article class="p-6 border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-sm">2</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Padrón — Socios e Inquilinos</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Administración del ecosistema humano de la cooperativa. El sistema diferencia estructuralmente a los <strong>socios</strong> (titulares/dueños de puesto) de los <strong>inquilinos</strong> (arrendatarios que asumen las deudas operativas). Cada persona tiene un expediente completo con DNI, datos de contacto, puesto asignado y estado financiero.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Listado unificado:</strong> Vista tabular con filtros por tipo (Socio/Inquilino), estado y puesto.</li>
+            <li><strong>Alta y edición:</strong> Formulario con validación en tiempo real. Solo Administrador puede crear o modificar registros.</li>
+            <li><strong>Historial de puestos:</strong> Cada transferencia de puesto queda registrada de forma inmutable en <code class="text-xs">historial_titularidad</code>. Permite auditar quién era titular de un puesto en cualquier fecha pasada.</li>
+            <li><strong>Baja (soft delete):</strong> Los socios nunca se eliminan de la BD; se marcan como inactivos con motivo.</li>
+          </ul>
+        </article>
+
+        <!-- 3. Caja e Ingresos -->
+        <article class="p-6 border-l-4 border-green-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 font-bold text-sm">3</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Caja e Ingresos — Tesorería Diaria</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Módulo de cajero de alta velocidad para cobranza física en mostrador. Agrupa tres flujos de ingreso bajo el mismo menú.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              <strong>Registrar Pago (Wizard 3 pasos):</strong> Busca al socio o inquilino por nombre o DNI → el sistema muestra sus deudas de forma agrupada → el cajero selecciona cuáles pagar (total o abono parcial) → confirma el método de pago (Efectivo o Transferencia) → se genera el recibo con código de transacción único. Todo el proceso es una transacción ACID; si falla en cualquier punto no queda cargo registrado.
+            </li>
+            <li>
+              <strong>Recaudación por Tarjeta:</strong> Los socios que participan en el sistema de prepago semanal aparecen en una lista con su saldo actual. El cajero ingresa el monto recaudado de cada uno y el sistema acumula el importe en su <em>saldo a favor</em>, listo para descontar en el siguiente pago mensual.
+            </li>
+            <li>
+              <strong>Caja Rápida (Ingresos Internos):</strong> Para cobros menores sin boleta nominal: baños, parqueo temporal, fotocopias. Se registra el monto, categoría y observación. Estos ingresos aparecen en el Arqueo de Caja como una línea separada de los recibos formales.
+            </li>
+          </ul>
+        </article>
+
+        <!-- 4. Cuenta Corriente -->
+        <article class="p-6 border-l-4 border-brand-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300 font-bold text-sm">4</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Cuenta Corriente — Gestión Financiera Individual</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Vista consolidada del estado financiero de cada persona. Es el módulo principal para el <strong>Administrador</strong>: permite ver el historial completo de deudas y pagos, agregar cargos manuales sin pasar por la facturación masiva, registrar abonos directos y corregir metadatos de pagos ya emitidos.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Búsqueda unificada:</strong> Encuentra socios e inquilinos en un solo buscador. Muestra el saldo a favor disponible y la deuda total pendiente.</li>
+            <li><strong>Deudas pendientes:</strong> Lista con concepto, período (mes/año), monto original, lo ya abonado y el saldo restante. Permite abonar desde aquí con método Efectivo o Transferencia.</li>
+            <li><strong>Historial de pagos:</strong> Todos los recibos emitidos con fecha, monto, método de pago y detalle de conceptos cubiertos. Los pagos anulados aparecen marcados con su motivo.</li>
+            <li><strong>Cargo manual:</strong> El Administrador puede agregar una deuda puntual (concepto + período + monto) sin necesidad de ejecutar una facturación masiva.</li>
+            <li><strong>Edición de pago:</strong> Se permite corregir el comprobante (número de operación bancaria) y la fecha de un pago sin anularlo.</li>
+          </ul>
+        </article>
+
+        <!-- 5. Reportes -->
+        <article class="p-6 border-l-4 border-orange-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 font-bold text-sm">5</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Reportes — Arqueo de Caja y Central</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Herramientas de cierre de turno y análisis histórico para gerencia y auditores.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>
+              <strong>Arqueo de Caja Diario:</strong> Reporte de cierre del día. Calcula automáticamente:<br>
+              <code class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded block mt-1 mb-1">(Recibos Efectivo + Recibos Transferencia + Ingresos Internos) − Gastos del día = Saldo Neto en Caja</code>
+              Muestra el desglose por método de pago y, si hay discrepancia con el conteo físico, la diferencia queda expuesta explícitamente. Permite exportar a PDF para archivo físico.
+            </li>
+            <li>
+              <strong>Central de Reportes:</strong> Cruce de datos multi-período. Filtros rápidos por Hoy, Última Semana, Mes y Año. Incluye evolución de recaudación mensual, comparativa de egresos e ingresos por categoría.
+            </li>
+          </ul>
+        </article>
+
+        <!-- 6. Facturación -->
+        <article class="p-6 border-l-4 border-yellow-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 font-bold text-sm">6</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Facturación — Motor de Deudas Masivas</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Herramientas de uso mensual exclusivas del <strong>Administrador</strong> para generar las obligaciones de cobro al padrón completo.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Lectura de Medidores (Luz y Agua):</strong> Interfaz de digitación ágil de las lecturas actuales y anteriores de cada puesto. El sistema calcula el consumo (kWh / m³) y lo multiplica por la tarifa global configurada. Emite la deuda automáticamente al confirmar.</li>
+            <li><strong>Cargos Fijos del Mes:</strong> Emite con un clic las cuotas mensuales periódicas (seguridad, mantenimiento, administración) a todo el padrón activo.</li>
+            <li><strong>Cargos Extraordinarios:</strong> Permite cobrar cuotas especiales o multas con segmentación flexible: por pasillo, por tipo de persona (Socio/Inquilino) o individualmente. Útil para obras de mejoramiento o eventos especiales.</li>
+          </ul>
+        </article>
+
+        <!-- 7. Gastos -->
+        <article class="p-6 border-l-4 border-red-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-bold text-sm">7</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Gastos — Egresos Operativos</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Registro de todas las salidas de dinero de la caja física: compras de insumos, servicios urgentes, planilla de personal, reparaciones. Cada gasto tiene categoría, monto, fecha y observación. Los gastos del día aparecen automáticamente en el Arqueo de Caja para el cuadre.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>Categorización por tipo de egreso (configurable por el Administrador).</li>
+            <li>Anulación de gasto por error con motivo obligatorio (soft delete, sin eliminar el registro).</li>
+          </ul>
+        </article>
+
+        <!-- 8. Bancos e Inventario -->
+        <article class="p-6 border-l-4 border-teal-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 font-bold text-sm">8</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Bancos e Inventario Interno</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Control de activos externos (cuentas bancarias corporativas) e internos (almacén), separados contablemente de la caja chica física.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Movimientos Bancarios:</strong> Registro de depósitos y retiros en cuentas corrientes de la cooperativa. El saldo se actualiza automáticamente con triggers. Útil para cuadrar lo ingresado por transferencias con el extracto bancario real.</li>
+            <li><strong>Almacén (Kardex):</strong> Catálogo de insumos, herramientas y repuestos. Control estricto de Entradas y Salidas. Cuando el stock de un artículo cae por debajo del mínimo, aparece una alerta visual en el menú lateral del sistema.</li>
+          </ul>
+        </article>
+
+        <!-- 9. Portal Público -->
+        <article class="p-6 border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-sm">9</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Portal Público de Consultas</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            URL accesible sin necesidad de iniciar sesión (<code class="text-xs bg-gray-100 dark:bg-gray-700 px-1 rounded">/consultas</code>). Permite a socios e inquilinos consultar su estado de cuenta desde sus teléfonos móviles, ingresando solo su DNI o nombre. El sistema muestra únicamente la deuda pendiente del consultante — sin exponer datos de terceros.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>Restricciones de búsqueda anti-scraping (límites de resultados, validación de formato).</li>
+            <li>Sin acceso a historial de pagos ni información sensible desde este portal.</li>
+          </ul>
+        </article>
+
+        <!-- 10. Auditoría -->
+        <article class="p-6 border-l-4 border-pink-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 font-bold text-sm">10</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Auditoría — Bitácora de Cambios Críticos</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Tabla inmutable de solo lectura donde se registran automáticamente (por triggers de BD) todas las inserciones, anulaciones y modificaciones de alto impacto: pagos emitidos, pagos anulados, cambios de titularidad, cargos emitidos. Incluye fecha, hora, usuario responsable y antes/después del cambio. Accesible solo para el rol Administrador.
+          </p>
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li>No se puede modificar ni eliminar ninguna entrada de auditoría — es la fuente de verdad legal.</li>
+            <li>Filtros por tipo de evento, usuario y rango de fechas.</li>
+          </ul>
+        </article>
+
+        <!-- 11. Panel de Notificaciones -->
+        <article class="p-6 border-l-4 border-violet-500 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300 font-bold text-sm">11</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Panel de Notificaciones — Campana del Header</h3>
+          </div>
+          <p class="text-gray-700 dark:text-gray-300 mb-3 ml-11">
+            Sistema de alertas en tiempo real visible desde el ícono de campana en la barra superior. Combina eventos persistidos en base de datos con alertas dinámicas calculadas en el cliente. El badge de notificaciones muestra el conteo de alertas no leídas de forma inmediata al cargar la sesión.
+          </p>
+
+          <!-- Grid de los 4 tipos -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-11 mb-4">
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+              <span class="text-2xl flex-shrink-0">🚨</span>
+              <div>
+                <p class="text-sm font-semibold text-red-700 dark:text-red-400">Auditoría</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Se genera automáticamente vía trigger de BD cuando se anula un <strong>pago</strong> o un <strong>cargo</strong>. Muestra el monto y el motivo de la anulación. Persiste en la tabla <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">notificaciones</code>.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800">
+              <span class="text-2xl flex-shrink-0">📦</span>
+              <div>
+                <p class="text-sm font-semibold text-yellow-700 dark:text-yellow-400">Inventario</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Trigger AFTER INSERT en <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">inventario_movimientos</code>: si una Salida deja el <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">stock_actual ≤ 2</code> o por debajo del mínimo configurado, se inserta una alerta de stock crítico (deduplicada cada 24 h).
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800">
+              <span class="text-2xl flex-shrink-0">💸</span>
+              <div>
+                <p class="text-sm font-semibold text-orange-700 dark:text-orange-400">Morosidad</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Alerta dinámica (en memoria, no persiste). Al abrir la campana, el servicio consulta <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">montos_por_cobrar</code> y calcula cuántos puestos acumulan más de 3 cuotas en estado <em>Pendiente</em>.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+              <span class="text-2xl flex-shrink-0">📊</span>
+              <div>
+                <p class="text-sm font-semibold text-blue-700 dark:text-blue-400">Caja</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  Alerta dinámica (en memoria). A partir de las 18:00 h, el servicio inyecta automáticamente el recordatorio de revisar el Arqueo de Caja del día antes de cerrar.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ul class="list-disc pl-14 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+            <li><strong>Persistentes vs. dinámicas:</strong> Las alertas de Auditoría e Inventario se guardan en BD y sobreviven entre sesiones. Las de Morosidad y Caja se calculan en el cliente al abrir la campana y no generan registros.</li>
+            <li><strong>Marcar como leídas:</strong> El botón "Limpiar" del panel hace UPDATE en BD para las notificaciones persistentes y descarta las dinámicas de la vista. Solo los roles Administrador y Caja tienen permiso de UPDATE.</li>
+            <li><strong>Seguridad:</strong> Los triggers de BD son <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">SECURITY DEFINER</code>, por lo que insertan en la tabla <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">notificaciones</code> con privilegios del owner (postgres) sin necesitar un grant INSERT para el usuario de sesión.</li>
+            <li><strong>Skeleton de carga:</strong> Mientras el servicio consulta Supabase se muestran 3 placeholders animados en lugar de una pantalla en blanco.</li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ── SECCIÓN 5: Flujo Mensual Recomendado ── -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Flujo de Trabajo Mensual Recomendado</h2>
+      <div class="relative pl-8 border-l-2 border-brand-200 dark:border-brand-700 space-y-6">
+
+        <div class="relative">
+          <span class="absolute -left-10 flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">1</span>
+          <h4 class="font-semibold text-gray-800 dark:text-gray-200">Inicio de mes — Facturación Masiva</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">El Administrador accede a <strong>Facturación → Lectura de Medidores</strong> para ingresar los consumos de luz y agua de todos los puestos. Luego emite los <strong>Cargos Fijos del Mes</strong> (seguridad, mantenimiento). Ambas acciones generan deudas en <code class="text-xs">montos_por_cobrar</code> para cada socio/inquilino.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-10 flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">2</span>
+          <h4 class="font-semibold text-gray-800 dark:text-gray-200">Durante el mes — Cobranza Diaria</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">El cajero opera desde <strong>Caja e Ingresos → Registrar Pago</strong>. Busca al socio, selecciona sus deudas, confirma el método (Efectivo/Transferencia) y emite el recibo. Los ingresos de Caja Rápida y Gastos operativos se registran en sus módulos correspondientes.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-10 flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">3</span>
+          <h4 class="font-semibold text-gray-800 dark:text-gray-200">Cada semana — Recaudación por Tarjeta</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Para los socios que prepagan semanalmente, el cajero accede a <strong>Caja e Ingresos → Recaudación Tarjeta</strong>, ingresa los montos de la semana y el sistema los acumula en el saldo a favor de cada socio.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-10 flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">4</span>
+          <h4 class="font-semibold text-gray-800 dark:text-gray-200">Cierre de turno — Arqueo de Caja</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Al final de cada jornada, el cajero o el Administrador abre <strong>Reportes → Arqueo de Caja Diario</strong>. El sistema calcula el saldo neto automáticamente. Si hay diferencia con el conteo físico, queda registrada con transparencia. Se genera el PDF para el archivo físico.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer class="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-400 dark:text-gray-500">
+      <p>
+        Sistema ERP desarrollado para la <strong class="text-gray-600 dark:text-gray-300">Cooperativa Primero de Mayo</strong> ·
+        <strong class="text-gray-600 dark:text-gray-300">Oscar Martin Paredes Morales</strong> —
+        Ingeniero de Sistemas
+      </p>
+      <p class="mt-1">Construido con Angular 20 · Supabase · Tailwind CSS v4 · Vercel</p>
+    </footer>
+
+  </div>
+</div>

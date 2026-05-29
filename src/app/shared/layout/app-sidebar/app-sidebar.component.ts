@@ -121,7 +121,10 @@ export class AppSidebarComponent {
     {
       name: 'Documentación',
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" fill="currentColor"/><path d="M8 12h8v2H8zm0 4h8v2H8z" fill="currentColor"/></svg>`,
-      path: '/documentacion'
+      subItems: [
+        { name: 'Manual de Usuario', path: '/documentacion/manual' },
+        { name: 'Documentación Técnica', path: '/documentacion/tecnica' }
+      ]
     }
   ];
 
