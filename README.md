@@ -1,5 +1,7 @@
 # Sistema Cooperativa Primero de Mayo
 
+🌎 **English** · [Español](README.es.md)
+
 An enterprise-grade ERP and financial management system built for municipal markets and cooperative associations to manage retail spaces, utilities distribution, membership accounts, and cash desks.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge&logo=vercel)](https://sistema-cooperativa-ochre.vercel.app)
