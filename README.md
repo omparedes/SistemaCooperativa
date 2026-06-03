@@ -64,7 +64,7 @@ graph TD
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/oscarparedes/SistemaCooperativa.git
+git clone https://github.com/omparedes/SistemaCooperativa.git
 cd SistemaCooperativa
 ```
 
@@ -141,7 +141,7 @@ SistemaCooperativa/
 
 ## 📄 License
 
-This project is private and proprietary. All rights reserved. Developed by **[Oscar Paredes](https://github.com/oscarparedes)**.
+This project is private and proprietary. All rights reserved. Developed by **[Oscar Paredes](https://github.com/omparedes)**.
 
 *   **LinkedIn**: [linkedin.com/in/omparedes](https://linkedin.com/in/omparedes)
-*   **GitHub**: [@oscarparedes](https://github.com/oscarparedes)
+*   **GitHub**: [@omparedes](https://github.com/omparedes)
