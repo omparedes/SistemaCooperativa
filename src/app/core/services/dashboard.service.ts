@@ -11,11 +11,12 @@ interface RecaudacionRow {
 }
 
 interface DeudaRow {
-  total_general: number;
+  total_saldo: number;
 }
 
 interface MorosoRow {
-  socio_id: number;
+  persona_id: number;
+  persona_tipo: 'socio' | 'inquilino';
   dni: string;
   apellidos: string;
   nombres: string;
@@ -34,7 +35,8 @@ export interface MesRecaudacion {
 }
 
 export interface SocioMorosoResumen {
-  socio_id: number;
+  socio_id: number; // persona_id
+  persona_tipo: 'socio' | 'inquilino';
   dni: string;
   nombre_completo: string;
   codigo_puesto: string;
@@ -74,12 +76,14 @@ export class DashboardService {
   private readonly _cantidadMorosos     = signal(0);
   private readonly _recaudacion6m       = signal<MesRecaudacion[]>([]);
   private readonly _morosos             = signal<SocioMorosoResumen[]>([]);
+  private readonly _filtros             = signal({ socios: true, inquilinos: true, otros: true });
 
   // --- API pública ---
   readonly loading = this._loading.asReadonly();
   readonly error   = this._error.asReadonly();
   readonly morosos = this._morosos.asReadonly();
   readonly recaudacion6m = this._recaudacion6m.asReadonly();
+  readonly filtros = this._filtros.asReadonly();
 
   /** KPIs computados para las tarjetas de resumen. */
   readonly kpis = computed(() => ({
@@ -87,6 +91,12 @@ export class DashboardService {
     deudaTotalPendiente:   this._deudaTotalPendiente(),
     cantidadMorosos:       this._cantidadMorosos(),
   }));
+
+  /** Actualiza los filtros de origen y recarga el dashboard */
+  setFiltros(filtros: { socios: boolean; inquilinos: boolean; otros: boolean }): void {
+    this._filtros.set(filtros);
+    void this.cargar();
+  }
 
   // -------------------------------------------------------------------------
   // Carga principal — dispara las 3 queries en paralelo
@@ -121,13 +131,26 @@ export class DashboardService {
       return { anio: d.getFullYear(), mes: d.getMonth() + 1 };
     });
 
-    // Filtramos por año: añadimos lte para no traer años futuros.
-    // Los meses fuera de la ventana de 6 son ignorados por el Map
-    // (precisión exacta requeriría anio*100+mes que PostgREST no computa
-    // directamente sin RPC — esta es la solución pragmática sin sobrecarga).
+    const selectedTypes: string[] = [];
+    if (this._filtros().socios) selectedTypes.push('socio');
+    if (this._filtros().inquilinos) selectedTypes.push('inquilino');
+    if (this._filtros().otros) selectedTypes.push('otros');
+
+    if (selectedTypes.length === 0) {
+      this._recaudacion6m.set(
+        meses6.map(m => ({
+          label: `${MESES[m.mes - 1]}-${m.anio}`,
+          total: 0,
+        })),
+      );
+      this._recaudacionMesAct.set(0);
+      return;
+    }
+
     const { data, error } = await this.db
       .from('vw_recaudacion_mensual')
       .select('anio, mes, total_recaudado')
+      .in('tipo_pagador', selectedTypes)
       .gte('anio', meses6[0].anio)
       .lte('anio', anioActual)
       .order('anio', { ascending: true })
@@ -135,9 +158,9 @@ export class DashboardService {
 
     if (error) throw new Error(error.message);
 
-    // Agrega por (anio, mes) — la vista devuelve 1 fila por mes+concepto
+    // Agrega por (anio, mes) — la vista devuelve 1 fila por mes+concepto+tipo
     const porMes = new Map<string, number>();
-    for (const row of (data ?? []) as unknown as RecaudacionRow[]) {
+    for (const row of (data ?? []) as unknown as { anio: number, mes: number, total_recaudado: number }[]) {
       const k = `${row.anio}-${row.mes}`;
       porMes.set(k, (porMes.get(k) ?? 0) + Number(row.total_recaudado));
     }
@@ -155,32 +178,54 @@ export class DashboardService {
   }
 
   // -------------------------------------------------------------------------
-  // Query 2 — vw_deuda_total_por_puesto (KPI deuda global)
+  // Query 2 — vw_deuda_filtrada (KPI deuda global con filtros)
   // -------------------------------------------------------------------------
   private async cargarDeuda(): Promise<void> {
+    const selectedTypes: string[] = [];
+    if (this._filtros().socios) selectedTypes.push('socio');
+    if (this._filtros().inquilinos) selectedTypes.push('inquilino');
+    if (this._filtros().otros) selectedTypes.push('otros');
+
+    if (selectedTypes.length === 0) {
+      this._deudaTotalPendiente.set(0);
+      return;
+    }
+
     const { data, error } = await this.db
-      .from('vw_deuda_total_por_puesto')
-      .select('total_general');
+      .from('vw_deuda_consolidada_por_tipo')
+      .select('total_saldo')
+      .in('tipo_deudor', selectedTypes);
 
     if (error) throw new Error(error.message);
 
     const rows  = (data ?? []) as unknown as DeudaRow[];
-    const total = rows.reduce((s, r) => s + Number(r.total_general), 0);
+    const total = rows.reduce((s, r) => s + Number(r.total_saldo), 0);
     this._deudaTotalPendiente.set(round2(total));
   }
 
   // -------------------------------------------------------------------------
-  // Query 3 — vw_socios_morosos (KPI conteo + tabla top 10)
+  // Query 3 — vw_morosos_filtrados (KPI conteo + tabla top 10)
   // -------------------------------------------------------------------------
   private async cargarMorosos(): Promise<void> {
+    const morosoTypes: string[] = [];
+    if (this._filtros().socios) morosoTypes.push('socio');
+    if (this._filtros().inquilinos) morosoTypes.push('inquilino');
+
+    if (morosoTypes.length === 0) {
+      this._cantidadMorosos.set(0);
+      this._morosos.set([]);
+      return;
+    }
+
     // count:'exact' devuelve el total sin traer todas las filas; limit(10) trae solo la tabla.
     const { data, count, error } = await this.db
-      .from('vw_socios_morosos')
+      .from('vw_morosos_filtrados')
       .select(
-        'socio_id, dni, apellidos, nombres, puesto_actual_codigo, ' +
+        'persona_id, persona_tipo, dni, apellidos, nombres, puesto_actual_codigo, ' +
         'cantidad_deudas_vencidas, monto_total_vencido, periodo_mas_antiguo_yyyymm',
         { count: 'exact' },
       )
+      .in('persona_tipo', morosoTypes)
       .order('monto_total_vencido', { ascending: false })
       .limit(10);
 
@@ -191,7 +236,8 @@ export class DashboardService {
 
     this._morosos.set(
       rows.map(r => ({
-        socio_id:         r.socio_id,
+        socio_id:         r.persona_id,
+        persona_tipo:     r.persona_tipo,
         dni:              r.dni,
         nombre_completo:  `${r.apellidos}, ${r.nombres}`,
         codigo_puesto:    r.puesto_actual_codigo ?? '—',

@@ -256,7 +256,7 @@ export class SociosService {
       .is('deleted_at', null);
 
     if (puestoIds.length > 0) {
-      query = query.or(`socio_id.eq.${socioId},puesto_id.in.(${puestoIds.join(',')})`);
+      query = query.or(`socio_id.eq.${socioId},and(puesto_id.in.(${puestoIds.join(',')}),concepto_id.neq.11)`);
     } else {
       query = query.eq('socio_id', socioId);
     }

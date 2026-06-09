@@ -1,0 +1,553 @@
+{
+  "resumen": {
+    "dbActivos": 87,
+    "hojasExcel": 98,
+    "emparejados": 73,
+    "sinEmparejarExcel": 25,
+    "sinEmparejarDB": 15
+  },
+  "emparejados": [
+    {
+      "excel": "AIRE HECTOR",
+      "dbId": 1,
+      "dbDni": "10019147",
+      "dbNombre": "AIRE MALPARTIDA HECTOR "
+    },
+    {
+      "excel": "ALARCON MARTHA",
+      "dbId": 65,
+      "dbDni": "09350799",
+      "dbNombre": "ALARCON ESPINOZA MARTHA ESPERANZA "
+    },
+    {
+      "excel": "ALVAREZ EDGAR",
+      "dbId": 3,
+      "dbDni": "09706677",
+      "dbNombre": "ALVAREZ CHIARA EDGAR SALVADOR "
+    },
+    {
+      "excel": "ALVAREZ FLORENCIA",
+      "dbId": 2,
+      "dbDni": "08877133",
+      "dbNombre": "ALVAREZ BERRIO FLORENCIA ASUNTA "
+    },
+    {
+      "excel": "ANCHAYA ABEL",
+      "dbId": 4,
+      "dbDni": "44071731",
+      "dbNombre": "ANCHAYA HUAMAN ABEL "
+    },
+    {
+      "excel": "ARMESTAR JUANA ",
+      "dbId": 5,
+      "dbDni": "00254279",
+      "dbNombre": "ARMESTAR GODOS JUANA JACKELYNE "
+    },
+    {
+      "excel": "AYALA MARLENE",
+      "dbId": 8,
+      "dbDni": "43650510",
+      "dbNombre": "AYALA HUASHUAYO MARLENE ESTHER "
+    },
+    {
+      "excel": "ARREDONDO GLADYS",
+      "dbId": 6,
+      "dbDni": "31428533",
+      "dbNombre": "ARREDONDO GARCIA GLADYS "
+    },
+    {
+      "excel": "AVILA ROSA",
+      "dbId": 7,
+      "dbDni": "44982231",
+      "dbNombre": "AVILA CHAVEZ ROSA MARINA "
+    },
+    {
+      "excel": "AZURZA DAYSI",
+      "dbId": 9,
+      "dbDni": "47384400",
+      "dbNombre": "AZURZA TRIBINOS DAYSI ELIZABETH "
+    },
+    {
+      "excel": "BENITES ERIKA",
+      "dbId": 11,
+      "dbDni": "40466902",
+      "dbNombre": "BENITES TRIBINOS ERIKA "
+    },
+    {
+      "excel": "BELLIDO ZENAIDA",
+      "dbId": 10,
+      "dbDni": "08386063",
+      "dbNombre": "BELLIDO DE LA TORRE DE CHUQUITAIPE ZENAIDA "
+    },
+    {
+      "excel": "BURGA ELMER",
+      "dbId": 12,
+      "dbDni": "45136700",
+      "dbNombre": "BURGA CARRASCO ELMER "
+    },
+    {
+      "excel": "BUSTAMANTE GRACIELA",
+      "dbId": 13,
+      "dbDni": "42082589",
+      "dbNombre": "BUSTAMANTE CHILON GRACIELA "
+    },
+    {
+      "excel": "CAHUANA ALEX",
+      "dbId": 14,
+      "dbDni": "60812334",
+      "dbNombre": "CAHUANA PUCURIMAY ALEX ENRIQUE "
+    },
+    {
+      "excel": "CLAROS SANTOS",
+      "dbId": 24,
+      "dbDni": "10104498146",
+      "dbNombre": "CLAROS TORRES SANTOS JESUS "
+    },
+    {
+      "excel": "CARRASCO MERY",
+      "dbId": 15,
+      "dbDni": "44168936",
+      "dbNombre": "CARRASCO PICHIHUA MERY RUTH "
+    },
+    {
+      "excel": "CASTRO CONSUELO",
+      "dbId": 17,
+      "dbDni": "46405540",
+      "dbNombre": "CASTRO RODRIGUEZ JANETT CONSUELO "
+    },
+    {
+      "excel": "CCENCHO DAVID",
+      "dbId": 18,
+      "dbDni": "44002664",
+      "dbNombre": "CCENCHO CARRASCO DAVID VICENTE "
+    },
+    {
+      "excel": "CERDAN MARIA",
+      "dbId": 19,
+      "dbDni": "46542458",
+      "dbNombre": "CERDAN MUNOZ MARIA DOMINGA "
+    },
+    {
+      "excel": "CERRON OBDULIA",
+      "dbId": 66,
+      "dbDni": "20097655",
+      "dbNombre": "CERRON GALVAN OBDULIA "
+    },
+    {
+      "excel": "CERVANTES CARLOS",
+      "dbId": 20,
+      "dbDni": "41762238",
+      "dbNombre": "CERVANTES GARCIA CARLOS ARTURO "
+    },
+    {
+      "excel": "CHAMBI SIMONA",
+      "dbId": 21,
+      "dbDni": "10474827",
+      "dbNombre": "CHAMBI APAZA SIMONA "
+    },
+    {
+      "excel": "CHOQUEHUANCA HUAMAN DERSE",
+      "dbId": 23,
+      "dbDni": "47205649",
+      "dbNombre": "CHOQUEHUANCA HUAMAN DERSE "
+    },
+    {
+      "excel": "COLINA SIRLEY",
+      "dbId": 61,
+      "dbDni": "03901433",
+      "dbNombre": "COLINA CORREA SIRLEY KARINA "
+    },
+    {
+      "excel": "CONDORI LIDIA",
+      "dbId": 25,
+      "dbDni": "08995920",
+      "dbNombre": "CONDORI MAMANI LIDIA AGRIPINA "
+    },
+    {
+      "excel": "CUNIAS MARIELA",
+      "dbId": 26,
+      "dbDni": "71577898",
+      "dbNombre": "CUNIAS SANTOS MARIELA "
+    },
+    {
+      "excel": "DAVILA YESENIA",
+      "dbId": 27,
+      "dbDni": "10233461",
+      "dbNombre": "DAVILA HILARES YESENIA BEATRIZ "
+    },
+    {
+      "excel": "ENCARNACION GLADYS",
+      "dbId": 28,
+      "dbDni": "09369721",
+      "dbNombre": "ENCARNACION PAUCARPOMA GLADYS "
+    },
+    {
+      "excel": "ESPARTA JULIO",
+      "dbId": 68,
+      "dbDni": "08899417",
+      "dbNombre": "ESPARTA CARDENAS JULIO HECTOR "
+    },
+    {
+      "excel": "FERREYRA TANIA",
+      "dbId": 69,
+      "dbDni": "10106511476",
+      "dbNombre": "FERREYRA COSME TANIA MABEL "
+    },
+    {
+      "excel": "GARCIA CLEMENCIA",
+      "dbId": 30,
+      "dbDni": "08905454",
+      "dbNombre": "GARCIA MEDINA VDA DE MOLINA CLEMENCIA BEATRIZ "
+    },
+    {
+      "excel": "GOMERO MARGARITA",
+      "dbId": 31,
+      "dbDni": "41844307",
+      "dbNombre": "GOMERO DULANTO MARGARITA JUANA "
+    },
+    {
+      "excel": "GOMEZ MARIBEL",
+      "dbId": 32,
+      "dbDni": "10347772",
+      "dbNombre": "GOMEZ MITMA MARIBEL "
+    },
+    {
+      "excel": "HERRERA ROMINA",
+      "dbId": 34,
+      "dbDni": "71009767",
+      "dbNombre": "HERRERA PEVES ROMINA DEL CARMEN "
+    },
+    {
+      "excel": "HERNANDEZ LILIBETH",
+      "dbId": 33,
+      "dbDni": "04352513",
+      "dbNombre": "HERNANDEZ HERNANDEZ LILIBETH MARIA "
+    },
+    {
+      "excel": "HUAMANI MAXIMO.",
+      "dbId": 70,
+      "dbDni": "08991437",
+      "dbNombre": "HUAMANI CONTRERAS MAXIMO FLAVIO "
+    },
+    {
+      "excel": "HERRERA ORFELITA",
+      "dbId": 35,
+      "dbDni": "41365838",
+      "dbNombre": "HERRERA CAMPOS ORFELITA "
+    },
+    {
+      "excel": "LUCIANO KARINA",
+      "dbId": 74,
+      "dbDni": "46101817",
+      "dbNombre": "KARINA LUZ LUCIANO INGA "
+    },
+    {
+      "excel": "LA ROSA MARGARITA",
+      "dbId": 36,
+      "dbDni": "46950481",
+      "dbNombre": "LA ROSA LOPEZ MARGARITA LILIANA "
+    },
+    {
+      "excel": "LAPAS MARIA",
+      "dbId": 37,
+      "dbDni": "07279524",
+      "dbNombre": "LAPAS ZALAZAR ANA MARIA "
+    },
+    {
+      "excel": "LEONARDO ROSANA",
+      "dbId": 40,
+      "dbDni": "10026348",
+      "dbNombre": "LEONARDO AMARILLO ROSANA PILAR "
+    },
+    {
+      "excel": "LEONARDO FEDERICO",
+      "dbId": 39,
+      "dbDni": "09575838",
+      "dbNombre": "LEONARDO AMARILLO FEDERICO MANUEL "
+    },
+    {
+      "excel": "LOPEZ HAYDEE",
+      "dbId": 41,
+      "dbDni": "07266341",
+      "dbNombre": "LOPEZ CERRON HAYDEE "
+    },
+    {
+      "excel": "HUAMANI MAXIMO",
+      "dbId": 70,
+      "dbDni": "08991437",
+      "dbNombre": "HUAMANI CONTRERAS MAXIMO FLAVIO "
+    },
+    {
+      "excel": "Choquehuanca David",
+      "dbId": 22,
+      "dbDni": "48822765",
+      "dbNombre": "CHOQUEHUANCA HUAMAN DAVID "
+    },
+    {
+      "excel": "MALLMA CONDORI LISBETH",
+      "dbId": 42,
+      "dbDni": "72446110",
+      "dbNombre": "MALLMA CONDORI LISBETH LUCIA "
+    },
+    {
+      "excel": "MAYHUASCA DORIS",
+      "dbId": 43,
+      "dbDni": "10481732",
+      "dbNombre": "MAYHUASCA BASTIDAS DORIS "
+    },
+    {
+      "excel": "MIRANDA FELICITA",
+      "dbId": 44,
+      "dbDni": "06651184",
+      "dbNombre": "MIRANDA CACERES FELICITA "
+    },
+    {
+      "excel": "MUJICA SANDRA ",
+      "dbId": 45,
+      "dbDni": "80055674",
+      "dbNombre": "MUJICA PALOMINO SANDRA LIZ "
+    },
+    {
+      "excel": "OBREGON FERNANDO",
+      "dbId": 46,
+      "dbDni": "08139723",
+      "dbNombre": "OBREGON CASTILLO FERNANDO MARTIN "
+    },
+    {
+      "excel": "PALOMINO ROSA",
+      "dbId": 47,
+      "dbDni": "44465773",
+      "dbNombre": "PALOMINO CUSI ROSA "
+    },
+    {
+      "excel": "PEÑA ASHLEY",
+      "dbId": 62,
+      "dbDni": "72336226",
+      "dbNombre": "PENA VILLANUEVA ASHLEY MARYORI "
+    },
+    {
+      "excel": "PFUÑO VICTOR",
+      "dbId": 49,
+      "dbDni": "09720689",
+      "dbNombre": "PFUNO RAMOS VICTOR RAUL "
+    },
+    {
+      "excel": "PRADO MILAGROS",
+      "dbId": 50,
+      "dbDni": "42841670",
+      "dbNombre": "PRADO CATANO MIRIAM MILAGROS "
+    },
+    {
+      "excel": "QUISPE PATRICIA",
+      "dbId": 52,
+      "dbDni": "41747705",
+      "dbNombre": "QUISPE MAMANI PATRICIA PAOLA "
+    },
+    {
+      "excel": "QUISPE LISBETH",
+      "dbId": 76,
+      "dbDni": "48462586",
+      "dbNombre": "QUISPE NAPUCHE LISBETH KARITO "
+    },
+    {
+      "excel": "REBAZA CASILDA",
+      "dbId": 53,
+      "dbDni": "09852414",
+      "dbNombre": "REBAZA REBAZA CASILDA CATALINA "
+    },
+    {
+      "excel": "RENTERIA ROSA",
+      "dbId": 54,
+      "dbDni": "10625419",
+      "dbNombre": "RENTERIA HUANCAS ROSA ARMANDINA "
+    },
+    {
+      "excel": "SALAZAR MARIA",
+      "dbId": 55,
+      "dbDni": "09135097",
+      "dbNombre": "SALAZAR VASQUEZ MARIA ROSARIO "
+    },
+    {
+      "excel": "SALDAÑA JESSICA",
+      "dbId": 63,
+      "dbDni": "45452812",
+      "dbNombre": "SALDANA DONAYRE JESSICA PATRICIA "
+    },
+    {
+      "excel": "SANCHEZ DIANA",
+      "dbId": 64,
+      "dbDni": "71390650",
+      "dbNombre": "SANCHEZ PRADO DIANA ZENAIDA "
+    },
+    {
+      "excel": "SUAREZ REBAZA LUIS",
+      "dbId": 56,
+      "dbDni": "73192679",
+      "dbNombre": "SUAREZ REBAZA LUIS ABRAHAM "
+    },
+    {
+      "excel": "TUEROS PRUDENCIO",
+      "dbId": 77,
+      "dbDni": "28312595",
+      "dbNombre": "TUEROS QUISPE PRUDENCIO "
+    },
+    {
+      "excel": "YAURIMUCHA URSULA",
+      "dbId": 57,
+      "dbDni": "08363214",
+      "dbNombre": "YAURIMUCHA RIMACHI URSULA "
+    },
+    {
+      "excel": "YAUYOS MARLENE",
+      "dbId": 58,
+      "dbDni": "09574907",
+      "dbNombre": "YAUYOS MENDIETA MARLENE "
+    },
+    {
+      "excel": "YUPANQUI SAYDA",
+      "dbId": 59,
+      "dbDni": "42479516",
+      "dbNombre": "YUPANQUI QUISPE SAYDA "
+    },
+    {
+      "excel": "ZANABRIA LILIA",
+      "dbId": 60,
+      "dbDni": "20654471",
+      "dbNombre": "ZANABRIA LADERA DE COCHACHI LILIA RUFINA "
+    },
+    {
+      "excel": "IDALINA MONTENEGRO",
+      "dbId": 73,
+      "dbDni": "42799850",
+      "dbNombre": "IDALINA MONTENEGRO BAUTISTA "
+    },
+    {
+      "excel": "ACCO VICTOR",
+      "dbId": 100,
+      "dbDni": "DEP-5-D3",
+      "dbNombre": "ACCO NOA VICTOR "
+    },
+    {
+      "excel": "BUSTAMANTE JOSE",
+      "dbId": 99,
+      "dbDni": "DEP-4-D3",
+      "dbNombre": "BUSTAMANTE JOSE "
+    },
+    {
+      "excel": "MARILIN DEL CARMEN VERA",
+      "dbId": 75,
+      "dbDni": "15605235546",
+      "dbNombre": "MARILIN DEL CARMEN VERA "
+    },
+    {
+      "excel": "ANATOLIA CHIPANA",
+      "dbId": 72,
+      "dbDni": "29096837",
+      "dbNombre": "CHIPANA DE VARGAS ANATOLIA "
+    }
+  ],
+  "sinEmparejarExcel": [
+    "ALVARO GUSTAVO",
+    "AYALA HILARY",
+    "ATO MARIA",
+    "CALLIROS FIORELLA",
+    "CASTILLO ASAEL",
+    "CAYO BASILIO",
+    "DURAND BLANCA",
+    "FLORES DOMINICA",
+    "FUENTES VANESSA",
+    "HERRERA ELIZABETH",
+    "LEON RODRIGUEZ - FUENTES",
+    "LOAYZA JOSE",
+    "LUJAN  DEISSY",
+    "FLORES WILLIAMS",
+    "GONZALEZ CARMEN",
+    "GONZALES ROSMARY",
+    "IBARRA EMMA",
+    "LUCAS  LUZ",
+    "PEÑA TEREZA",
+    "QUISPE MARISOL",
+    "QUISPE ROSA MARIBEL",
+    "SATALAYA SEGUNDO",
+    "TITO ISABEL",
+    "MALCA LUZ",
+    "EVELYN CUYA"
+  ],
+  "sinEmparejarDB": [
+    {
+      "id": 16,
+      "dni": "48773769",
+      "nombre": "CASTILLO ZAPATA ESAEL "
+    },
+    {
+      "id": 29,
+      "dni": "09407642",
+      "nombre": "FLORES LAREDO DOMINICIA LUCIANA "
+    },
+    {
+      "id": 38,
+      "dni": "73348594",
+      "nombre": "LEON RODRIGUEZ ANGIE MARGARITA "
+    },
+    {
+      "id": 48,
+      "dni": "08378642",
+      "nombre": "PENA VDA DE VILLANUEVA TERESA "
+    },
+    {
+      "id": 51,
+      "dni": "09700283",
+      "nombre": "QUISPE CHAVEZ MARI SOL "
+    },
+    {
+      "id": 67,
+      "dni": "08030473",
+      "nombre": "DURAN CHACON BLANCA NIEVES "
+    },
+    {
+      "id": 71,
+      "dni": "08914131",
+      "nombre": "CAYO HUAMANI BACILIO ANTONIO "
+    },
+    {
+      "id": 80,
+      "dni": "DEP-3-D1",
+      "nombre": "CARTAGENA ALVARO "
+    },
+    {
+      "id": 81,
+      "dni": "DEP-4-D1",
+      "nombre": "MESIAS GLADYS "
+    },
+    {
+      "id": 83,
+      "dni": "DEP-6-D1",
+      "nombre": "VILLANUEVA INGA ROSA "
+    },
+    {
+      "id": 85,
+      "dni": "COOP-1-D2",
+      "nombre": "COOPERATIVA PRIMERO DE MAYO "
+    },
+    {
+      "id": 91,
+      "dni": "DEP-7-D2",
+      "nombre": "DAVILA CAHUANA MARISOL "
+    },
+    {
+      "id": 93,
+      "dni": "COOP-9-D2",
+      "nombre": "COOPERATIVA PRIMERO DE MAYO "
+    },
+    {
+      "id": 95,
+      "dni": "DEP-11-D2",
+      "nombre": "SALDANA DONAYRE JESSICA PATRICIA "
+    },
+    {
+      "id": 101,
+      "dni": "DEP-6-D3",
+      "nombre": "ACCO NOA VICTOR "
+    }
+  ]
+}

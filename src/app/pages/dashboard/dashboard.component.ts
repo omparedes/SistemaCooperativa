@@ -46,6 +46,68 @@ function fmtSoles(n: number): string {
         </button>
       </div>
 
+      <!-- ── Filtros de Origen ───────────────────────────────────────────── -->
+      <div class="mb-6 rounded-2xl border border-gray-200 bg-white/50 backdrop-blur-md p-4 shadow-sm dark:border-gray-700 dark:bg-gray-dark/50">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Origen de Información</h3>
+            <p class="text-xs text-gray-400 dark:text-gray-500">Selecciona los orígenes para segmentar todos los reportes y resúmenes del dashboard</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Botón Socio -->
+            <button
+              (click)="toggleFiltro('socios')"
+              class="flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-medium transition duration-200 cursor-pointer"
+              [class]="dashService.filtros().socios
+                ? 'bg-brand-50 border-brand-300 text-brand-700 dark:bg-brand-900/30 dark:border-brand-800 dark:text-brand-400 font-semibold shadow-sm'
+                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'">
+              <span class="flex h-3.5 w-3.5 items-center justify-center rounded border transition" [class.bg-brand-500]="dashService.filtros().socios" [class.border-brand-500]="dashService.filtros().socios" [class.border-gray-300]="!dashService.filtros().socios" [class.dark:border-gray-600]="!dashService.filtros().socios">
+                @if (dashService.filtros().socios) {
+                  <svg class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </span>
+              👥 Socios
+            </button>
+
+            <!-- Botón Inquilino -->
+            <button
+              (click)="toggleFiltro('inquilinos')"
+              class="flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-medium transition duration-200 cursor-pointer"
+              [class]="dashService.filtros().inquilinos
+                ? 'bg-brand-50 border-brand-300 text-brand-700 dark:bg-brand-900/30 dark:border-brand-800 dark:text-brand-400 font-semibold shadow-sm'
+                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'">
+              <span class="flex h-3.5 w-3.5 items-center justify-center rounded border transition" [class.bg-brand-500]="dashService.filtros().inquilinos" [class.border-brand-500]="dashService.filtros().inquilinos" [class.border-gray-300]="!dashService.filtros().inquilinos" [class.dark:border-gray-600]="!dashService.filtros().inquilinos">
+                @if (dashService.filtros().inquilinos) {
+                  <svg class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </span>
+              🔑 Inquilinos
+            </button>
+
+            <!-- Botón Otros -->
+            <button
+              (click)="toggleFiltro('otros')"
+              class="flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-medium transition duration-200 cursor-pointer"
+              [class]="dashService.filtros().otros
+                ? 'bg-brand-50 border-brand-300 text-brand-700 dark:bg-brand-900/30 dark:border-brand-800 dark:text-brand-400 font-semibold shadow-sm'
+                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'">
+              <span class="flex h-3.5 w-3.5 items-center justify-center rounded border transition" [class.bg-brand-500]="dashService.filtros().otros" [class.border-brand-500]="dashService.filtros().otros" [class.border-gray-300]="!dashService.filtros().otros" [class.dark:border-gray-600]="!dashService.filtros().otros">
+                @if (dashService.filtros().otros) {
+                  <svg class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </span>
+              💼 Otros (Caja Rápida)
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Error global ──────────────────────────────────────────────── -->
       @if (dashService.error()) {
         <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
@@ -122,7 +184,7 @@ function fmtSoles(n: number): string {
           }
         </div>
 
-        <!-- KPI 3: Socios Morosos -->
+        <!-- KPI 3: Morosos Activos -->
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-dark">
           @if (dashService.loading()) {
             <div class="animate-pulse space-y-3">
@@ -133,11 +195,11 @@ function fmtSoles(n: number): string {
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Socios Morosos
+                  Morosos Activos
                 </p>
                 <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                   {{ dashService.kpis().cantidadMorosos }}
-                  <span class="text-base font-normal text-gray-400">puestos</span>
+                  <span class="text-base font-normal text-gray-400">personas</span>
                 </p>
                 <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Con ≥ 1 deuda de períodos anteriores</p>
               </div>
@@ -166,7 +228,7 @@ function fmtSoles(n: number): string {
               Recaudación — Últimos 6 meses
             </h3>
             <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
-              Total cobrado por mes (todas las categorías)
+              Total cobrado por mes (filtrado por origen seleccionado)
             </p>
           </div>
           <span class="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-600 dark:border-brand-800 dark:bg-brand-900/20 dark:text-brand-400">
@@ -200,7 +262,7 @@ function fmtSoles(n: number): string {
             <svg class="h-10 w-10 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
             </svg>
-            <p class="text-sm">Sin datos de recaudación en los últimos 6 meses</p>
+            <p class="text-sm">Sin datos de recaudación para la selección actual</p>
           </div>
         }
       </div>
@@ -215,7 +277,7 @@ function fmtSoles(n: number): string {
               Top 10 — Mayores Deudas Vencidas
             </h3>
             <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
-              Puestos con mayor deuda en períodos anteriores · Ordenados por monto
+              Personas con mayor deuda en períodos anteriores · Ordenados por monto
             </p>
           </div>
           <a routerLink="/socios"
@@ -240,7 +302,7 @@ function fmtSoles(n: number): string {
             <svg class="h-10 w-10 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-sm font-medium text-green-600 dark:text-green-400">¡Sin socios morosos! Todos al día.</p>
+            <p class="text-sm font-medium text-green-600 dark:text-green-400">¡Sin morosos! Todos al día.</p>
           </div>
         } @else {
           <div class="overflow-x-auto">
@@ -248,7 +310,7 @@ function fmtSoles(n: number): string {
               <thead>
                 <tr class="bg-gray-50 dark:bg-gray-700/40">
                   <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">#</th>
-                  <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Socio / Puesto</th>
+                  <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Persona / Puesto</th>
                   <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Deudas</th>
                   <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Monto vencido</th>
                   <th class="px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Desde</th>
@@ -273,10 +335,17 @@ function fmtSoles(n: number): string {
                     <!-- Nombre + DNI + Puesto -->
                     <td class="px-5 py-4">
                       <p class="font-medium text-gray-900 dark:text-white leading-tight">{{ s.nombre_completo }}</p>
-                      <div class="mt-1 flex items-center gap-2">
+                      <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
                         <span class="text-xs text-gray-400">DNI {{ s.dni }}</span>
                         <span class="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-900/20 dark:text-brand-400">
                           P-{{ s.codigo_puesto }}
+                        </span>
+                        <!-- Etiqueta de clasificación de moroso -->
+                        <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                              [class]="s.persona_tipo === 'socio'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'">
+                          {{ s.persona_tipo === 'socio' ? 'Socio' : 'Inquilino' }}
                         </span>
                       </div>
                     </td>
@@ -304,7 +373,7 @@ function fmtSoles(n: number): string {
 
                     <!-- Acción -->
                     <td class="px-5 py-4 text-right">
-                      <a [routerLink]="['/socios', s.socio_id]"
+                      <a [routerLink]="[s.persona_tipo === 'socio' ? '/socios' : '/inquilinos', s.socio_id]"
                          class="inline-flex items-center gap-1 rounded-lg border border-brand-300 px-3 py-1.5 text-xs font-medium text-brand-600 transition hover:bg-brand-50 dark:border-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/20">
                         Ver detalle
                         <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -322,7 +391,7 @@ function fmtSoles(n: number): string {
           <div class="border-t border-gray-200 px-5 py-3 dark:border-gray-700">
             <p class="text-right text-xs text-gray-400 dark:text-gray-500">
               Mostrando {{ dashService.morosos().length }} de
-              {{ dashService.kpis().cantidadMorosos }} socios morosos
+              {{ dashService.kpis().cantidadMorosos }} morosos activos
             </p>
           </div>
         }
@@ -349,6 +418,12 @@ export class DashboardComponent implements OnInit {
 
   recargar(): void {
     void this.dashService.cargar();
+  }
+
+  toggleFiltro(tipo: 'socios' | 'inquilinos' | 'otros'): void {
+    const current = { ...this.dashService.filtros() };
+    current[tipo] = !current[tipo];
+    this.dashService.setFiltros(current);
   }
 
   // ── ApexCharts: series y xaxis derivados de las signals del servicio ──────
@@ -415,3 +490,4 @@ export class DashboardComponent implements OnInit {
     theme: 'light',
   };
 }
+

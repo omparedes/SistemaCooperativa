@@ -1,0 +1,108 @@
+Excel: 1018 filas en hoja "Detalle por cobrar"
+
+=== RESULTADO DE MATCHING / MAPEO ===
+Claves agregadas (puesto+concepto+periodo) a reconciliar: 954
+Socios del Excel sin match en BD: 4
+   - "MAYHUASCA  CLUDY" (4 filas)
+   - "PRADO ZOZIMA" (4 filas)
+   - "TORRES NERY(F)" (8 filas)
+   - "VARA ERNESTINA(F)" (12 filas)
+Socios con match pero sin puesto activo: 0
+Fechas inválidas/no parseables: 0
+Conceptos SIN mapeo confiable (no se tocarán, requieren revisión manual): 3
+   - "FUMIGACION" (21 filas)
+   - "TALONARIO SANTA ROSA" (1 filas)
+   - "TALONARIO MAMÁ" (1 filas)
+Deudas activas cargadas para 158 puestos: 3962
+detalle_pagos cargados (activos) para 3962 montos: 3028 con pagos
+
+=== DIFF CONTRA BD (montos_por_cobrar activos) ===
+Sin cambios:                         841
+A actualizar (monto/estado difiere): 13
+   - id=7334 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-03 Luz: monto 78.3 -> 86 (pagado=78.3, saldo=7.7, estado Pagado -> Pendiente)
+   - id=7335 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-03 Agua: monto 6 -> 12 (pagado=6, saldo=6, estado Pagado -> Pendiente)
+   - id=7332 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-03 Gastos administrativos: monto 60 -> 120 (pagado=60, saldo=60, estado Pagado -> Pendiente)
+   - id=7333 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-03 Previsión social: monto 5 -> 10 (pagado=5, saldo=5, estado Pagado -> Pendiente)
+   - id=7338 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-04 Luz: monto 87 -> 8.1 (pagado=0, saldo=8.1, estado Pendiente -> Pendiente)
+   - id=7336 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-04 Gastos administrativos: monto 60 -> 120 (pagado=60, saldo=60, estado Pagado -> Pendiente)
+   - id=7337 puesto=80 (ALVAREZ MARIN MARIANELA ) 2026-04 Previsión social: monto 5 -> 10 (pagado=5, saldo=5, estado Pagado -> Pendiente)
+   - id=6533 puesto=104 (BASTIDAS MEDINA HERMENEGILDO ) 2026-04 Luz: monto 71.5 -> 32.5 (pagado=0, saldo=32.5, estado Pendiente -> Pendiente)
+   - id=6534 puesto=104 (BASTIDAS MEDINA HERMENEGILDO ) 2026-04 Agua: monto 12 -> 6 (pagado=0, saldo=6, estado Pendiente -> Pendiente)
+   - id=9397 puesto=139 (RODRIGUEZ CORDOVA MARCOS ) 2026-04 Luz: monto 25.2 -> 73.9 (pagado=0, saldo=73.9, estado Pendiente -> Pendiente)
+   - id=9398 puesto=139 (RODRIGUEZ CORDOVA MARCOS ) 2026-04 Agua: monto 6 -> 195.4 (pagado=0, saldo=195.4, estado Pendiente -> Pendiente)
+   - id=9392 puesto=139 (RODRIGUEZ CORDOVA MARCOS ) 2026-04 Gastos administrativos: monto 60 -> 120 (pagado=60, saldo=60, estado Pagado -> Pendiente)
+   - id=9399 puesto=139 (RODRIGUEZ CORDOVA MARCOS ) 2026-04 Previsión social: monto 5 -> 10 (pagado=0, saldo=10, estado Pendiente -> Pendiente)
+A insertar (no existe en BD):        2
+   - puesto=74 (BASTIDAS MEDINA DINA ) 2026-04 Luz: monto=39
+   - puesto=74 (BASTIDAS MEDINA DINA ) 2026-04 Agua: monto=6
+Huérfanos 2026 SIN pagos (candidatos a soft-delete): 0
+Huérfanos 2026 CON pagos aplicados (NO se tocan, revisar a mano): 0
+
+=== CONCEPTOS EXÓTICOS — SOLO INFORME, NO SE AUTOMATIZAN (revisión manual) ===
+Filas del Excel con concepto exótico (Depósito/Multa/Aporte extr./Ajuste/Fallecimiento/...): 98 grupos
+   - Deposito: 46 grupos
+   - Multa: 42 grupos
+   - Fallecimiento de socio: 5 grupos
+   - Ajuste manual: 3 grupos
+   - Aporte extraordinario: 2 grupos
+Deudas 'Pendiente' 2026 de concepto exótico que la BD tiene activas pero no aparecen claramente en el Excel: 56
+   - id=8976 puesto=138 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9004 puesto=123 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9116 puesto=114 2026-03 concepto_id=18 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/01/2026"
+   - id=6610 puesto=15 2026-03 concepto_id=6 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/03/2026"
+   - id=9226 puesto=131 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9249 puesto=127 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9299 puesto=136 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6654 puesto=37 2026-03 concepto_id=16 monto=200 pagado=100 obs="Migración de deudas 2026 - DEPOSITO N° 8"
+   - id=6657 puesto=37 2026-04 concepto_id=16 monto=200 pagado=180 obs="Migración de deudas 2026 - DEPOSITO N° 8"
+   - id=9472 puesto=38 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9730 puesto=190 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9757 puesto=65 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9806 puesto=34 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=9983 puesto=44 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6163 puesto=58 2026-01 concepto_id=11 monto=500 pagado=0 obs="Migracion 2026: Deuda Pendiente ENERO ALQUILER"
+   - id=6164 puesto=58 2026-02 concepto_id=11 monto=500 pagado=0 obs="Migracion 2026: Deuda Pendiente FEBRERO ALQUILER"
+   - id=6165 puesto=58 2026-03 concepto_id=11 monto=500 pagado=0 obs="Migracion 2026: Deuda Pendiente MARZO ALQUILER"
+   - id=10139 puesto=70 2026-01 concepto_id=6 monto=28.3 pagado=0 obs="Migración de deudas 2026 - MULTA X CAPACITACION"
+   - id=10140 puesto=70 2026-01 concepto_id=16 monto=150 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 3 3PISO"
+   - id=10145 puesto=70 2026-02 concepto_id=16 monto=150 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 3 3PISO"
+   - id=10150 puesto=70 2026-03 concepto_id=16 monto=150 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 3 3PISO"
+   - id=10155 puesto=70 2026-04 concepto_id=16 monto=150 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 3 3PISO"
+   - id=10206 puesto=82 2026-01 concepto_id=6 monto=28.3 pagado=0 obs="Migración de deudas 2026 - MULTA X CAPACITACION"
+   - id=10209 puesto=82 2026-03 concepto_id=6 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/03/2026"
+   - id=6222 puesto=134 2026-04 concepto_id=7 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=10485 puesto=54 2026-01 concepto_id=19 monto=10 pagado=0 obs="Migración de deudas 2026 - P.S X FALL. FLORES FLORES UMBELINA"
+   - id=10486 puesto=54 2026-01 concepto_id=6 monto=28.3 pagado=0 obs="Migración de deudas 2026 - MULTA X CAPACITACION"
+   - id=10493 puesto=54 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6270 puesto=59 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=10555 puesto=160 2026-03 concepto_id=18 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 5"
+   - id=10560 puesto=160 2026-04 concepto_id=18 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 5"
+   - id=10583 puesto=91 2026-04 concepto_id=18 monto=190 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 5"
+   - id=6312 puesto=73 2026-03 concepto_id=7 monto=200 pagado=100 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=6318 puesto=73 2026-04 concepto_id=7 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=10731 puesto=145 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6582 puesto=64 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6764 puesto=149 2026-04 concepto_id=7 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=6859 puesto=183 2026-01 concepto_id=19 monto=10 pagado=0 obs="Migración de deudas 2026 - P.S X FALL. FLORES FLORES UMBELINA"
+   - id=6866 puesto=183 2026-03 concepto_id=18 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/03/26"
+   - id=6871 puesto=183 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=6943 puesto=89 2026-04 concepto_id=7 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=6970 puesto=79 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=7029 puesto=62 2026-01 concepto_id=6 monto=28.3 pagado=0 obs="Migración de deudas 2026 - MULTA X CAPACITACION"
+   - id=7032 puesto=62 2026-03 concepto_id=6 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/03/2026"
+   - id=7145 puesto=103 2026-04 concepto_id=16 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 2A 1 PISO"
+   - id=7218 puesto=93 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=7241 puesto=67 2026-04 concepto_id=16 monto=150 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 2 3PISO"
+   - id=7645 puesto=14 2026-03 concepto_id=6 monto=113 pagado=0 obs="Migración de deudas 2026 - MULTA 26/03/2026"
+   - id=7744 puesto=107 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=7816 puesto=84 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=7894 puesto=100 2026-04 concepto_id=7 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO"
+   - id=8101 puesto=87 2026-04 concepto_id=18 monto=5 pagado=0 obs="Migración de deudas 2026 - FUMIGACION"
+   - id=8306 puesto=81 2026-03 concepto_id=18 monto=200 pagado=100 obs="Migración de deudas 2026 - DEPOSITO N° 8 Y 9 1PISO"
+   - id=8315 puesto=81 2026-04 concepto_id=18 monto=200 pagado=0 obs="Migración de deudas 2026 - DEPOSITO N° 8 Y 9 1PISO"
+   - id=8792 puesto=195 2026-03 concepto_id=18 monto=200 pagado=91 obs="Migración de deudas 2026 - DEPOSITO N° 4"
+   - id=8796 puesto=195 2026-04 concepto_id=18 monto=200 pagado=168 obs="Migración de deudas 2026 - DEPOSITO N° 4"
+
+Total "por cobrar" agregado del Excel (filas mapeadas): S/ 52580.5
+
+(Modo análisis. Ejecuta con --generate-sql para escribir supabase/migrations/00064_reconciliacion_consolidado_socios.sql)
