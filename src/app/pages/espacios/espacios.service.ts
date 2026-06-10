@@ -9,11 +9,12 @@ import {
 } from './espacios.model';
 
 export interface AsignarAlmacenParams {
-  puestoId:      number;
-  tipoOcupante:  TipoOcupante;
-  socioId?:      number;
-  inquilinoId?:  number;
-  fechaInicio?:  string;
+  puestoId:       number;
+  tipoOcupante:   TipoOcupante;
+  socioId?:       number;
+  inquilinoId?:   number;
+  fechaInicio?:   string;
+  costoAlquiler?: number;
 }
 
 export interface TransferirPuestoParams {
@@ -34,7 +35,6 @@ export interface TransferirPuestoResult {
   deudas_pendientes_total:   number;
 }
 
-// Raw row from ocupaciones_almacenes with joins
 interface OcupacionAlmacenRow {
   id: number;
   puesto_id: number;
@@ -46,6 +46,7 @@ interface OcupacionAlmacenRow {
   fecha_inicio: string;
   fecha_fin: string | null;
   motivo_cierre: string | null;
+  costo_alquiler: number;
   puesto: { codigo_puesto: string } | null;
 }
 
@@ -133,7 +134,7 @@ export class EspaciosService {
       .from('ocupaciones_almacenes')
       .select(`
         id, puesto_id, tipo_ocupante, socio_id, inquilino_id,
-        fecha_inicio, fecha_fin, motivo_cierre,
+        fecha_inicio, fecha_fin, motivo_cierre, costo_alquiler,
         socio:socios (nombres, apellidos),
         inquilino:inquilinos (nombres, apellidos, tipo_inquilino),
         puesto:puestos (codigo_puesto)
@@ -148,15 +149,24 @@ export class EspaciosService {
   async asignarAlmacen(params: AsignarAlmacenParams): Promise<number> {
     const { data: auth } = await this.db.auth.getUser();
     const { data, error } = await this.db.rpc('rpc_asignar_almacen', {
-      p_puesto_id:     params.puestoId,
-      p_tipo_ocupante: params.tipoOcupante,
-      p_socio_id:      params.socioId      ?? null,
-      p_inquilino_id:  params.inquilinoId  ?? null,
-      p_fecha_inicio:  params.fechaInicio  ?? null,
-      p_usuario:       auth.user?.id       ?? null,
+      p_puesto_id:      params.puestoId,
+      p_tipo_ocupante:  params.tipoOcupante,
+      p_socio_id:       params.socioId       ?? null,
+      p_inquilino_id:   params.inquilinoId   ?? null,
+      p_fecha_inicio:   params.fechaInicio   ?? null,
+      p_usuario:        auth.user?.id        ?? null,
+      p_costo_alquiler: params.costoAlquiler ?? null,
     });
     if (error) throw new Error(error.message);
     return (data as { id: number }).id;
+  }
+
+  async modificarCostoAlmacen(puestoId: number, costo: number): Promise<void> {
+    const { error } = await this.db.rpc('rpc_modificar_costo_almacen', {
+      p_puesto_id: puestoId,
+      p_monto:     costo,
+    });
+    if (error) throw new Error(error.message);
   }
 
   async liberarAlmacen(
@@ -207,6 +217,7 @@ export class EspaciosService {
       fecha_inicio:         r.fecha_inicio,
       fecha_fin:            r.fecha_fin,
       motivo_cierre:        r.motivo_cierre,
+      costo_alquiler:       r.costo_alquiler ?? 0,
     };
   }
 }

@@ -6,6 +6,7 @@ import { EspacioOcupacion, esEspacioPrincipal } from './espacios.model';
 import { EspacioTableComponent, ToggleServicioEvent } from './components/espacio-table.component';
 import { EspacioDrawerComponent } from './components/espacio-drawer.component';
 import { TransferirPuestoDialogComponent } from './components/transferir-puesto-dialog.component';
+import { AsignarAlmacenDialogComponent } from './components/asignar-almacen-dialog.component';
 
 type FiltroTipo = 'todos' | 'Regular' | 'Pequeño' | 'Almacen';
 
@@ -17,6 +18,7 @@ type FiltroTipo = 'todos' | 'Regular' | 'Pequeño' | 'Almacen';
     EspacioTableComponent,
     EspacioDrawerComponent,
     TransferirPuestoDialogComponent,
+    AsignarAlmacenDialogComponent,
   ],
   template: `
 <div class="p-6 max-w-7xl mx-auto">
@@ -116,8 +118,9 @@ type FiltroTipo = 'todos' | 'Regular' | 'Pequeño' | 'Almacen';
     (toggleLuz)="onToggleServicio({ espacio: $event, servicio: 'luz' })"
     (toggleAgua)="onToggleServicio({ espacio: $event, servicio: 'agua' })"
     (requestTransferir)="abrirDialogoTransferir($event)"
-    (requestAsignarAlmacen)="onRequestAsignarAlmacen($event)"
+    (requestAsignarAlmacen)="dialogoAsignarAlmacen.set($event)"
     (requestLiberarAlmacen)="onRequestLiberarAlmacen($event)"
+    (requestEditarCosto)="onRequestEditarCosto($event)"
   />
 }
 
@@ -128,6 +131,17 @@ type FiltroTipo = 'todos' | 'Regular' | 'Pequeño' | 'Almacen';
     [codigoPuesto]="dialogoTransferir()!.codigo_puesto"
     (cancelar)="dialogoTransferir.set(null)"
     (transferido)="onTransferido($event)"
+  />
+}
+
+<!-- Diálogo de asignación de almacén (smart) -->
+@if (dialogoAsignarAlmacen()) {
+  <app-asignar-almacen-dialog
+    [puestoId]="dialogoAsignarAlmacen()!.puesto_id"
+    [codigoPuesto]="dialogoAsignarAlmacen()!.codigo_puesto"
+    [costoAlquilerBase]="dialogoAsignarAlmacen()!.costo_alquiler"
+    (cancelar)="dialogoAsignarAlmacen.set(null)"
+    (asignado)="onAlmacenAsignado()"
   />
 }
   `,
@@ -142,6 +156,7 @@ export class GestionEspaciosComponent implements OnInit {
   protected readonly errorLocal      = signal<string | null>(null);
   protected readonly avisoDeudas     = signal(false);
   protected readonly dialogoTransferir = signal<EspacioOcupacion | null>(null);
+  protected readonly dialogoAsignarAlmacen = signal<EspacioOcupacion | null>(null);
 
   protected readonly sortCol = signal<'codigo' | 'ocupante'>('codigo');
   protected readonly sortAsc = signal<boolean>(true);
@@ -255,9 +270,9 @@ export class GestionEspaciosComponent implements OnInit {
     void this.svc.cargar();
   }
 
-  protected onRequestAsignarAlmacen(_esp: EspacioOcupacion): void {
-    // TODO: abrir formulario de asignación de almacén
-    // Por ahora recargar
+  protected onAlmacenAsignado(): void {
+    this.dialogoAsignarAlmacen.set(null);
+    this.seleccionado.set(null);
     void this.svc.cargar();
   }
 
@@ -273,6 +288,30 @@ export class GestionEspaciosComponent implements OnInit {
       void this.svc.cargar();
     } catch (e: unknown) {
       this.errorLocal.set(e instanceof Error ? e.message : 'Error al liberar almacén.');
+    }
+  }
+
+  protected async onRequestEditarCosto(esp: EspacioOcupacion): Promise<void> {
+    const actual = esp.costo_alquiler ?? 0;
+    const input = window.prompt(
+      `Nuevo costo mensual de alquiler para ${esp.codigo_puesto} (actual: S/ ${actual.toFixed(2)}):`,
+      actual.toFixed(2),
+    );
+    if (input === null) return;
+    const nuevo = parseFloat(input.replace(',', '.'));
+    if (isNaN(nuevo) || nuevo < 0) {
+      this.errorLocal.set('Monto inválido. Debe ser un número mayor o igual a 0.');
+      return;
+    }
+    this.errorLocal.set(null);
+    try {
+      await this.svc.modificarCostoAlmacen(esp.puesto_id, nuevo);
+      this.svc.actualizarEspacio(esp.puesto_id, { costo_alquiler: nuevo });
+      if (this.seleccionado()?.puesto_id === esp.puesto_id) {
+        this.seleccionado.update(s => s ? { ...s, costo_alquiler: nuevo } : s);
+      }
+    } catch (e: unknown) {
+      this.errorLocal.set(e instanceof Error ? e.message : 'Error al actualizar el costo de alquiler.');
     }
   }
 }

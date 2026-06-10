@@ -46,6 +46,10 @@ export interface EspacioOcupacion {
   tipo_ocupante:        TipoOcupante | null;
   // ID de ocupacion_almacen activa (solo para Almacén)
   ocupacion_almacen_id: number | null;
+  // Tarifa base del almacén (puestos.costo_alquiler)
+  costo_alquiler: number;
+  // Costo del contrato vigente (ocupaciones_almacenes.costo_alquiler — solo Almacén ocupado)
+  costo_alquiler_contrato: number | null;
 }
 
 /** Espacio Regular/Pequeño con sus Almacenes agrupados por titular. */
@@ -70,6 +74,7 @@ export interface OcupacionAlmacen {
   fecha_inicio:      string;
   fecha_fin:         string | null;
   motivo_cierre:     string | null;
+  costo_alquiler:    number;
 }
 
 // ---------------------------------------------------------------------------

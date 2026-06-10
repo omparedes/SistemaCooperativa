@@ -221,6 +221,34 @@ import {
         }
       </section>
     } @else {
+      <!-- Costo de alquiler (solo Almacén) -->
+      <section>
+        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Tarifa de Alquiler</h4>
+        <div class="flex items-center justify-between rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3">
+          <div>
+            <div class="text-xs text-amber-700 dark:text-amber-400">Costo mensual base</div>
+            <div class="text-lg font-bold text-amber-900 dark:text-amber-200">
+              S/ {{ espacio().costo_alquiler | number:'1.2-2' }}
+            </div>
+            @if (espacio().costo_alquiler_contrato !== null && espacio().costo_alquiler_contrato !== espacio().costo_alquiler) {
+              <div class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                Contrato vigente: S/ {{ espacio().costo_alquiler_contrato! | number:'1.2-2' }}
+              </div>
+            }
+          </div>
+          @if (esAdmin()) {
+            <button
+              (click)="requestEditarCosto.emit(espacio())"
+              title="Editar costo"
+              class="p-1.5 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </section>
+
       <!-- Ocupante para Almacén -->
       <section>
         <div class="flex items-center justify-between mb-3">
@@ -249,6 +277,11 @@ import {
             <div class="text-xs text-gray-500 dark:text-gray-400">
               Desde: {{ (espacio().titularidad_inicio ?? espacio().arriendo_inicio) | date:'dd/MM/yyyy' }}
             </div>
+            @if (espacio().costo_alquiler_contrato !== null) {
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                Alquiler acordado: <span class="font-semibold text-gray-700 dark:text-gray-300">S/ {{ espacio().costo_alquiler_contrato! | number:'1.2-2' }}</span>
+              </div>
+            }
             @if (esAdmin() && espacio().ocupacion_almacen_id) {
               <button
                 (click)="requestLiberarAlmacen.emit({ espacio: espacio(), ocupacionId: espacio().ocupacion_almacen_id! })"
@@ -283,12 +316,13 @@ export class EspacioDrawerComponent {
   readonly esAdmin  = input(false);
   readonly toggling = input<string | null>(null);
 
-  readonly cerrar              = output<void>();
-  readonly toggleLuz           = output<EspacioOcupacion>();
-  readonly toggleAgua          = output<EspacioOcupacion>();
-  readonly requestTransferir   = output<EspacioOcupacion>();
+  readonly cerrar                 = output<void>();
+  readonly toggleLuz              = output<EspacioOcupacion>();
+  readonly toggleAgua             = output<EspacioOcupacion>();
+  readonly requestTransferir      = output<EspacioOcupacion>();
   readonly requestAsignarAlmacen  = output<EspacioOcupacion>();
   readonly requestLiberarAlmacen  = output<{ espacio: EspacioOcupacion; ocupacionId: number }>();
+  readonly requestEditarCosto     = output<EspacioOcupacion>();
 
   protected readonly getTipoBadge      = badgeTipoEspacio;
   protected readonly getOcupanteBadge  = badgeTipoOcupante;

@@ -466,4 +466,49 @@ export class FacturacionService {
       montos_ya_existian: r.montos_ya_existian,
     };
   }
+
+  // ---------------------------------------------------------------------------
+  // Alquiler de Almacenes (migración 00072)
+  // ---------------------------------------------------------------------------
+
+  async generarAlquilerAlmacenesMes(params: { anio: number; mes: number }): Promise<{
+    periodo: { anio: number; mes: number };
+    almacenes_procesados: number;
+    cargos_generados: number;
+    total_monto: number;
+  }> {
+    const { data: authData } = await this.db.auth.getUser();
+    const userId = authData.user?.id ?? null;
+
+    const { data, error } = await this.db.rpc('generar_alquiler_almacenes_mes', {
+      p_anio:    params.anio,
+      p_mes:     params.mes,
+      p_usuario: userId,
+    });
+
+    if (error) throw new Error(error.message);
+    return data as {
+      periodo: { anio: number; mes: number };
+      almacenes_procesados: number;
+      cargos_generados: number;
+      total_monto: number;
+    };
+  }
+
+  async cargarResumenAlmacenesElegibles(): Promise<{ cantidad: number; total: number }> {
+    const { data, error } = await this.db
+      .from('ocupaciones_almacenes')
+      .select('costo_alquiler, puestos!inner(estado, deleted_at)')
+      .is('fecha_fin', null)
+      .eq('puestos.estado', 'Activo')
+      .is('puestos.deleted_at', null);
+
+    if (error) throw new Error(error.message);
+
+    const rows = (data ?? []) as { costo_alquiler: number }[];
+    return {
+      cantidad: rows.length,
+      total:    rows.reduce((acc, r) => acc + (r.costo_alquiler ?? 0), 0),
+    };
+  }
 }

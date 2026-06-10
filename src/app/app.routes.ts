@@ -140,6 +140,13 @@ export const routes: Routes = [
         title: 'Cargos Fijos del Mes | Cooperativa Primero de Mayo',
       },
       {
+        path: 'facturacion/alquiler-almacenes',
+        loadComponent: () =>
+          import('./pages/facturacion/facturacion-almacenes.component').then(m => m.FacturacionAlmacenesComponent),
+        canActivate: [adminGuard],
+        title: 'Alquiler de Almacenes | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'recaudacion',
         loadComponent: () =>
           import('./pages/recaudacion/recaudacion.component')
