@@ -53,3 +53,6 @@ Thumbs.db
 /supabase/.env
 
 /migracion_coop
+
+# Documentación interna de mejora continua (no publicar)
+/plan_mejora
