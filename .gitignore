@@ -56,3 +56,9 @@ Thumbs.db
 
 # Documentación interna de mejora continua (no publicar)
 /plan_mejora
+
+# Archivos sensibles — nunca deben entrar al repo
+backup_*.sql
+*.dump
+informe_*.md
+scratch/
