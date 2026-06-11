@@ -1,5 +1,5 @@
 import {
-  Component, computed, inject, input, OnInit, output, signal,
+  Component, inject, input, OnInit, output, signal,
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -108,7 +108,7 @@ interface PersonaOpcion {
       </button>
       <button
         (click)="confirmar()"
-        [disabled]="!puedeConfirmar() || guardando()"
+        [disabled]="!puedeConfirmar || guardando()"
         class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
         @if (guardando()) {
           <span class="inline-flex items-center gap-2">
@@ -149,9 +149,9 @@ export class AsignarAlmacenDialogComponent implements OnInit {
   protected readonly guardando        = signal(false);
   protected readonly errorMsg         = signal<string | null>(null);
 
-  protected readonly puedeConfirmar = computed(
-    () => this.personaSeleccionadaId !== null && this.costoAlquiler >= 0,
-  );
+  protected get puedeConfirmar(): boolean {
+    return this.personaSeleccionadaId !== null && this.costoAlquiler >= 0;
+  }
 
   ngOnInit(): void {
     this.costoAlquiler = this.costoAlquilerBase();
@@ -196,7 +196,7 @@ export class AsignarAlmacenDialogComponent implements OnInit {
   }
 
   protected async confirmar(): Promise<void> {
-    if (!this.puedeConfirmar()) return;
+    if (!this.puedeConfirmar) return;
     this.guardando.set(true);
     this.errorMsg.set(null);
     try {
