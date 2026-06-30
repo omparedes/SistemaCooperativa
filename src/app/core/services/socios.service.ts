@@ -88,6 +88,16 @@ interface SocioDetalleRow {
       giro: { nombre: string } | null;
     } | null;
   }>;
+  ocupaciones_almacenes: Array<{
+    fecha_fin: string | null;
+    puesto: {
+      id: number;
+      codigo_puesto: string;
+      estado: string;
+      tipo_espacio: TipoEspacioPuesto;
+      giro: { nombre: string } | null;
+    } | null;
+  }>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -147,10 +157,18 @@ export class SociosService {
             id, codigo_puesto, estado, tipo_espacio,
             giro:giros ( nombre )
           )
+        ),
+        ocupaciones_almacenes (
+          fecha_fin,
+          puesto:puestos (
+            id, codigo_puesto, estado, tipo_espacio,
+            giro:giros ( nombre )
+          )
         )
       `)
       .eq('id', id)
       .is('deleted_at', null)
+      .is('ocupaciones_almacenes.fecha_fin', null)
       .single();
 
     if (error) throw new Error(error.message);
@@ -361,7 +379,18 @@ export class SociosService {
 
     const vigentes = titularidades.filter(t => t.vigente);
     const puesto_vigente = vigentes.find(t => esEspacioPrincipal(t.puesto.tipo_espacio))?.puesto ?? null;
-    const almacenes_vigentes = vigentes.filter(t => t.puesto.tipo_espacio === 'Almacen').map(t => t.puesto);
+
+    // Los almacenes usan ocupaciones_almacenes, NO historial_titularidad.
+    // La query ya filtra por fecha_fin IS NULL (vigentes) en el servidor.
+    const almacenes_vigentes = (row.ocupaciones_almacenes ?? [])
+      .filter(o => o.fecha_fin === null && o.puesto !== null)
+      .map(o => ({
+        id:           o.puesto!.id,
+        codigo:       o.puesto!.codigo_puesto,
+        estado:       o.puesto!.estado,
+        tipo_espacio: o.puesto!.tipo_espacio as TipoEspacioPuesto,
+        giro:         o.puesto!.giro?.nombre ?? null,
+      }));
 
     return {
       id: row.id,
