@@ -172,7 +172,7 @@ function formatSoles(n: number): string {
                 <div class="flex flex-wrap gap-2">
                   @for (d of deudas(); track d.monto_id) {
                     <span class="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-600 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400">
-                      {{ d.concepto }} {{ formatPeriodo(d.periodo_anio, d.periodo_mes) }}: {{ formatSoles(d.saldo_pendiente) }}
+                      {{ d.concepto }}@if (d.codigo_puesto && d.codigo_puesto !== seleccionado()?.codigo_puesto) { [{{ d.codigo_puesto }}]} {{ formatPeriodo(d.periodo_anio, d.periodo_mes) }}: {{ formatSoles(d.saldo_pendiente) }}
                     </span>
                   }
                 </div>
@@ -364,7 +364,7 @@ function formatSoles(n: number): string {
                         : 'bg-white dark:bg-gray-800'">
                         <td class="px-4 py-3">
                           <p class="font-medium text-gray-800 dark:text-white">{{ linea.concepto }}</p>
-                          <p class="text-xs text-gray-400">{{ linea.periodo_label }}</p>
+                          <p class="text-xs text-gray-400">{{ linea.periodo_label }}@if (linea.codigo_puesto) { · {{ linea.codigo_puesto }}}</p>
                         </td>
                         <td class="px-4 py-3 text-right font-medium text-gray-800 dark:text-white">
                           {{ formatSoles(linea.saldo_pendiente) }}
@@ -556,7 +556,7 @@ function formatSoles(n: number): string {
                       <tr>
                         <td class="px-4 py-3">
                           <p class="font-medium text-gray-800 dark:text-white">{{ linea.concepto }}</p>
-                          <p class="text-xs text-gray-400">{{ linea.periodo_label }}</p>
+                          <p class="text-xs text-gray-400">{{ linea.periodo_label }}@if (linea.codigo_puesto) { · {{ linea.codigo_puesto }}}</p>
                         </td>
                         <td class="px-4 py-3 text-right font-bold text-brand-600 dark:text-brand-400">
                           {{ formatSoles(linea.monto_aplicado) }}
@@ -674,6 +674,7 @@ export class PagoWizardComponent {
         return {
           monto_id: d.monto_id,
           concepto: d.concepto,
+          codigo_puesto: d.codigo_puesto,
           periodo_label: formatPeriodo(d.periodo_anio, d.periodo_mes),
           saldo_pendiente: d.saldo_pendiente,
           monto_aplicado: 0,
@@ -685,6 +686,7 @@ export class PagoWizardComponent {
       return {
         monto_id: d.monto_id,
         concepto: d.concepto,
+        codigo_puesto: d.codigo_puesto,
         periodo_label: formatPeriodo(d.periodo_anio, d.periodo_mes),
         saldo_pendiente: d.saldo_pendiente,
         monto_aplicado: aplicar,
@@ -703,6 +705,7 @@ export class PagoWizardComponent {
       return {
         monto_id: d.monto_id,
         concepto: d.concepto,
+        codigo_puesto: d.codigo_puesto,
         periodo_label: formatPeriodo(d.periodo_anio, d.periodo_mes),
         saldo_pendiente: d.saldo_pendiente,
         monto_aplicado,
@@ -909,7 +912,9 @@ export class PagoWizardComponent {
       detalle: this.distribucionFinal()
         .filter(l => l.monto_aplicado > 0)
         .map(l => ({
-          concepto: l.concepto,
+          concepto: l.codigo_puesto && l.codigo_puesto !== sel.codigo_puesto
+            ? `${l.concepto} · ${l.codigo_puesto}`
+            : l.concepto,
           periodo: l.periodo_label,
           saldo_original: l.saldo_pendiente,
           aplicado: l.monto_aplicado,

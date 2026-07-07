@@ -86,6 +86,20 @@ export const routes: Routes = [
           import('./pages/reportes/arqueo-caja.component').then(m => m.ArqueoCajaComponent),
         title: 'Arqueo de Caja Diario | Cooperativa Primero de Mayo',
       },
+      {
+        path: 'reportes/dietas',
+        loadComponent: () =>
+          import('./pages/reportes/beneficios-reporte.component').then(m => m.BeneficiosReporteComponent),
+        title: 'Reporte de Dietas | Cooperativa Primero de Mayo',
+        data: { tipo: 'dieta', titulo: 'Reporte de Dietas de Socios' }
+      },
+      {
+        path: 'reportes/provision-social',
+        loadComponent: () =>
+          import('./pages/reportes/beneficios-reporte.component').then(m => m.BeneficiosReporteComponent),
+        title: 'Reporte de Provisión Social | Cooperativa Primero de Mayo',
+        data: { tipo: 'provision_social', titulo: 'Reporte de Provisión Social' }
+      },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
         path: 'configuracion/tarifas',

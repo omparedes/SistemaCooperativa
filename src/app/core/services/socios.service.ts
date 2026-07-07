@@ -260,63 +260,39 @@ export class SociosService {
     if (error) throw new Error(error.message);
   }
 
-  /** Deudas pendientes de un socio, incluyendo cargos personales y de todos sus espacios asignados. */
-  async cargarDeudasVigentes(socioId: number, puestoIds: number[]): Promise<DeudaPendiente[]> {
-    let query = this.db
-      .from('montos_por_cobrar')
-      .select(`
-        id, monto, estado, periodo_anio, periodo_mes, puesto_id, socio_id,
-        concepto:conceptos ( nombre ),
-        puesto:puestos ( codigo_puesto ),
-        detalle_pagos ( monto_aplicado, deleted_at )
-      `)
-      .eq('estado', 'Pendiente')
-      .is('deleted_at', null);
-
-    if (puestoIds.length > 0) {
-      query = query.or(`socio_id.eq.${socioId},and(puesto_id.in.(${puestoIds.join(',')}),concepto_id.neq.11)`);
-    } else {
-      query = query.eq('socio_id', socioId);
-    }
-
-    const { data, error } = await query
-      .order('periodo_anio', { ascending: true })
-      .order('periodo_mes',  { ascending: true });
+  /**
+   * Deudas pendientes de un socio vía `rpc_caja_cargar_deudas` (00082):
+   * cargos personales + puesto principal + almacenes vigentes.
+   * Misma fuente canónica que Caja, Cuenta Corriente y Portal Público.
+   */
+  async cargarDeudasVigentes(socioId: number): Promise<DeudaPendiente[]> {
+    const { data, error } = await this.db.rpc('rpc_caja_cargar_deudas', {
+      p_puesto_id:  null,
+      p_persona_id: socioId,
+      p_tipo:       'socio',
+    });
 
     if (error) throw new Error(error.message);
 
     return ((data ?? []) as unknown as Array<{
-      id: number;
-      monto: number;
-      estado: string;
+      monto_id: number;
+      concepto: string;
+      codigo_puesto: string | null;
       periodo_anio: number;
       periodo_mes: number;
-      puesto_id: number | null;
-      socio_id: number | null;
-      concepto: { nombre: string } | null;
-      puesto: { codigo_puesto: string } | null;
-      detalle_pagos: Array<{ monto_aplicado: number; deleted_at: string | null }>;
-    }>).map(row => {
-      const pagado = (row.detalle_pagos ?? [])
-        .filter(d => d.deleted_at === null)
-        .reduce((acc, d) => acc + d.monto_aplicado, 0);
-
-      let origen = 'Personal';
-      if (row.puesto?.codigo_puesto) {
-        origen = `Puesto ${row.puesto.codigo_puesto}`;
-      }
-
-      return {
-        id:           row.id,
-        concepto:     row.concepto?.nombre ?? '—',
-        periodo_anio: row.periodo_anio,
-        periodo_mes:  row.periodo_mes,
-        monto:        row.monto,
-        monto_pagado: pagado,
-        saldo:        row.monto - pagado,
-        origen:       origen,
-      };
-    });
+      monto_original: number;
+      ya_pagado: number;
+      saldo_pendiente: number;
+    }>).map(row => ({
+      id:           row.monto_id,
+      concepto:     row.concepto,
+      periodo_anio: row.periodo_anio,
+      periodo_mes:  row.periodo_mes,
+      monto:        Number(row.monto_original),
+      monto_pagado: Number(row.ya_pagado),
+      saldo:        Number(row.saldo_pendiente),
+      origen:       row.codigo_puesto ? `Puesto ${row.codigo_puesto}` : 'Personal',
+    }));
   }
 
   private mapearLista(row: SocioListaRow): SocioConPuesto {

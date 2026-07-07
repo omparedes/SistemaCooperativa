@@ -13,6 +13,8 @@ export interface BusquedaResultado {
 export interface DeudaItem {
   monto_id: number;
   concepto: string;
+  /** Código del espacio al que pertenece el cargo (null = cargo personal). */
+  codigo_puesto?: string | null;
   periodo_anio: number;
   periodo_mes: number;
   monto_original: number;
@@ -24,6 +26,7 @@ export interface DeudaItem {
 export interface LineaFifo {
   monto_id: number;
   concepto: string;
+  codigo_puesto?: string | null;
   periodo_label: string;
   saldo_pendiente: number;
   monto_aplicado: number;
@@ -36,6 +39,8 @@ export interface LineaFifo {
 export interface PagoHistorialDetalle {
   monto_aplicado: number;
   concepto: string;
+  /** Código del espacio al que pertenece el cargo pagado (para reimpresiones). */
+  codigo_puesto?: string | null;
   periodo_anio: number;
   periodo_mes: number;
   monto_original: number;

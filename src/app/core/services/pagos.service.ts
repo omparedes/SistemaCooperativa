@@ -52,6 +52,7 @@ interface PagoHistorialDetalleRow {
     periodo_anio: number;
     periodo_mes: number;
     concepto: { nombre: string } | null;
+    puesto: { codigo_puesto: string } | null;
   } | null;
 }
 
@@ -66,17 +67,6 @@ interface PagoHistorialRow {
   motivo_anulacion: string | null;
   puesto: { codigo_puesto: string } | null;
   detalle: PagoHistorialDetalleRow[];
-}
-
-interface MontoPorCobrarRow {
-  id: number;
-  monto: number;
-  estado: string;
-  periodo_anio: number;
-  periodo_mes: number;
-  fecha_generacion: string;
-  concepto: { nombre: string } | null;
-  pagos_parciales: Array<{ monto_aplicado: number; deleted_at: string | null }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -161,51 +151,26 @@ export class PagosService {
     return resultados.slice(0, 10);
   }
 
+  /**
+   * Consolidado de deudas del pagador vía `rpc_caja_cargar_deudas` (00082):
+   * cargos personales + puesto principal + todos los almacenes vigentes.
+   * Misma fuente canónica que Cuenta Corriente y el Portal Público.
+   */
   async cargarDeudasPuesto(puestoId: number, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
-
-    let query = this.db
-      .from('montos_por_cobrar')
-      .select(`
-        id, monto, estado, periodo_anio, periodo_mes, fecha_generacion,
-        concepto:conceptos(nombre),
-        pagos_parciales:detalle_pagos(monto_aplicado, deleted_at)
-      `);
-
-    if (personaId && tipo === 'socio') {
-      query = query.or(`puesto_id.eq.${puestoId},socio_id.eq.${personaId}`);
-    } else if (personaId && tipo === 'inquilino') {
-      // Inquilinos in theory only pay puesto debts, but we add it for symmetry
-      query = query.eq('puesto_id', puestoId);
-    } else {
-      query = query.eq('puesto_id', puestoId);
-    }
-
-    const { data, error } = await query
-      .neq('estado', 'Cancelado')
-      .is('deleted_at', null)
-      .order('periodo_anio', { ascending: true })
-      .order('periodo_mes', { ascending: true });
+    const { data, error } = await this.db.rpc('rpc_caja_cargar_deudas', {
+      p_puesto_id:  puestoId,
+      p_persona_id: personaId ?? null,
+      p_tipo:       tipo ?? null,
+    });
 
     if (error) throw new Error(error.message);
 
-    return ((data ?? []) as unknown as MontoPorCobrarRow[])
-      .map(row => {
-        const ya_pagado = (row.pagos_parciales ?? [])
-          .filter(p => p.deleted_at === null)
-          .reduce((s, p) => s + Number(p.monto_aplicado), 0);
-        const saldo_pendiente = Math.round((Number(row.monto) - ya_pagado) * 100) / 100;
-        return {
-          monto_id: row.id,
-          concepto: row.concepto?.nombre ?? 'Sin concepto',
-          periodo_anio: row.periodo_anio,
-          periodo_mes: row.periodo_mes,
-          monto_original: Number(row.monto),
-          ya_pagado,
-          saldo_pendiente,
-          fecha_generacion: row.fecha_generacion,
-        };
-      })
-      .filter(d => d.saldo_pendiente > 0);
+    return ((data ?? []) as unknown as DeudaItem[]).map(d => ({
+      ...d,
+      monto_original:  Number(d.monto_original),
+      ya_pagado:       Number(d.ya_pagado),
+      saldo_pendiente: Number(d.saldo_pendiente),
+    }));
   }
 
   async obtenerSaldoAFavor(personaId: number, tipo: 'socio' | 'inquilino'): Promise<number> {
@@ -286,7 +251,8 @@ export class PagosService {
           id, monto_aplicado, deleted_at,
           monto_cobrar:montos_por_cobrar(
             monto, periodo_anio, periodo_mes,
-            concepto:conceptos(nombre)
+            concepto:conceptos(nombre),
+            puesto:puestos(codigo_puesto)
           )
         )
       `)
@@ -317,6 +283,7 @@ export class PagosService {
           .map(d => ({
             monto_aplicado: Number(d.monto_aplicado),
             concepto:      d.monto_cobrar?.concepto?.nombre ?? 'Concepto eliminado',
+            codigo_puesto: d.monto_cobrar?.puesto?.codigo_puesto ?? null,
             periodo_anio:  d.monto_cobrar?.periodo_anio ?? 0,
             periodo_mes:   d.monto_cobrar?.periodo_mes ?? 0,
             monto_original: Number(d.monto_cobrar?.monto ?? d.monto_aplicado),

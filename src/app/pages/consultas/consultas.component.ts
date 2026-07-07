@@ -187,7 +187,12 @@ const MESES: ReadonlyArray<string> = [
                       <tbody>
                         @for (d of deudas(); track d.monto_id) {
                           <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3 font-medium text-slate-800">{{ d.concepto }}</td>
+                            <td class="px-5 py-3 font-medium text-slate-800">
+                              {{ d.concepto }}
+                              @if (d.codigo_puesto && d.codigo_puesto !== seleccionado()?.codigo_puesto) {
+                                <span class="ml-1 text-xs font-normal text-slate-400">{{ d.codigo_puesto }}</span>
+                              }
+                            </td>
                             <td class="px-5 py-3 text-slate-600">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</td>
                             <td class="px-5 py-3 text-right font-bold text-red-600">{{ moneda(d.saldo_pendiente) }}</td>
                           </tr>
@@ -412,7 +417,9 @@ export class ConsultasComponent {
         comprobante:        pago.comprobante,
         observacion:        null,
         detalle: (pago.detalle || []).map(det => ({
-          concepto:           det.concepto,
+          concepto:           det.codigo_puesto && det.codigo_puesto !== (pago.codigo_puesto || sel.codigo_puesto)
+            ? `${det.concepto} · ${det.codigo_puesto}`
+            : det.concepto,
           periodo:            `${MESES[det.periodo_mes - 1] ?? det.periodo_mes}-${det.periodo_anio}`,
           saldo_original:     det.monto_original,
           aplicado:           det.monto_aplicado,

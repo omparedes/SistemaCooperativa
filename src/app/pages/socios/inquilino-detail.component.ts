@@ -699,7 +699,9 @@ export class InquilinoDetailComponent implements OnDestroy {
         metodo_pago:        pago.metodo_pago,
         comprobante:        pago.comprobante,
         detalle: pago.detalle.map(det => ({
-          concepto:          det.concepto,
+          concepto:          det.codigo_puesto && det.codigo_puesto !== pago.codigo_puesto
+            ? `${det.concepto} · ${det.codigo_puesto}`
+            : det.concepto,
           periodo:           formatPeriodo(det.periodo_anio, det.periodo_mes),
           saldo_original:    det.monto_original,
           aplicado:          det.monto_aplicado,

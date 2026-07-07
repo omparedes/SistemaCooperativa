@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SociosService } from '../../core/services/socios.service';
@@ -8,8 +8,10 @@ import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-genera
 import { AuthService } from '../../core/services/auth.service';
 import { DeudaPendiente, SocioDetalle } from './socio.model';
 import { PagoHistorial } from '../pagos/pago.model';
+import { BeneficiosService, BeneficioSocio } from '../../core/services/beneficios.service';
+import { FormsModule } from '@angular/forms';
 
-type Tab = 'pagos' | 'deudas' | 'configuracion';
+type Tab = 'pagos' | 'deudas' | 'configuracion' | 'dietas' | 'provision_social';
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'] as const;
 
@@ -28,7 +30,7 @@ const MOTIVOS_ANULACION = [
 @Component({
   selector: 'app-socio-detail',
   standalone: true,
-  imports: [NgClass, DatePipe, RouterModule],
+  imports: [NgClass, DatePipe, DecimalPipe, RouterModule, FormsModule],
   template: `
     <div class="p-6 max-w-7xl mx-auto">
       <a routerLink="/socios"
@@ -210,6 +212,28 @@ const MOTIVOS_ANULACION = [
                     Configuración
                   </button>
                 }
+
+                <button (click)="tab.set('dietas'); cargarDietasTab()" role="tab"
+                  [ngClass]="tab() === 'dietas'
+                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+                    : 'text-gray-500 border-transparent'"
+                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
+                  Dietas
+                  @if (dietasLoading()) {
+                    <span class="ml-1.5 inline-block h-3 w-3 rounded-full border border-brand-400 border-t-transparent animate-spin align-middle"></span>
+                  }
+                </button>
+
+                <button (click)="tab.set('provision_social'); cargarProvisionSocialTab()" role="tab"
+                  [ngClass]="tab() === 'provision_social'
+                    ? 'text-brand-600 dark:text-brand-400 border-brand-600 dark:border-brand-400'
+                    : 'text-gray-500 border-transparent'"
+                  class="px-4 py-3 -mb-px border-b-2 font-medium text-sm transition hover:text-brand-600 dark:hover:text-brand-400">
+                  Provisión Social
+                  @if (provisionSocialLoading()) {
+                    <span class="ml-1.5 inline-block h-3 w-3 rounded-full border border-brand-400 border-t-transparent animate-spin align-middle"></span>
+                  }
+                </button>
               </nav>
             </div>
 
@@ -480,6 +504,116 @@ const MOTIVOS_ANULACION = [
                   </div>
                 </div>
               }
+
+              <!-- ─── TAB: DIETAS ────────────────────────────────────────────── -->
+              @else if (tab() === 'dietas') {
+                <div class="mb-4 flex justify-between items-center">
+                  <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Historial de Dietas</h3>
+                    <p class="text-xs text-gray-500">Dietas otorgadas a este socio.</p>
+                  </div>
+                  @if (authSvc.esAdmin()) {
+                    <button (click)="abrirModalBeneficio('dieta')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
+                      + Nueva Dieta
+                    </button>
+                  }
+                </div>
+                @if (dietasLoading()) {
+                  <div class="py-12 flex items-center justify-center gap-3 text-gray-400">
+                    <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
+                    Cargando dietas...
+                  </div>
+                } @else if (dietasError()) {
+                  <div class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+                    {{ dietasError() }}
+                  </div>
+                } @else if (dietas().length === 0) {
+                  <div class="py-16 text-center text-gray-500">
+                    <p class="font-medium">Sin dietas registradas</p>
+                  </div>
+                } @else {
+                  <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-left">
+                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-xs uppercase text-gray-500">
+                        <tr>
+                          <th class="px-4 py-3">Fecha</th>
+                          <th class="px-4 py-3">Concepto</th>
+                          <th class="px-4 py-3 text-right">Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (d of dietas(); track d.id) {
+                          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="px-4 py-3 whitespace-nowrap">{{ d.fecha | date:'dd/MM/yyyy' }}</td>
+                            <td class="px-4 py-3">
+                              <span class="block font-medium text-gray-900 dark:text-white">{{ d.motivo || '—' }}</span>
+                              @if (d.observacion) { <span class="block text-xs text-gray-500">{{ d.observacion }}</span> }
+                            </td>
+                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                              S/ {{ d.monto | number:'1.2-2' }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              }
+
+              <!-- ─── TAB: PROVISIÓN SOCIAL ─────────────────────────────────── -->
+              @else if (tab() === 'provision_social') {
+                <div class="mb-4 flex justify-between items-center">
+                  <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Provisión Social</h3>
+                    <p class="text-xs text-gray-500">Apoyos económicos entregados.</p>
+                  </div>
+                  @if (authSvc.esAdmin()) {
+                    <button (click)="abrirModalBeneficio('provision_social')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
+                      + Nueva Provisión
+                    </button>
+                  }
+                </div>
+                @if (provisionSocialLoading()) {
+                  <div class="py-12 flex items-center justify-center gap-3 text-gray-400">
+                    <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
+                    Cargando provisión social...
+                  </div>
+                } @else if (provisionSocialError()) {
+                  <div class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+                    {{ provisionSocialError() }}
+                  </div>
+                } @else if (provisionSocial().length === 0) {
+                  <div class="py-16 text-center text-gray-500">
+                    <p class="font-medium">Sin apoyos de provisión social registrados</p>
+                  </div>
+                } @else {
+                  <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="w-full text-sm text-left">
+                      <thead class="bg-gray-50 dark:bg-gray-900/50 text-xs uppercase text-gray-500">
+                        <tr>
+                          <th class="px-4 py-3">Fecha</th>
+                          <th class="px-4 py-3">Motivo</th>
+                          <th class="px-4 py-3 text-right">Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (p of provisionSocial(); track p.id) {
+                          <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                            <td class="px-4 py-3 whitespace-nowrap">{{ p.fecha | date:'dd/MM/yyyy' }}</td>
+                            <td class="px-4 py-3">
+                              <span class="block font-medium text-gray-900 dark:text-white">{{ p.motivo || '—' }}</span>
+                              @if (p.observacion) { <span class="block text-xs text-gray-500">{{ p.observacion }}</span> }
+                            </td>
+                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                              S/ {{ p.monto | number:'1.2-2' }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              }
             </div>
           </section>
         </div>
@@ -487,6 +621,81 @@ const MOTIVOS_ANULACION = [
         <p class="text-gray-500 dark:text-gray-400">Selecciona un socio.</p>
       }
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL BENEFICIOS (DIETAS / PROVISION SOCIAL)                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (modalBeneficioAbierto()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        (click)="cerrarModalBeneficio()">
+        <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
+          (click)="$event.stopPropagation()">
+          
+          <div class="flex items-start justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ modalBeneficioTipo() === 'dieta' ? 'Nueva Dieta' : 'Nueva Provisión Social' }}
+              </h3>
+            </div>
+            <button (click)="cerrarModalBeneficio()" class="text-gray-400 hover:text-gray-600 transition">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <form (ngSubmit)="guardarBeneficio()" class="p-5 space-y-4">
+            @if (beneficioError()) {
+              <div class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+                {{ beneficioError() }}
+              </div>
+            }
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha</label>
+              <input type="date" required [(ngModel)]="beneficioForm.fecha" name="fecha"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto (S/)</label>
+              <input type="number" required min="0.01" step="0.01" [(ngModel)]="beneficioForm.monto" name="monto"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ modalBeneficioTipo() === 'dieta' ? 'Concepto' : 'Motivo' }}
+              </label>
+              <input type="text" required [(ngModel)]="beneficioForm.motivo" name="motivo" placeholder="Ej. Asistencia a asamblea"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones (Opcional)</label>
+              <textarea [(ngModel)]="beneficioForm.observacion" name="observacion" rows="2"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500"></textarea>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+              <button type="button" (click)="cerrarModalBeneficio()"
+                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                Cancelar
+              </button>
+              <button type="submit" [disabled]="beneficioGuardando()"
+                class="flex-1 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition disabled:opacity-50 flex justify-center items-center gap-2">
+                @if (beneficioGuardando()) {
+                  <span class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  Guardando...
+                } @else {
+                  Guardar
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════════ -->
     <!-- MODAL DE ANULACIÓN                                                      -->
@@ -591,6 +800,7 @@ export class SocioDetailComponent implements OnDestroy {
   private readonly pagosSvc   = inject(PagosService);
   private readonly pdfSvc     = inject(PdfGeneratorService);
   protected readonly authSvc  = inject(AuthService);
+  private readonly beneficiosSvc = inject(BeneficiosService);
 
   irAEditar(): void {
     const id = this.socioId();
@@ -625,6 +835,22 @@ export class SocioDetailComponent implements OnDestroy {
   readonly errorCargo    = signal<string | null>(null);
 
   // Estado del modal de anulación
+  // Dietas y Provisión Social
+  readonly dietas                 = signal<BeneficioSocio[]>([]);
+  readonly dietasLoading          = signal(false);
+  readonly dietasError            = signal<string | null>(null);
+
+  readonly provisionSocial        = signal<BeneficioSocio[]>([]);
+  readonly provisionSocialLoading = signal(false);
+  readonly provisionSocialError   = signal<string | null>(null);
+
+  // Modal Beneficios
+  readonly modalBeneficioAbierto  = signal(false);
+  readonly modalBeneficioTipo     = signal<'dieta' | 'provision_social'>('dieta');
+  readonly beneficioGuardando     = signal(false);
+  readonly beneficioError         = signal<string | null>(null);
+  beneficioForm = { fecha: '', monto: 0, motivo: '', observacion: '' };
+
   readonly modalAnularAbierto  = signal(false);
   readonly pagoAAnular         = signal<PagoHistorial | null>(null);
   readonly motivoSeleccionado  = signal('');
@@ -714,18 +940,16 @@ export class SocioDetailComponent implements OnDestroy {
   protected readonly formatPeriodo = formatPeriodo;
 
   cargarDeudasTab(): void {
-    const d = this.detalle();
     const id = this.socioId();
-    if (!d || !id) return;
-    const puestoIds = [d.puesto_vigente?.id, ...d.almacenes_vigentes.map(a => a.id)].filter((pId): pId is number => !!pId);
-    void this.cargarDeudas(id, puestoIds);
+    if (!this.detalle() || !id) return;
+    void this.cargarDeudas(id);
   }
 
-  private async cargarDeudas(socioId: number, puestoIds: number[]): Promise<void> {
+  private async cargarDeudas(socioId: number): Promise<void> {
     this.deudasLoading.set(true);
     this.deudasError.set(null);
     try {
-      const lista = await this.svc.cargarDeudasVigentes(socioId, puestoIds);
+      const lista = await this.svc.cargarDeudasVigentes(socioId);
       this.deudas.set(lista);
     } catch (e: unknown) {
       this.deudasError.set(e instanceof Error ? e.message : 'Error al cargar deudas');
@@ -817,7 +1041,9 @@ export class SocioDetailComponent implements OnDestroy {
         metodo_pago:        pago.metodo_pago,
         comprobante:        pago.comprobante,
         detalle: pago.detalle.map(det => ({
-          concepto:           det.concepto,
+          concepto:           det.codigo_puesto && det.codigo_puesto !== pago.codigo_puesto
+            ? `${det.concepto} · ${det.codigo_puesto}`
+            : det.concepto,
           periodo:            formatPeriodo(det.periodo_anio, det.periodo_mes),
           saldo_original:     det.monto_original,
           aplicado:           det.monto_aplicado,
@@ -833,6 +1059,88 @@ export class SocioDetailComponent implements OnDestroy {
       );
     } finally {
       this.generandoPdfId.set(null);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Beneficios (Dietas y Provisión Social)
+  // ---------------------------------------------------------------------------
+
+  async cargarDietasTab(): Promise<void> {
+    const id = this.socioId();
+    if (!id) return;
+    this.dietasLoading.set(true);
+    this.dietasError.set(null);
+    try {
+      const lista = await this.beneficiosSvc.obtenerPorSocio(id, 'dieta');
+      this.dietas.set(lista);
+    } catch (e: any) {
+      this.dietasError.set(e.message || 'Error al cargar dietas');
+    } finally {
+      this.dietasLoading.set(false);
+    }
+  }
+
+  async cargarProvisionSocialTab(): Promise<void> {
+    const id = this.socioId();
+    if (!id) return;
+    this.provisionSocialLoading.set(true);
+    this.provisionSocialError.set(null);
+    try {
+      const lista = await this.beneficiosSvc.obtenerPorSocio(id, 'provision_social');
+      this.provisionSocial.set(lista);
+    } catch (e: any) {
+      this.provisionSocialError.set(e.message || 'Error al cargar provisión social');
+    } finally {
+      this.provisionSocialLoading.set(false);
+    }
+  }
+
+  abrirModalBeneficio(tipo: 'dieta' | 'provision_social'): void {
+    const d = new Date();
+    this.beneficioForm = {
+      fecha: d.toISOString().split('T')[0],
+      monto: 0,
+      motivo: '',
+      observacion: ''
+    };
+    this.modalBeneficioTipo.set(tipo);
+    this.beneficioError.set(null);
+    this.modalBeneficioAbierto.set(true);
+  }
+
+  cerrarModalBeneficio(): void {
+    this.modalBeneficioAbierto.set(false);
+  }
+
+  async guardarBeneficio(): Promise<void> {
+    const id = this.socioId();
+    if (!id) return;
+
+    this.beneficioGuardando.set(true);
+    this.beneficioError.set(null);
+    try {
+      await this.beneficiosSvc.crear({
+        socio_id: id,
+        tipo: this.modalBeneficioTipo(),
+        fecha: this.beneficioForm.fecha,
+        monto: this.beneficioForm.monto,
+        motivo: this.beneficioForm.motivo || undefined,
+        observacion: this.beneficioForm.observacion || undefined
+      });
+      
+      this.cerrarModalBeneficio();
+      
+      // Recargar la tabla activa
+      if (this.modalBeneficioTipo() === 'dieta') {
+        await this.cargarDietasTab();
+      } else {
+        await this.cargarProvisionSocialTab();
+      }
+    } catch (e: any) {
+      this.beneficioError.set(e.message || 'Error al guardar beneficio');
+    } finally {
+      this.beneficioGuardando.set(false);
     }
   }
 }
