@@ -195,12 +195,17 @@ export class SociosService {
   }
 
   /** Actualiza los datos personales de un socio existente. */
-  async actualizar(id: number, params: ActualizarSocioParams): Promise<void> {
-    const { error } = await this.db
-      .from('socios')
-      .update(params)
-      .eq('id', id)
-      .is('deleted_at', null);
+  /**
+   * Edición vía `rpc_actualizar_con_motivo` (00086): el motivo opcional viaja
+   * al audit trail y el RPC valida una whitelist de columnas editables.
+   */
+  async actualizar(id: number, params: ActualizarSocioParams, motivo?: string): Promise<void> {
+    const { error } = await this.db.rpc('rpc_actualizar_con_motivo', {
+      p_tabla:  'socios',
+      p_id:     id,
+      p_patch:  params,
+      p_motivo: motivo?.trim() || null,
+    });
 
     if (error) throw new Error(error.message);
   }

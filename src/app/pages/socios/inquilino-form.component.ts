@@ -147,6 +147,18 @@ const DNI_RE   = /^\d{8}$/;
                 placeholder="Av. Principal 123, Trujillo"
                 class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500" />
             </div>
+
+            <!-- Motivo del cambio (solo edición — viaja al registro de auditoría) -->
+            @if (editMode()) {
+              <div class="md:col-span-2">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Motivo del cambio <span class="text-xs font-normal text-gray-400">(opcional — queda en auditoría)</span>
+                </label>
+                <input type="text" [value]="motivo()" (input)="motivo.set(inp($event))"
+                  placeholder="Ej. Corrección de teléfono solicitada por el inquilino"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500" />
+              </div>
+            }
           </div>
 
           <!-- ─── Arriendo ───────────────────────────────────────────────── -->
@@ -270,6 +282,8 @@ export class InquilinoFormComponent implements OnInit {
   readonly direccion    = signal('');
   readonly puestoId     = signal<number | null>(null);
   readonly montoArriendo = signal('');
+  /** Justificación opcional de la edición — viaja al audit trail (00086). */
+  readonly motivo       = signal('');
 
   private puestoIdInicial: number | null = null;
 
@@ -391,7 +405,7 @@ export class InquilinoFormComponent implements OnInit {
 
       if (this.editMode()) {
         inquilinoId = this.editId()!;
-        await this.inquilinosSvc.actualizar(inquilinoId, params);
+        await this.inquilinosSvc.actualizar(inquilinoId, params, this.motivo());
       } else {
         inquilinoId = await this.inquilinosSvc.crear(params);
       }

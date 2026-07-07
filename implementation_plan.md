@@ -1,115 +1,118 @@
-# Plan de Implementación — Central de Reportes v2 + Auditoría de Arqueo
+# Plan de Implementación — Auditoría Narrativa (Timeline ERP)
 
-> **Estado: APROBADO Y EJECUTADO** (2026-07-07). Decisiones del cliente: arqueo intacto
-> (sin filas de conciliación), limpieza de huérfanos aprobada, columna Cajero solo Admin.
-> Pendiente del lado del cliente: `supabase db push` (migración 00085) + `npm install`.
+> **Estado: APROBADO Y EJECUTADO** (2026-07-07). Decisiones del cliente: triggers en las
+> 3 tablas nuevas, motivo opcional en padrón, timeline sin límite de antigüedad.
+> Pendiente del lado del cliente: `supabase db push` (migración 00086).
 > Fecha: 2026-07-07 · Autor: Claude Code
+> (El plan anterior — Central de Reportes v2 — fue ejecutado y aplicado el 2026-07-07.)
 
 ---
 
 ## 1. Diagnóstico del estado actual
 
-### 1.1 Central de Reportes (`reportes.component.ts`)
+### 1.1 Base de datos (`audit_logs`, migración 00016)
 
-- El componente usa **template inline** y solo muestra 3 tarjetas estáticas por sección (Caja, Banco, Almacén). No hay desglose por concepto, ni drill-down, ni filtros de pagador, ni exportación.
-- `ReportesService.cargarReporteConsolidado()` hace **5 queries PostgREST crudas** que descargan *todas las filas* del rango (`select monto_total` de cada pago). Para el rango "Este Año" eso significa miles de filas transferidas solo para sumarlas en el navegador. Riesgos:
-  - **Free Tier**: tráfico innecesario (egress) en cada visita a la pantalla.
-  - **Límite de 1000 filas** de PostgREST: si un rango supera 1000 pagos, los totales salen **silenciosamente incompletos** (hoy el año ya bordea ese volumen). Este es el defecto más grave del módulo actual.
-- El total "Caja Física · Ingresos" **mezcla efectivo y transferencias** — semánticamente incorrecto según CLAUDE.md §4.2 (las transferencias no entran a gaveta).
-- `reportes.component.html` es un **archivo huérfano** (el componente usa template inline; ese HTML referencia `apx-chart`, `ngModel` y métodos que no existen en ninguna clase). Igualmente `registro-pago.component.ts` (ruta `pagos/registrar/:id`) sigue usando **datos mock** — la caja real es `pago-wizard`. Propongo limpieza en la fase final.
+```
+audit_logs (id uuid, table_name, record_id text, action INSERT|UPDATE|DELETE,
+            old_data jsonb, new_data jsonb, changed_by uuid → auth.users, created_at)
+```
+- Trigger genérico `log_audit_action()` (SECURITY DEFINER) aplicado a **5 tablas**: `socios`, `inquilinos`, `puestos`, `pagos`, `distribuciones_mensuales` (00016 + 00045).
+- Append-only real: RLS sin policies de UPDATE/DELETE; SELECT solo Administrador. ✅
+- **Huecos detectados**:
+  1. `ocupaciones_almacenes` — la tabla de tu Ejemplo 2 ("Retiró el almacén D-15") — **no tiene trigger**. Tampoco `gastos` ni `caja_ajustes` (dinero saliendo de gaveta sin rastro de quién lo tocó).
+  2. No existe columna de **motivo**: hoy el motivo solo sobrevive cuando queda dentro de la propia fila (`pagos.motivo_anulacion` aparece en `new_data`), pero no para ediciones de padrón ni desasignaciones.
+  3. La tabla `auditoria` que `rpc_cc_editar_pago` intenta poblar "gracefully" **no existe** → ese insert nunca escribe nada (bug silencioso heredado; el trigger de `pagos` sí captura el UPDATE, así que no se perdió trazabilidad, pero el código muerto confunde).
 
-### 1.2 Auditoría del Arqueo de Caja (`arqueo-caja.component.ts` + `cargarArqueo`)
+### 1.2 Frontend (`auditoria.service.ts` + `auditoria-list.component.ts`)
 
-**Veredicto: la lógica central está correcta — se deja intacta.** Verificado:
-
-| Punto auditado | Resultado |
-|---|---|
-| Pagos anulados | ✅ Se listan (tachados) pero se excluyen de `total_efectivo`/`total_transferencia` y del desglose por concepto. `anular_pago` soft-deletea también `detalle_pagos`, así que no hay fugas. |
-| Efectivo vs Transferencia | ✅ Separados; transferencias no entran a `efectivo_fisico_caja`. |
-| Fórmula de gaveta | ✅ `apertura + efectivo − gastos − faltantes + sobrantes` — idéntica a CLAUDE.md §4.2. Los `gastos` no tienen método de pago (los egresos bancarios viven en `movimientos_bancarios`), así que restar el 100 % de gastos de la gaveta es correcto por diseño. |
-| Recaudación tarjeta / ingresos internos | ✅ Suman a efectivo y al desglose; filtro "solo mi caja" deliberadamente no aplica a recaudación (operación masiva). |
-
-**Dos observaciones menores** (no rompen el cuadre, decisión aparte):
-
-- **(A) Desglose por concepto vs Total del día**: la tabla "Desglose por concepto" suma `monto_aplicado` de los detalles, mientras el KPI "Total Recaudado" suma `monto_total` de los pagos. Cuando un pago usa **saldo a favor** (detalle > dinero recibido) o deja **excedente a saldo a favor** (detalle < dinero recibido), la tabla no suma exactamente el total del día. *Propuesta opcional*: añadir dos filas sintéticas de conciliación "(+) Saldo a favor utilizado" y "(−) Excedente a saldo a favor" al pie de la tabla. No toco nada si prefieres dejarlo.
-- **(B) Anulaciones retroactivas**: si hoy se anula un pago de ayer, el arqueo de ayer cambia retroactivamente (el PDF impreso ayer ya no coincide). Es una propiedad del diseño actual, la documento pero no propongo cambio.
+Tabla técnica: acción/tabla/`record_id` numérico/UUID truncado del usuario, y un modal con los **JSON crudos** `old_data`/`new_data` en `<pre>`. Cero resolución de nombres, cero deltas, ilegible para una Junta Directiva.
 
 ---
 
-## 2. Diseño propuesto
+## 2. Decisión de arquitectura: ¿dónde se resuelve la narrativa?
 
-### 2.1 Capa SQL — Migración `00085_rpc_reportes_drilldown.sql`
+**Híbrido — resolución de entidades y deltas en la BD (RPC), etiquetas y redacción final en Angular.**
 
-Tres RPCs `SECURITY DEFINER` (rol `Administrador | Caja`, mismo patrón `get_my_rol()` del proyecto). Todas devuelven **un solo valor JSON** (evita el límite de 1000 filas y minimiza egress: la agregación ocurre en Postgres).
+| Responsabilidad | Dónde | Por qué |
+|---|---|---|
+| Resolver entidad ("socio 54" → "PAREDES, Oscar"; pago → recibo + conceptos + monto) | **RPC en Postgres** | Los nombres del pagador de un pago y los conceptos requieren JOINs (`detalle_pagos → conceptos`) que en el cliente costarían N+1 requests o diccionarios completos del padrón (288+ personas) descargados en cada visita — exactamente lo que el Free Tier no tolera. Además el payload jsonb ya trae `apellidos/nombres/codigo_puesto` aunque el registro haya sido borrado (resolución garantizada incluso para DELETE). |
+| Calcular deltas (solo campos que cambiaron) | **RPC en Postgres** | `jsonb_each` compara old/new en una línea y evita enviar los payloads completos al navegador (un row de `socios` pesa ~1 KB; el delta típico, ~80 bytes). Menos egress, modal instantáneo. |
+| Actor + rol | **RPC** (JOIN a `perfiles`) | Una sola fuente, sin caché de usuarios en el cliente. |
+| Etiquetas de columnas (`telefono` → "Teléfono") y formato (fechas, S/, Sí/No) | **Angular** (diccionario estático `auditoria-labels.ts`) | Es presentación pura: cambiar un rótulo no debe requerir migración SQL. El diccionario vive junto a la UI que lo usa. |
+| Acción semántica (UPDATE que setea `deleted_at` → "Anulación/Retiro", no "UPDATE") | **RPC** (se deriva del delta) | Así el filtro por tipo de evento funciona server-side. |
 
-**Parámetros comunes**: `p_desde date, p_hasta date, p_tipo_pagador text DEFAULT 'todos'` (`'todos' | 'socios' | 'inquilinos'`). El frontend seguirá calculando el rango con los pills existentes (hoy/semana/mes/año) — la lógica temporal no cambia, solo se pasa como fechas explícitas.
-
-1. **`rpc_reporte_resumen(p_desde, p_hasta, p_tipo_pagador)`** → reemplaza los 5 queries de `cargarReporteConsolidado`. Devuelve:
-   ```json
-   {
-     "caja":  { "efectivo": 0, "transferencia": 0, "ingresos_internos": 0,
-                "recaudacion_tarjeta": 0, "egresos": 0, "saldo": 0,
-                "count_recibos": 0, "count_internos": 0, "count_anulados": 0 },
-     "banco": { "ingresos": 0, "egresos": 0, "saldo": 0, "count": 0 },
-     "por_concepto": [
-       { "concepto": "Luz", "monto": 0, "cantidad": 0,
-         "monto_socios": 0, "monto_inquilinos": 0 }
-     ],
-     "egresos_por_categoria": [ { "categoria": "...", "monto": 0, "cantidad": 0 } ]
-   }
-   ```
-   - `por_concepto` se agrega desde `detalle_pagos` (activos) × `montos_por_cobrar` × `conceptos`, filtrando `pagos.deleted_at IS NULL` y el rango sobre `fecha_pago`. "Almacenes" aparece naturalmente como los conceptos `Alquiler de almacén` / `Deposito`.
-   - Filtro pagador: `pagos.socio_id IS NOT NULL` → socios; `inquilino_id IS NOT NULL` → inquilinos. Los **ingresos internos** (sin pagador) solo se incluyen con `'todos'`, como fila propia por concepto.
-   - Separa efectivo/transferencia (corrige la mezcla semántica actual de "Ingresos Caja").
-
-2. **`rpc_reporte_detalle_concepto(p_desde, p_hasta, p_concepto text, p_tipo_pagador)`** → el drill-down. JSON array de líneas:
-   ```json
-   [ { "fecha_pago": "...", "codigo_transaccion": "PAG-...", "recibo_anulado": false,
-       "pagador": "APELLIDOS, Nombres", "tipo_pagador": "socio",
-       "codigo_puesto": "A-12", "periodo": "2026/05",
-       "monto_aplicado": 43.50, "metodo_pago": "Efectivo" } ]
-   ```
-   - `p_concepto = NULL` → **todas** las líneas del rango (lo usa la exportación Excel para la hoja de detalle completo).
-   - Orden: `fecha_pago DESC`. Solo detalles y pagos vigentes.
-
-3. **`rpc_reporte_detalle_egresos(p_desde, p_hasta, p_categoria text DEFAULT NULL)`** → drill-down de gastos (fecha, comprobante, responsable, categoría, descripción, monto).
-
-*Nota*: no toco ninguna RPC existente; el arqueo diario queda intacto.
-
-### 2.2 Capa servicio (Angular)
-
-- **`ReportesService`**: nuevos métodos `cargarResumenV2(rango, tipoPagador)`, `cargarDetalleConcepto(...)`, `cargarDetalleEgresos(...)` que llaman a las RPCs. `calcularRango()` existente se reutiliza (misma lógica temporal). `cargarReporteConsolidado` se elimina cuando la UI nueva esté lista.
-- **`ExcelExportService`** (nuevo, `core/services/excel-export.service.ts`): wrapper de **SheetJS `xlsx@0.18.5`**, que **ya está en `package.json`** (devDependencies → se mueve a `dependencies`). Se carga con `import()` dinámico para no engordar el bundle inicial (~800 KB solo cuando se exporta). API: `exportar(nombreArchivo, hojas: { nombre: string; filas: Record<string, unknown>[] }[])`.
-  - *Alternativa descartada*: CSV crudo — no soporta multi-hoja ni tipos numéricos limpios, y la librería ya está instalada.
-
-### 2.3 Capa UI — reescritura de `reportes.component.ts`
-
-Un solo componente standalone con signals (mismo estilo que `arqueo-caja`), sin modales ni componentes anidados nuevos — **tablas expansibles tipo acordeón** dentro del mismo template:
+### 2.1 Nueva RPC `rpc_auditoria_timeline` (migración 00086)
 
 ```
-┌─ Central de Reportes ────────────────────────────────────────────┐
-│ [Hoy] [Últimos 7 días] [Este Mes] [Este Año]   [Todos|Socios|Inq]│
-│                                            [⬇ Exportar a Excel]  │
-├─ KPIs Caja: Efectivo · Transferencia · Egresos · Saldo ──────────┤
-├─ KPIs Banco (igual que hoy) ─────────────────────────────────────┤
-├─ INGRESOS POR CONCEPTO (expansible) ─────────────────────────────┤
-│ ▸ Luz                 142 recibos    S/ 8,420.50   ▓▓▓▓░ 34 %    │
-│ ▾ Alquiler de almacén   6 recibos    S/ 1,200.00   ▓░░░░  5 %    │
-│     22/06 PAG-000123  CALLE ALVAREZ (socio)  D-10  2026/05  S/100│
-│     ...(sub-tabla lazy: se carga al expandir, 1 RPC por fila)    │
-├─ EGRESOS POR CATEGORÍA (mismo patrón expansible) ────────────────┤
-└─ Estado del Almacén (se conserva tal cual) ──────────────────────┘
+rpc_auditoria_timeline(
+  p_limit    int  DEFAULT 50,
+  p_before   timestamptz DEFAULT NULL,   -- keyset pagination ("Cargar más")
+  p_tabla    text DEFAULT NULL,          -- filtro por entidad
+  p_accion   text DEFAULT NULL,          -- CREACION|EDICION|ANULACION|ELIMINACION
+  p_busqueda text DEFAULT NULL           -- por nombre de entidad/actor
+) RETURNS json  -- solo Administrador
+```
+Cada evento sale ya "resuelto":
+```json
+{
+  "id": "…", "fecha": "…", "tabla": "pagos", "registro_id": "812",
+  "accion": "CREACION",              // derivada: UPDATE+deleted_at ⇒ ANULACION
+  "actor":   { "nombre": "María López", "rol": "Caja" },
+  "entidad": "Recibo PAG-0001524 · PAREDES, Oscar (Socio)",
+  "resumen": { "monto": 145.00, "metodo": "Efectivo",
+               "conceptos": ["Agua", "Luz", "Gastos administrativos"] },  // solo pagos
+  "cambios": [ { "campo": "telefono", "antes": "987654321", "despues": "999888777" } ],
+  "motivo":  "Corrección de error de tipeo solicitada por el socio."
+}
+```
+- Resolución por tabla vía `CASE table_name`: socios/inquilinos desde el propio payload; pagos con JOIN a socios/inquilinos + `detalle_pagos→conceptos`; puestos/almacenes por `codigo_puesto`; ocupaciones_almacenes con JOIN a puesto + ocupante.
+- Deltas: `jsonb_each_text(old) ⋈ jsonb_each_text(new)` excluyendo ruido (`updated_at`, `created_at`, `created_by`).
+- `motivo`: `coalesce(audit_logs.motivo, new_data->>'motivo_anulacion' si cambió)` — los motivos históricos de anulaciones aparecen retroactivamente sin backfill.
+
+### 2.2 Inyección del "Motivo" en los triggers (misma migración 00086)
+
+Mecanismo estándar de PostgreSQL: **variable de sesión local a la transacción**.
+
+1. `ALTER TABLE audit_logs ADD COLUMN motivo text;`
+2. `log_audit_action()` pasa a leer `nullif(current_setting('app.audit_motivo', true), '')` y guardarlo en la fila de auditoría.
+3. Los **RPCs críticos existentes** setean la variable al inicio con `set_config('app.audit_motivo', p_motivo, true)` (el `true` = se limpia sola al terminar la transacción, imposible que "contamine" la siguiente operación):
+   - `anular_pago` (ya recibe `p_motivo` — solo se añade el `set_config`),
+   - `rpc_anular_cargo`, `rpc_liberar_almacen`, `rpc_modificar_costo_almacen`, `rpc_cc_editar_pago`, `rpc_eliminar_socio` / `rpc_eliminar_inquilino` — se les añade `p_motivo text DEFAULT NULL` (parámetro nuevo con default ⇒ **no rompe** las llamadas actuales del frontend).
+   - De paso se elimina el bloque muerto de `rpc_cc_editar_pago` que insertaba en la tabla inexistente `auditoria`.
+4. **Ediciones directas del padrón** (los formularios de socio/inquilino hoy hacen `.update()` PostgREST directo, sin lugar donde poner el motivo): nueva RPC genérica y acotada
+   `rpc_actualizar_con_motivo(p_tabla text, p_id bigint, p_patch jsonb, p_motivo text)`
+   con **whitelist dura** de tablas/columnas editables (`socios`/`inquilinos`: teléfono, dirección, email…; nada financiero), rol Admin|Caja. Los formularios de edición ganan un campo opcional "Motivo del cambio" y llaman a esta RPC en vez del update directo. El trigger captura todo.
+5. **Triggers nuevos** con `log_audit_action()` en: `ocupaciones_almacenes` (imprescindible para el Ejemplo 2), `gastos` y `caja_ajustes` (dinero físico). *Deliberadamente NO* en `montos_por_cobrar`/`detalle_pagos`: la facturación mensual insertaría ~1,700 filas de auditoría por ciclo (ruido y storage del Free Tier); esos movimientos ya quedan narrados a través del evento del pago.
+
+### 2.3 UI — Timeline (reescritura de `auditoria-list.component.ts`)
+
+Sin librerías nuevas (SVG inline como todo el proyecto, estilo TailAdmin, dark mode):
+
+```
+┌─ Auditoría — Registro de Actividad ───────────────────────────────┐
+│ [Todas ▾ Entidad] [Todas ▾ Acción] [🔎 buscar persona/recibo]     │
+├───────────────────────────────────────────────────────────────────┤
+│  HOY · 07 julio 2026                                              │
+│  ● 09:35  ✏️ EDICIÓN            María López · Caja                │
+│  │  Modificó el socio PAREDES, Oscar                              │
+│  │  · Teléfono:  987654321  ➔  999888777                          │
+│  │  ▸ Motivo: “Corrección de error de tipeo solicitada…”          │
+│  ● 10:00  💵 PAGO               Ana Gómez · Caja                  │
+│  │  Registró el recibo PAG-0001524 · PAREDES, Oscar · S/ 145.00   │
+│  │  [Agua] [Luz] [G. Administrativos]                             │
+│  AYER · 06 julio 2026                                             │
+│  ● 15:20  🗑 RETIRO             Carlos Rojas · Administrador      │
+│     Retiró el almacén DEPOSITO 5-D1 del socio PÉREZ, Juan         │
+│     · Estado: Activo ➔ Desasignado                                │
+│                            [ Cargar más ]                         │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
-- **Estado**: `rango`, `tipoPagador`, `resumen` (signals); expansión con `expandido = signal<Set<string>>` y caché `detalles = signal<Map<string, DetalleLinea[]>>` — cada concepto se pide **una sola vez** por rango/filtro (lazy), y se invalida al cambiar filtros.
-- **Filtro pagador**: segmented control `Todos | Solo Socios | Solo Inquilinos` → recarga el resumen con `p_tipo_pagador` (el filtrado es 100 % server-side, coherente en resumen y detalle).
-- **Exportación**: botón único que genera un libro con 4 hojas — `Resumen` (KPIs), `Por Concepto`, `Detalle Ingresos` (todas las líneas vía `rpc_reporte_detalle_concepto(NULL)`), `Egresos`. Respeta rango y filtro de pagador activos. Nombre: `reporte_YYYY-MM-DD_a_YYYY-MM-DD.xlsx`.
-- Dark mode y skeletons TailAdmin como el resto del proyecto.
-
-### 2.4 Limpieza (fase final, opcional pero recomendada)
-
-- Eliminar `reportes.component.html` (huérfano, referencia código inexistente).
-- `registro-pago.component.ts` (ruta `pagos/registrar/:id`) sigue con **datos mock**: propongo redirigir esa ruta al wizard real (`pago-wizard`) y eliminar el componente muerto. **Requiere tu confirmación** — puede haber un motivo histórico para conservarlo.
+- **Estructura**: un solo componente standalone con signals (patrón del proyecto) + `auditoria-labels.ts` (diccionario `COLUMN_LABELS`, `TABLA_LABELS`, formatters de valores: fechas → `dd/mm/yyyy`, montos → `S/`, booleanos → Sí/No, `deleted_at` → Activo/Anulado).
+- Línea vertical con nodos coloreados por acción (verde creación, ámbar edición, rojo anulación/retiro), agrupación por día ("HOY", "AYER", fecha), tarjetas con actor+rol, narrativa, deltas "Antes ➔ Ahora" y callout de motivo.
+- Filtros server-side (entidad, acción, búsqueda) + **keyset pagination** ("Cargar más" con `p_before`), en lugar del `limit 100` fijo actual.
+- `AuditoriaService` se reescribe para consumir la RPC (se elimina la lectura directa de `audit_logs`).
+- Se conserva un botón "Ver JSON técnico" por tarjeta (colapsable) para no perder la vista de programador.
 
 ---
 
@@ -117,19 +120,19 @@ Un solo componente standalone con signals (mismo estilo que `arqueo-caja`), sin 
 
 | # | Entregable | Toca |
 |---|---|---|
-| 1 | Migración `00085_rpc_reportes_drilldown.sql` (3 RPCs) | `supabase/migrations/` |
-| 2 | `ExcelExportService` + mover `xlsx` a dependencies | `core/services/`, `package.json` |
-| 3 | Métodos nuevos en `ReportesService` | `core/services/reportes.service.ts` |
-| 4 | Reescritura UI `reportes.component.ts` (drill-down + filtros + export) | `pages/reportes/` |
-| 5 | (Opcional, aparte) Filas de conciliación de saldo a favor en el arqueo — hallazgo A | `reportes.service.ts` + `arqueo-caja` |
-| 6 | Limpieza de huérfanos + `ng build` + verificación manual | — |
+| 1 | Migración `00086_auditoria_narrativa.sql`: columna `motivo`, trigger v2, triggers nuevos (ocupaciones_almacenes, gastos, caja_ajustes), `rpc_auditoria_timeline`, `rpc_actualizar_con_motivo`, `p_motivo` en RPCs críticos, limpieza del bloque muerto de `rpc_cc_editar_pago` | `supabase/migrations/` |
+| 2 | `auditoria-labels.ts` (diccionario + formatters) | `pages/auditoria/` |
+| 3 | `AuditoriaService` v2 (RPC + paginación) | `core/services/` |
+| 4 | Timeline UI (reescritura de `auditoria-list.component.ts`) | `pages/auditoria/` |
+| 5 | Campo "Motivo" en formularios de edición de socio/inquilino + modal de motivo en anulaciones que aún no lo pidan | `pages/socios/` |
+| 6 | `ng build` + verificación | — |
 
-**No se toca**: fórmula de caja física, arqueo diario, RPCs existentes, módulos de pagos.
+**No se toca**: la tabla `audit_logs` existente (solo se le añade una columna nullable — los logs históricos siguen siendo legibles por la RPC), fórmulas financieras, RLS.
 
 ---
 
 ## 4. Preguntas antes de ejecutar
 
-1. **Arqueo — hallazgo A**: ¿agrego las filas de conciliación de saldo a favor al desglose por concepto del arqueo, o lo dejo intacto?
-2. **Limpieza**: ¿confirmas eliminar `reportes.component.html` y el `registro-pago.component.ts` mock (redirigiendo su ruta al wizard)?
-3. **Drill-down**: ¿el detalle expandido debe mostrar también al **cajero** que registró cada pago (visible solo para Administrador, como en el arqueo)?
+1. **Alcance de triggers nuevos**: ¿confirmas auditar también `gastos` y `caja_ajustes` (además de `ocupaciones_almacenes`, que es imprescindible)?
+2. **Motivo obligatorio u opcional**: en las ediciones del padrón (teléfono, dirección…), ¿el motivo es opcional? En anulaciones ya es obligatorio hoy y así se mantiene.
+3. **Retención**: el timeline pagina de 50 en 50 sin límite de antigüedad. ¿Correcto, o quieres un corte visual (p. ej. solo último año)?

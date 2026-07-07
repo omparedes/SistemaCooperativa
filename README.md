@@ -34,9 +34,9 @@ graph TD
 *   **Database & Backend-as-a-Service**: Supabase Postgres v15+ (PostGREST API exposed via JWT authentication, Stored Procedures, Triggers, RLS policies).
 *   **Libraries**:
     *   `@supabase/supabase-js` - Realtime data fetching and Auth.
-    *   `pdfmake` - High-quality PDF receipt and report generation.
-    *   `apexcharts` & `ng-apexcharts` - Visual financial analytics and collections metrics.
-    *   `xlsx` (SheetJS) - Procedural data migration from physical ledgers.
+    *   `pdfmake` - High-quality PDF receipt and report generation (80mm thermal tickets & A4).
+    *   `xlsx` (SheetJS) - Multi-sheet Excel exports, loaded lazily via dynamic `import()` (also used by data-migration scripts).
+    *   `apexcharts` & `ng-apexcharts` - Visual financial analytics (installed, pending adoption).
     *   `flatpickr` - Ergonomic dates and periods selector.
 
 ---
@@ -48,8 +48,11 @@ graph TD
 *   **Partnership Account Settings**: Restricts corporate fees (GA - *Gastos Administrativos* & PS - *Previsión Social*) exclusively to active Partners with toggle switches to suspend charges individually.
 *   **Unified Account Statement**: Tracks the complete financial lifecycle of each stall under a double-entry ledger, automatically recalculating reactive balances (*Saldo a Favor*) on payments.
 *   **Double-Entry POS & Card Processing**: POS interface (*Caja Rápida*) for cashiers supporting credit card receipts (Visa/Mastercard), daily cash desk balances (*Arqueo de Caja*), and automated payment applications via transactional RPCs.
+*   **Single Source of Debt Truth**: One canonical SQL function (`fn_deudas_pagador`) feeds the Cash Desk, Account Statements, the Members Directory and the Public Portal, guaranteeing every screen shows exactly the same consolidated balance (main stall + warehouses + personal charges).
+*   **Drill-Down Reporting & Excel Export**: Server-side aggregated reports (immune to PostgREST row limits) with expandable per-concept detail down to individual receipt lines, payer-type filters, and clean 4-sheet Excel workbooks.
 *   **Masked Public Search**: A secure public portal where users can query pending debts using their DNI or Stall Number, with DNI masking and brute-force mitigation.
-*   **Audit Trail System**: Automated database triggers that log all critical administrative edits (tariff adjustments, manual debt creation, voided payments) into a read-only audit ledger.
+*   **Narrative Audit Timeline**: An immutable, admin-only activity log rendered as a human-readable timeline (actor + role, resolved entity names, before ➔ after field diffs, and transaction-scoped *reasons* for sensitive changes).
+*   **Member Benefits Ledger**: Registry of diets (assembly attendance) and social-provision aid payments per member, with yearly grouped reporting.
 
 ---
 
@@ -113,18 +116,27 @@ SistemaCooperativa/
 │   │   │   └── services/          # Services for API connection (socios, giros, pagos, bancos)
 │   │   ├── pages/                 # Standalone page components mapped to lazy routes
 │   │   │   ├── socios/            # Partners, Tenants and profiles management
+│   │   │   ├── espacios/          # Stalls & warehouse occupancies, transfers
 │   │   │   ├── giros/             # Commercial activity categories CRUD
-│   │   │   ├── pagos/             # Payment POS wizards, rapid cash, card collection
-│   │   │   ├── facturacion/       # Communes expense sharing, Luz and Agua medidores
+│   │   │   ├── pagos/             # Payment POS wizard, rapid cash, card collection
+│   │   │   ├── facturacion/       # Communal expense sharing, Luz and Agua medidores
 │   │   │   ├── cuenta-corriente/  # Account statements and ledgers
-│   │   │   ├── reportes/          # Visual analytics and daily cashier desk closeout
+│   │   │   ├── reportes/          # Drill-down reports, Excel export, daily cash closeout
+│   │   │   ├── auditoria/         # Narrative audit timeline (admin-only)
+│   │   │   ├── config/            # Tariffs and receipt-design settings
+│   │   │   ├── usuarios/          # User & role management (admin-only)
 │   │   │   └── consultas/         # Secure public search directory
 │   │   ├── shared/                # Layouts (app-layout, app-sidebar) and components
 │   │   └── app.routes.ts          # Central routing registry with Lazy Loaded chunks
 │   └── styles.css                 # Global CSS importing Tailwind CSS v4 directives
 ├── supabase/
-│   ├── migrations/                # Database migrations (Postgres Schema, RLS, functions)
+│   ├── migrations/                # Database migrations (Postgres schema, RLS, RPC functions)
 │   └── config.toml                # Supabase project configuration
+├── scripts/                       # Data-migration generators & diagnostic SQL
+├── AUDITORIA_2026.md              # Functional audit report (module-by-module health)
+├── ARCHITECTURE.md                # Architecture Decision Records
+├── CONTEXT.md · CLAUDE.md         # Business context & AI/developer working rules
+├── TODO.md                        # Prioritized backlog
 ├── package.json                   # Dependencies and scripts definitions
 └── README.md                      # Project documentation
 ```
@@ -133,9 +145,13 @@ SistemaCooperativa/
 
 ## 🚧 Roadmap & Known Limitations
 
-*   **Local PDF Storage**: Generated PDFs (payment receipts and closeout sheets) are compiled on the client side using `pdfmake`. Storage in Supabase Buckets with email delivery remains under development.
-*   **Offline Transaction Buffer**: Cashier transactions require an active connection to Supabase. Temporary SQLite or IndexedDB storage for offline receipt issuance during internet drops is planned for Q3 2026.
-*   **Bank Conciliation Automation**: Communal bank statement ingestion (`.txt` files from BCP/BBVA) is currently processed manually using flat-file mapping. An automated API integration with major banks is pending.
+The prioritized backlog lives in [TODO.md](TODO.md) (derived from the July 2026 functional audit — see [AUDITORIA_2026.md](AUDITORIA_2026.md)). Highlights:
+
+*   **Payment Concurrency Hardening**: `rpc_procesar_pago` will gain row-level locking (`FOR UPDATE`) and balance revalidation to prevent double-application when two cashiers charge the same member simultaneously.
+*   **Benefits ↔ Cash Desk Integration**: Diet and social-provision payouts are recorded but do not yet flow through the physical cash drawer (arqueo) or expense reports.
+*   **Local PDF Storage**: Generated PDFs are compiled client-side with `pdfmake`. Storage in Supabase Buckets with email delivery remains under development.
+*   **Offline Transaction Buffer**: Cashier transactions require an active connection to Supabase; IndexedDB buffering for internet drops is planned.
+*   **Bank Conciliation Automation**: Bank statement ingestion is still a manual flat-file process.
 
 ---
 

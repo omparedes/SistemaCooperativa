@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
+import { mensajeAmigable } from '../../shared/utils/errores';
 import type { BusquedaResultado, DeudaItem, PagoHistorial, TipoPagador } from '../pagos/pago.model';
 
 type TabActiva = 'pendientes' | 'realizados';
@@ -40,12 +41,14 @@ const MESES: ReadonlyArray<string> = [
 
           <div class="flex flex-col sm:flex-row gap-2">
             <input
+              #buscador
               type="text"
+              inputmode="search"
               [value]="queryInput()"
               (input)="onQueryInput($event)"
               (keydown.enter)="consultar()"
               placeholder="DNI, nombre o N° de Puesto..."
-              class="w-full sm:flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 transition"
+              class="w-full sm:flex-1 rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 transition"
             />
             <button
               (click)="consultar()"
@@ -65,9 +68,9 @@ const MESES: ReadonlyArray<string> = [
           </div>
 
           @if (error()) {
-            <div class="mt-4 flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
-              <svg class="w-4 h-4 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            <div class="mt-4 flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-base px-4 py-3.5">
+              <svg class="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
               {{ error() }}
             </div>

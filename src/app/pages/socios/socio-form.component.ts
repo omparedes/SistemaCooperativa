@@ -183,6 +183,18 @@ const DNI_RE   = /^\d{8}$/;
                 </label>
               </div>
             </div>
+
+            <!-- Motivo del cambio (solo edición — viaja al registro de auditoría) -->
+            @if (editMode()) {
+              <div class="md:col-span-2">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Motivo del cambio <span class="text-xs font-normal text-gray-400">(opcional — queda en auditoría)</span>
+                </label>
+                <input type="text" [value]="motivo()" (input)="motivo.set(inp($event))"
+                  placeholder="Ej. Corrección de teléfono solicitada por el socio"
+                  class="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500" />
+              </div>
+            }
           </div>
 
           <!-- ─── Sección: Asignación de puesto ─────────────────────── -->
@@ -285,6 +297,8 @@ export class SocioFormComponent implements OnInit {
   readonly direccion    = signal('');
   readonly estado       = signal<EstadoSocio>('Activo');
   readonly puestoId     = signal<number | null>(null);
+  /** Justificación opcional de la edición — viaja al audit trail (00086). */
+  readonly motivo       = signal('');
 
   // Puesto original al entrar en modo edición (para detectar cambio)
   private puestoIdInicial: number | null = null;
@@ -397,7 +411,7 @@ export class SocioFormComponent implements OnInit {
 
       if (this.editMode()) {
         socioId = this.editId()!;
-        await this.sociosSvc.actualizar(socioId, params);
+        await this.sociosSvc.actualizar(socioId, params, this.motivo());
       } else {
         socioId = await this.sociosSvc.crear(params);
       }

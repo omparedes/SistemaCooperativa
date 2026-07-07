@@ -34,9 +34,9 @@ graph TD
 *   **Base de Datos y Backend-as-a-Service**: Supabase Postgres v15+ (API PostGREST expuesta a través de autenticación JWT, Procedimientos Almacenados, Triggers y políticas de seguridad RLS).
 *   **Librerías Clave**:
     *   `@supabase/supabase-js` - Conexión de datos en tiempo real y autenticación.
-    *   `pdfmake` - Generación de recibos PDF e informes de alta calidad del lado del cliente.
-    *   `apexcharts` & `ng-apexcharts` - Análisis financiero visual y métricas de cobranza.
-    *   `xlsx` (SheetJS) - Migración procedimental de datos desde libros contables físicos en Excel.
+    *   `pdfmake` - Generación de recibos PDF (tickets térmicos 80mm y A4) e informes del lado del cliente.
+    *   `xlsx` (SheetJS) - Exportación de reportes Excel multi-hoja con carga diferida (`import()` dinámico); también usada por los scripts de migración de datos.
+    *   `apexcharts` & `ng-apexcharts` - Análisis financiero visual (instaladas, adopción pendiente).
     *   `flatpickr` - Selector ergonómico de fechas y periodos comerciales.
 
 ---
@@ -48,8 +48,11 @@ graph TD
 *   **Configuración de Cuentas de Socios:** Restringe los cargos corporativos corporativos (GA - *Gastos Administrativos* & PS - *Previsión Social*) exclusivamente a socios activos, con interruptores para suspender cobros de forma individual.
 *   **Estado de Cuenta Unificado:** Realiza el seguimiento del ciclo de vida financiero de cada puesto bajo un libro de contabilidad de doble entrada, recalculando automáticamente saldos a favor al registrar abonos.
 *   **POS de Doble Entrada y Procesamiento de Tarjetas:** Interfaz de punto de venta (*Caja Rápida*) para cajeros que soporta recibos con tarjeta de crédito (Visa/Mastercard), arqueo de caja diario, y aplicación automatizada de pagos mediante llamadas RPC transaccionales.
+*   **Fuente Única de la Deuda:** Una sola función SQL canónica (`fn_deudas_pagador`) alimenta Caja, Cuenta Corriente, Padrón y Portal Público, garantizando que toda pantalla muestre exactamente el mismo saldo consolidado (puesto principal + almacenes + cargos personales).
+*   **Reportes con Desglose y Exportación Excel:** Reportes agregados en el servidor (inmunes al límite de filas de PostgREST) con detalle expansible hasta la línea de recibo, filtros por tipo de pagador y libros Excel de 4 hojas.
 *   **Consulta Pública Enmascarada:** Un portal público seguro donde los usuarios pueden consultar deudas pendientes usando su DNI o número de puesto, con enmascaramiento de PII y mitigación de fuerza bruta.
-*   **Sistema de Auditoría Activa:** Triggers automatizados en la base de datos que registran todas las modificaciones administrativas críticas (ajustes de tarifas, deudas manuales, anulaciones de pagos) en un historial de auditoría de solo lectura.
+*   **Auditoría Narrativa (Timeline):** Bitácora inmutable de solo-Administrador presentada como línea de tiempo legible (actor + rol, entidades resueltas por nombre, diferencias "Antes ➔ Ahora" campo a campo, y *motivos* transaccionales en cambios sensibles).
+*   **Registro de Beneficios a Socios:** Dietas (asistencia a asambleas) y ayudas de Provisión Social por socio, con reporte anual agrupado.
 
 ---
 
@@ -113,11 +116,15 @@ SistemaCooperativa/
 │   │   │   └── services/          # Servicios de conexión API (socios, giros, pagos, bancos)
 │   │   ├── pages/                 # Componentes standalone de páginas mapeados a rutas diferidas
 │   │   │   ├── socios/            # Gestión de perfiles de socios, inquilinos y ocupación
+│   │   │   ├── espacios/          # Puestos y almacenes: ocupaciones y transferencias
 │   │   │   ├── giros/             # CRUD de categorías de actividad comercial
-│   │   │   ├── pagos/             # Interfaces de cobranza rápida, POS y tarjetas
+│   │   │   ├── pagos/             # Wizard de cobro, caja rápida y tarjetas
 │   │   │   ├── facturacion/       # Distribución de gastos comunes de Luz y Agua
 │   │   │   ├── cuenta-corriente/  # Estados de cuenta y movimientos detallados
-│   │   │   ├── reportes/          # Analíticas visuales y cierre de caja diario
+│   │   │   ├── reportes/          # Reportes con drill-down, Excel y cierre de caja diario
+│   │   │   ├── auditoria/         # Timeline narrativo de auditoría (solo Admin)
+│   │   │   ├── config/            # Tarifas y diseño de recibos
+│   │   │   ├── usuarios/          # Gestión de usuarios y roles (solo Admin)
 │   │   │   └── consultas/         # Portal seguro de consultas públicas
 │   │   ├── shared/                # Layouts (app-layout, app-sidebar) y componentes comunes
 │   │   └── app.routes.ts          # Registro central de enrutamiento con módulos Lazy Loaded
@@ -125,6 +132,11 @@ SistemaCooperativa/
 ├── supabase/
 │   ├── migrations/                # Migraciones de base de datos (Esquema Postgres, RLS, funciones)
 │   └── config.toml                # Configuración del proyecto de Supabase
+├── scripts/                       # Generadores de migración de datos y SQL de diagnóstico
+├── AUDITORIA_2026.md              # Auditoría funcional (salud módulo a módulo)
+├── ARCHITECTURE.md                # Registro de decisiones arquitectónicas
+├── CONTEXT.md · CLAUDE.md         # Contexto de negocio y reglas de trabajo para IA/devs
+├── TODO.md                        # Backlog priorizado
 ├── package.json                   # Definición de scripts y dependencias
 └── README.md                      # Documentación del proyecto (Inglés)
 ```
@@ -133,9 +145,13 @@ SistemaCooperativa/
 
 ## 🚧 Roadmap y Limitaciones Conocidas
 
-*   **Almacenamiento Local de PDFs**: Los recibos de pago y reportes generados se compilan del lado del cliente utilizando `pdfmake`. El almacenamiento automático en Supabase Buckets con envío automatizado por correo se encuentra en desarrollo.
-*   **Búfer Transaccional Offline**: Las transacciones de caja requieren conexión activa a Supabase. Se planea un almacenamiento temporal con IndexedDB para emitir recibos offline en caídas de internet para el Q3 2026.
-*   **Conciliación Bancaria Automatizada**: La lectura de estados de cuenta bancarios (archivos `.txt` del BCP/BBVA) se procesa actualmente mediante mapeadores de archivos planos. Está pendiente la integración directa por API con las entidades bancarias.
+El backlog priorizado vive en [TODO.md](TODO.md) (derivado de la auditoría funcional de julio 2026 — ver [AUDITORIA_2026.md](AUDITORIA_2026.md)). Destacados:
+
+*   **Endurecimiento de Concurrencia en Cobros**: `rpc_procesar_pago` incorporará bloqueo de fila (`FOR UPDATE`) y revalidación de saldo para impedir la doble aplicación cuando dos cajeros cobran al mismo socio simultáneamente.
+*   **Integración Beneficios ↔ Caja**: las dietas y ayudas de provisión social se registran pero aún no fluyen por la gaveta física (arqueo) ni los reportes de egresos.
+*   **Almacenamiento de PDFs**: los recibos se compilan en el cliente con `pdfmake`; el guardado en Supabase Buckets con envío por correo sigue en desarrollo.
+*   **Búfer Transaccional Offline**: las transacciones de caja requieren conexión activa; se planea un búfer con IndexedDB para caídas de internet.
+*   **Conciliación Bancaria Automatizada**: la lectura de estados de cuenta bancarios sigue siendo un proceso manual de archivos planos.
 
 ---
 
