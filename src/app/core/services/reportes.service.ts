@@ -134,25 +134,73 @@ interface RecaudacionAbonoArqueoRow {
 }
 
 // ---------------------------------------------------------------------------
-// Tipos del Reporte Consolidado
+// Tipos del Reporte Consolidado (v2 — RPC server-side, 00085)
 // ---------------------------------------------------------------------------
 export type RangoReporte = 'hoy' | 'semana' | 'mes' | 'año';
+export type TipoPagadorFiltro = 'todos' | 'socios' | 'inquilinos';
 
-export interface ReporteConsolidado {
+export interface ConceptoResumen {
+  concepto: string;
+  monto: number;
+  cantidad: number;
+  monto_socios: number;
+  monto_inquilinos: number;
+}
+
+export interface EgresoCategoria {
+  categoria: string;
+  monto: number;
+  cantidad: number;
+}
+
+export interface ReporteResumenV2 {
   rango: RangoReporte;
   fechaDesde: string;       // YYYY-MM-DD
   fechaHasta: string;       // YYYY-MM-DD
-  // Caja Física (pagos + ingresos_internos vs gastos)
-  caja_ingresos:           number;
-  caja_egresos:            number;
-  caja_saldo:              number;
-  caja_count_recibos:      number;
-  caja_count_internos:     number;
-  // Banco (movimientos_bancarios por tipo)
-  banco_ingresos:          number;
-  banco_egresos:           number;
-  banco_saldo:             number;
-  banco_count_movimientos: number;
+  tipoPagador: TipoPagadorFiltro;
+  caja: {
+    efectivo: number;
+    transferencia: number;
+    ingresos_internos: number;
+    recaudacion_tarjeta: number;
+    egresos: number;
+    saldo: number;
+    count_recibos: number;
+    count_internos: number;
+    count_recaudacion: number;
+    count_anulados: number;
+  };
+  banco: {
+    ingresos: number;
+    egresos: number;
+    saldo: number;
+    count: number;
+  };
+  por_concepto: ConceptoResumen[];
+  egresos_por_categoria: EgresoCategoria[];
+}
+
+export interface DetalleIngresoLinea {
+  fecha_pago: string;
+  codigo_transaccion: string;
+  concepto: string;
+  pagador: string;
+  tipo_pagador: 'socio' | 'inquilino' | 'interno';
+  codigo_puesto: string;
+  periodo: string;
+  monto: number;
+  metodo_pago: string;
+  cajero: string;
+}
+
+export interface DetalleEgresoLinea {
+  id: number;
+  fecha: string;
+  categoria: string;
+  descripcion: string | null;
+  comprobante_ref: string | null;
+  responsable: string | null;
+  monto: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -563,91 +611,76 @@ export class ReportesService {
     if (error) throw new Error(error.message);
   }
 
-  // ── Reporte Consolidado ───────────────────────────────────────────────────
+  // ── Reporte Consolidado v2 (RPCs 00085, agregación server-side) ──────────
 
   /**
-   * Carga los totales financieros del período seleccionado en paralelo:
-   * pagos, ingresos_internos, gastos y movimientos_bancarios.
+   * KPIs de caja/banco + desglose por concepto + egresos por categoría,
+   * agregados en Postgres (una sola llamada, sin límite de 1000 filas).
    */
-  async cargarReporteConsolidado(rango: RangoReporte): Promise<ReporteConsolidado> {
-    const { desde, hasta, desdeISO, hastaISO } = calcularRango(rango);
+  async cargarResumenV2(
+    rango: RangoReporte,
+    tipoPagador: TipoPagadorFiltro,
+  ): Promise<ReporteResumenV2> {
+    const { desde, hasta } = calcularRango(rango);
 
-    const [pagosRes, iiRes, gastosRes, bancosRes, recaudacionRes] = await Promise.all([
-      // Pagos de caja (recibos emitidos, no anulados)
-      this.db.from('pagos')
-        .select('monto_total')
-        .is('deleted_at', null)
-        .gte('fecha_pago', desdeISO)
-        .lte('fecha_pago', hastaISO),
+    const { data, error } = await this.db.rpc('rpc_reporte_resumen', {
+      p_desde:        desde,
+      p_hasta:        hasta,
+      p_tipo_pagador: tipoPagador,
+    });
+    if (error) throw new Error(error.message);
 
-      // Ingresos internos (cobros sin recibo)
-      this.db.from('ingresos_internos')
-        .select('monto')
-        .is('deleted_at', null)
-        .gte('fecha_ingreso', desdeISO)
-        .lte('fecha_ingreso', hastaISO),
-
-      // Gastos operativos (columna `fecha` es tipo date)
-      this.db.from('gastos')
-        .select('monto')
-        .is('deleted_at', null)
-        .gte('fecha', desde)
-        .lte('fecha', hasta),
-
-      // Movimientos bancarios (columna `fecha_operacion` es tipo date)
-      this.db.from('movimientos_bancarios')
-        .select('tipo, monto')
-        .is('deleted_at', null)
-        .gte('fecha_operacion', desde)
-        .lte('fecha_operacion', hasta),
-
-      // Recaudación semanal por tarjeta (prepago → saldo_a_favor)
-      this.db.from('recaudacion_abonos')
-        .select('monto')
-        .is('deleted_at', null)
-        .gte('fecha', desdeISO)
-        .lte('fecha', hastaISO),
-    ]);
-
-    if (pagosRes.error)       throw new Error(pagosRes.error.message);
-    if (iiRes.error)          throw new Error(iiRes.error.message);
-    if (gastosRes.error)      throw new Error(gastosRes.error.message);
-    if (bancosRes.error)      throw new Error(bancosRes.error.message);
-    if (recaudacionRes.error) throw new Error(recaudacionRes.error.message);
-
-    const totalPagos       = ((pagosRes.data       ?? []) as Array<{ monto_total: unknown }>)
-      .reduce((s, r) => s + Number(r.monto_total), 0);
-    const totalII          = ((iiRes.data           ?? []) as Array<{ monto: unknown }>)
-      .reduce((s, r) => s + Number(r.monto), 0);
-    const totalGastos      = ((gastosRes.data       ?? []) as Array<{ monto: unknown }>)
-      .reduce((s, r) => s + Number(r.monto), 0);
-    const totalRecaudacion = ((recaudacionRes.data  ?? []) as Array<{ monto: unknown }>)
-      .reduce((s, r) => s + Number(r.monto), 0);
-
-    const movBancos = (bancosRes.data ?? []) as Array<{ tipo: string; monto: unknown }>;
-    const totalBancoIngresos = movBancos
-      .filter(m => m.tipo === 'Ingreso')
-      .reduce((s, m) => s + Number(m.monto), 0);
-    const totalBancoEgresos = movBancos
-      .filter(m => m.tipo === 'Egreso')
-      .reduce((s, m) => s + Number(m.monto), 0);
-
-    const caja_ingresos = round2(totalPagos + totalII + totalRecaudacion);
-    const caja_egresos  = round2(totalGastos);
-
+    const raw = data as unknown as Omit<ReporteResumenV2, 'rango' | 'fechaDesde' | 'fechaHasta' | 'tipoPagador'>;
     return {
       rango,
       fechaDesde: desde,
       fechaHasta: hasta,
-      caja_ingresos,
-      caja_egresos,
-      caja_saldo:              round2(caja_ingresos - caja_egresos),
-      caja_count_recibos:      (pagosRes.data  ?? []).length,
-      caja_count_internos:     (iiRes.data     ?? []).length,
-      banco_ingresos:          round2(totalBancoIngresos),
-      banco_egresos:           round2(totalBancoEgresos),
-      banco_saldo:             round2(totalBancoIngresos - totalBancoEgresos),
-      banco_count_movimientos: movBancos.length,
+      tipoPagador,
+      caja:  raw.caja,
+      banco: raw.banco,
+      por_concepto:          (raw.por_concepto          ?? []).map(c => ({ ...c, monto: Number(c.monto) })),
+      egresos_por_categoria: (raw.egresos_por_categoria ?? []).map(e => ({ ...e, monto: Number(e.monto) })),
     };
+  }
+
+  /**
+   * Drill-down de ingresos: líneas de recibos, ingresos internos y
+   * recaudación tarjeta del rango. `concepto = null` → todas las líneas.
+   */
+  async cargarDetalleConcepto(
+    rango: RangoReporte,
+    concepto: string | null,
+    tipoPagador: TipoPagadorFiltro,
+  ): Promise<DetalleIngresoLinea[]> {
+    const { desde, hasta } = calcularRango(rango);
+
+    const { data, error } = await this.db.rpc('rpc_reporte_detalle_concepto', {
+      p_desde:        desde,
+      p_hasta:        hasta,
+      p_concepto:     concepto,
+      p_tipo_pagador: tipoPagador,
+    });
+    if (error) throw new Error(error.message);
+
+    return ((data ?? []) as unknown as DetalleIngresoLinea[])
+      .map(l => ({ ...l, monto: Number(l.monto) }));
+  }
+
+  /** Drill-down de egresos. `categoria = null` → todos los gastos del rango. */
+  async cargarDetalleEgresos(
+    rango: RangoReporte,
+    categoria: string | null,
+  ): Promise<DetalleEgresoLinea[]> {
+    const { desde, hasta } = calcularRango(rango);
+
+    const { data, error } = await this.db.rpc('rpc_reporte_detalle_egresos', {
+      p_desde:     desde,
+      p_hasta:     hasta,
+      p_categoria: categoria,
+    });
+    if (error) throw new Error(error.message);
+
+    return ((data ?? []) as unknown as DetalleEgresoLinea[])
+      .map(l => ({ ...l, monto: Number(l.monto) }));
   }
 }

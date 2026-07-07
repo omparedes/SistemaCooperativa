@@ -265,11 +265,10 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         title: 'Gestión de Usuarios | Cooperativa Primero de Mayo',
       },
+      // Ruta legada del prototipo con datos mock: redirige al wizard real de caja.
       {
         path: 'pagos/registrar/:id',
-        loadComponent: () =>
-          import('./pages/pagos/registro-pago.component').then(m => m.RegistroPagoComponent),
-        title: 'Registrar Pago | TailAdmin'
+        redirectTo: 'pagos/registrar',
       },
     ]
   },
