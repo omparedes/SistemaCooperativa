@@ -154,57 +154,75 @@ const MESES: ReadonlyArray<string> = [
               <!-- Cabeceras de pestañas -->
               <div class="flex border-b border-slate-200">
                 <button (click)="tab.set('pendientes')" [class]="tabClass('pendientes')">
-                  Pagos Pendientes
+                  <svg class="w-5 h-5 mr-1.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                  </svg>
+                  LO QUE DEBO
                   @if (deudas().length > 0) {
-                    <span class="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold">
+                    <span class="ml-2 inline-flex items-center justify-center min-w-6 h-6 px-1 rounded-full bg-red-600 text-white text-sm font-bold">
                       {{ deudas().length }}
                     </span>
                   }
                 </button>
                 <button (click)="tab.set('realizados')" [class]="tabClass('realizados')">
-                  Historial de Pagos
-                  <span class="ml-1.5 text-xs opacity-60">({{ historial().length }})</span>
+                  <svg class="w-5 h-5 mr-1.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  YA PAGADO
+                  <span class="ml-1.5 text-sm opacity-70">({{ historial().length }})</span>
                 </button>
               </div>
 
               <!-- Pestaña: Pagos Pendientes -->
               @if (tab() === 'pendientes') {
                 @if (deudas().length === 0) {
-                  <div class="flex flex-col items-center gap-2 py-16 text-slate-400">
-                    <svg class="w-12 h-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="m-5 flex flex-col items-center gap-3 py-14 rounded-2xl bg-green-50 border-2 border-green-200">
+                    <svg class="w-20 h-20 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <p class="text-sm font-semibold text-green-700">¡Al día con sus pagos!</p>
-                    <p class="text-xs">No tiene saldos pendientes.</p>
+                    <p class="text-xl font-bold text-green-700">¡Está al día con sus pagos!</p>
+                    <p class="text-base text-green-600">No tiene ninguna deuda pendiente.</p>
                   </div>
                 } @else {
+                  <!-- Banner grande: total adeudado -->
+                  <div class="m-5 flex items-center gap-4 rounded-2xl bg-red-50 border-2 border-red-300 px-5 py-4">
+                    <svg class="w-12 h-12 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-bold uppercase tracking-wide text-red-600">Total que debe pagar</p>
+                      <p class="text-3xl font-extrabold text-red-700">{{ moneda(totalDeuda()) }}</p>
+                      <p class="text-sm text-red-500 mt-0.5">Puede pagar en la oficina de la Cooperativa.</p>
+                    </div>
+                  </div>
+
                   <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
+                    <table class="w-full text-base">
                       <thead>
                         <tr class="bg-slate-50 border-b border-slate-100">
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepto</th>
-                          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Período</th>
+                          <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Mes</th>
                           <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Monto</th>
                         </tr>
                       </thead>
                       <tbody>
                         @for (d of deudas(); track d.monto_id) {
-                          <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                            <td class="px-5 py-3 font-medium text-slate-800">
+                          <tr class="border-b border-slate-100 hover:bg-red-50/40 transition-colors">
+                            <td class="px-5 py-3.5 font-medium text-slate-800">
                               {{ d.concepto }}
-                              @if (d.codigo_puesto && d.codigo_puesto !== seleccionado()?.codigo_puesto) {
-                                <span class="ml-1 text-xs font-normal text-slate-400">{{ d.codigo_puesto }}</span>
-                              }
+                              <span [class]="espacioBadgeClass(d)">
+                                {{ espacioLabel(d) }}
+                              </span>
                             </td>
-                            <td class="px-5 py-3 text-slate-600">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</td>
-                            <td class="px-5 py-3 text-right font-bold text-red-600">{{ moneda(d.saldo_pendiente) }}</td>
+                            <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</td>
+                            <td class="px-5 py-3.5 text-right font-bold text-red-600 whitespace-nowrap">{{ moneda(d.saldo_pendiente) }}</td>
                           </tr>
                         }
                       </tbody>
                       <tfoot>
-                        <tr class="bg-slate-50 border-t-2 border-slate-200">
-                          <td colspan="2" class="px-5 py-3 text-right text-sm font-semibold text-slate-700">Total por pagar:</td>
-                          <td class="px-5 py-3 text-right font-bold text-red-700 text-base">{{ moneda(totalDeuda()) }}</td>
+                        <tr class="bg-red-50 border-t-2 border-red-200">
+                          <td colspan="2" class="px-5 py-4 text-right text-base font-bold text-red-700">TOTAL POR PAGAR:</td>
+                          <td class="px-5 py-4 text-right font-extrabold text-red-700 text-xl whitespace-nowrap">{{ moneda(totalDeuda()) }}</td>
                         </tr>
                       </tfoot>
                     </table>
@@ -215,11 +233,12 @@ const MESES: ReadonlyArray<string> = [
               <!-- Pestaña: Historial de Pagos -->
               @if (tab() === 'realizados') {
                 @if (historial().length === 0) {
-                  <div class="flex flex-col items-center gap-2 py-16 text-slate-400">
-                    <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  <div class="flex flex-col items-center gap-3 py-16 text-slate-400">
+                    <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
-                    <p class="text-sm font-medium">Sin pagos registrados</p>
+                    <p class="text-lg font-semibold text-slate-500">Todavía no hay pagos registrados</p>
+                    <p class="text-base">Cuando realice un pago, aparecerá aquí con su recibo.</p>
                   </div>
                 } @else {
                   <div class="overflow-x-auto">
@@ -295,6 +314,8 @@ export class ConsultasComponent {
   private readonly pagosSvc = inject(ConsultasPublicasService);
   private readonly pdfSvc = inject(PdfGeneratorService);
 
+  private readonly buscador = viewChild<ElementRef<HTMLInputElement>>('buscador');
+
   readonly currentYear = new Date().getFullYear();
 
   readonly queryInput = signal('');
@@ -311,6 +332,11 @@ export class ConsultasComponent {
   readonly totalDeuda = computed(() =>
     this.deudas().reduce((s, d) => s + d.saldo_pendiente, 0),
   );
+
+  constructor() {
+    // El cursor arranca en la barra de búsqueda: el socio escribe su DNI sin tocar el mouse.
+    afterNextRender(() => this.buscador()?.nativeElement.focus());
+  }
 
   onQueryInput(event: Event): void {
     this.queryInput.set((event.target as HTMLInputElement).value);
@@ -330,7 +356,7 @@ export class ConsultasComponent {
       const res = await this.pagosSvc.buscarPagador(q);
       if (res.length === 0) {
         this.resultados.set([]);
-        this.error.set('No se encontró ningún socio o puesto con ese criterio.');
+        this.error.set('No encontramos deudas ni historial con ese dato. Por favor verifique su DNI, nombre o número de puesto.');
       } else if (res.length === 1) {
         this.resultados.set([]);
         await this.seleccionar(res[0]);
@@ -338,7 +364,7 @@ export class ConsultasComponent {
         this.resultados.set(res);
       }
     } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Error al buscar. Intente nuevamente.');
+      this.error.set(mensajeAmigable(e, 'No pudimos completar la búsqueda. Revise su conexión e intente otra vez.'));
     } finally {
       this.buscando.set(false);
     }
@@ -359,7 +385,7 @@ export class ConsultasComponent {
       this.historial.set(historial);
       this.tab.set('pendientes');
     } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Error al cargar los datos.');
+      this.error.set(mensajeAmigable(e, 'No pudimos cargar su información. Revise su conexión e intente otra vez.'));
     } finally {
       this.cargando.set(false);
     }
@@ -375,10 +401,13 @@ export class ConsultasComponent {
   }
 
   tabClass(nombre: TabActiva): string {
-    const base = 'flex-1 py-4 text-sm transition-colors flex items-center justify-center';
-    return this.tab() === nombre
-      ? `${base} font-semibold text-brand-600 border-b-2 border-brand-500 bg-brand-50`
-      : `${base} text-slate-500 hover:text-slate-700 hover:bg-slate-50`;
+    const base = 'flex-1 py-4 text-base font-semibold transition-colors flex items-center justify-center';
+    if (this.tab() === nombre) {
+      return nombre === 'pendientes'
+        ? `${base} text-red-600 border-b-4 border-red-500 bg-red-50`
+        : `${base} text-green-700 border-b-4 border-green-500 bg-green-50`;
+    }
+    return `${base} text-slate-400 hover:text-slate-600 hover:bg-slate-50`;
   }
 
   tipoBadgeClass(tipo: TipoPagador): string {
@@ -386,6 +415,22 @@ export class ConsultasComponent {
     return tipo === 'socio'
       ? `${base} bg-blue-100 text-blue-700`
       : `${base} bg-purple-100 text-purple-700`;
+  }
+
+  /** True si el cargo pertenece a un Almacén (código distinto al puesto principal). */
+  private esAlmacen(d: DeudaItem): boolean {
+    return !!d.codigo_puesto && d.codigo_puesto !== this.seleccionado()?.codigo_puesto;
+  }
+
+  espacioLabel(d: DeudaItem): string {
+    return this.esAlmacen(d) ? `Almacén ${d.codigo_puesto}` : 'Puesto Principal';
+  }
+
+  espacioBadgeClass(d: DeudaItem): string {
+    const base = 'ml-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold align-middle';
+    return this.esAlmacen(d)
+      ? `${base} bg-amber-100 text-amber-700`
+      : `${base} bg-blue-100 text-blue-700`;
   }
 
   mesPeriodo(mes: number, anio: number): string {
@@ -434,7 +479,7 @@ export class ConsultasComponent {
       await this.pdfSvc.generarYAbrir(datos);
     } catch (e: unknown) {
       console.error(e);
-      alert('No se pudo generar el PDF del recibo.');
+      this.error.set('No pudimos generar el recibo en PDF. Intente nuevamente en un momento.');
     } finally {
       this.generandoPdfId.set(null);
     }

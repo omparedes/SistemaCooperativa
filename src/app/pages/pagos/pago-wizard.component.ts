@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
+import { mensajeAmigable } from '../../shared/utils/errores';
 import {
   BusquedaResultado,
   DeudaItem,
@@ -75,6 +76,7 @@ function formatSoles(n: number): string {
 
           <div class="flex gap-3">
             <input
+              #buscadorCaja
               type="text"
               placeholder="DNI, apellido/nombre o código de puesto…"
               class="h-11 flex-1 rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm text-gray-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
@@ -130,7 +132,7 @@ function formatSoles(n: number): string {
             </ul>
           } @else if (busquedaRealizada() && !buscando()) {
             <p class="mt-4 text-sm text-gray-400 dark:text-gray-500 text-center py-4">
-              No se encontraron resultados para "{{ query() }}"
+              No encontramos ningún socio, inquilino ni puesto con “{{ query() }}”. Verifique el dato e intente otra vez.
             </p>
           }
 
@@ -181,12 +183,20 @@ function formatSoles(n: number): string {
           }
         </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <!-- Reducción de clics: cobra el total adeudado en un solo paso -->
+          @if (seleccionado() && deudas().length > 0 && !cargandoDeudas()) {
+            <button
+              (click)="pagarTodo()"
+              class="rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700">
+              💵 Pagar Todo ({{ formatSoles(totalDeuda()) }})
+            </button>
+          }
           <button
             (click)="irPaso2()"
             [disabled]="!seleccionado() || deudas().length === 0 || cargandoDeudas()"
             class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed">
-            Siguiente →
+            Monto parcial →
           </button>
         </div>
       }
@@ -629,8 +639,15 @@ export class PagoWizardComponent {
   private readonly pagosService = inject(PagosService);
   private readonly pdfService = inject(PdfGeneratorService);
 
+  private readonly buscadorCaja = viewChild<ElementRef<HTMLInputElement>>('buscadorCaja');
+
   readonly formatSoles = formatSoles;
   readonly formatPeriodo = formatPeriodo;
+
+  constructor() {
+    // El cursor arranca en la barra de búsqueda: la cajera escribe el DNI sin tocar el mouse.
+    afterNextRender(() => this.buscadorCaja()?.nativeElement.focus());
+  }
 
   readonly metodos: MetodoPago[] = ['Efectivo', 'Transferencia'];
   readonly pasos = [
@@ -822,7 +839,7 @@ export class PagoWizardComponent {
       this.resultados.set(r);
       this.busquedaRealizada.set(true);
     } catch (e: unknown) {
-      this.errorBusqueda.set(e instanceof Error ? e.message : 'Error al buscar');
+      this.errorBusqueda.set(mensajeAmigable(e, 'No se pudo completar la búsqueda. Revise la conexión e intente otra vez.'));
     } finally {
       this.buscando.set(false);
     }
@@ -842,7 +859,7 @@ export class PagoWizardComponent {
       this.deudas.set(items);
       this.saldoAFavor.set(saldo);
     } catch (e: unknown) {
-      this.errorDeudas.set(e instanceof Error ? e.message : 'Error al cargar deudas');
+      this.errorDeudas.set(mensajeAmigable(e, 'No se pudieron cargar las deudas. Revise la conexión e intente otra vez.'));
     } finally {
       this.cargandoDeudas.set(false);
     }
@@ -859,6 +876,22 @@ export class PagoWizardComponent {
     this.observacionPago.set('');
     this.modoDistribucion.set('automatico');
     this.distribucionManualMap.set(new Map());
+    this.paso.set(2);
+  }
+
+  /**
+   * Reducción de clics: precarga el monto con el total adeudado (usando el saldo
+   * a favor si lo hay) y salta directo a la confirmación con distribución FIFO.
+   */
+  pagarTodo(): void {
+    if (!this.seleccionado() || this.deudas().length === 0) return;
+    this.comprobante.set('');
+    this.observacionPago.set('');
+    this.modoDistribucion.set('automatico');
+    this.distribucionManualMap.set(new Map());
+    this.metodoPago.set('Efectivo');
+    const faltante = Math.round((this.totalDeuda() - this.saldoAFavor()) * 100) / 100;
+    this.montoRecibido.set(Math.max(faltante, 0));
     this.paso.set(2);
   }
 
@@ -887,7 +920,7 @@ export class PagoWizardComponent {
       });
       this.codigoTransaccion.set(resultado.codigo_transaccion);
     } catch (e: unknown) {
-      this.errorGuardado.set(e instanceof Error ? e.message : 'Error al guardar el pago');
+      this.errorGuardado.set(mensajeAmigable(e, 'No se pudo registrar el pago. Verifique los datos e intente nuevamente.'));
     } finally {
       this.guardando.set(false);
     }
