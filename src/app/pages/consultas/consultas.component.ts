@@ -198,21 +198,23 @@ const MESES: ReadonlyArray<string> = [
 
                   <div class="overflow-x-auto">
                     <table class="w-full text-base">
-                      <thead>
+                      <thead class="hidden md:table-header-group">
                         <tr class="bg-slate-50 border-b border-slate-100">
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Concepto</th>
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Mes</th>
                           <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Monto</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody class="hidden md:table-row-group">
                         @for (d of deudas(); track d.monto_id) {
                           <tr class="border-b border-slate-100 hover:bg-red-50/40 transition-colors">
                             <td class="px-5 py-3.5 font-medium text-slate-800">
                               {{ d.concepto }}
-                              <span [class]="espacioBadgeClass(d)">
-                                {{ espacioLabel(d) }}
-                              </span>
+                              @if (esAlmacen(d)) {
+                                <span class="ml-2" [class]="espacioBadgeClass(d)">
+                                  {{ espacioLabel(d) }}
+                                </span>
+                              }
                             </td>
                             <td class="px-5 py-3.5 text-slate-600 whitespace-nowrap">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</td>
                             <td class="px-5 py-3.5 text-right font-bold text-red-600 whitespace-nowrap">{{ moneda(d.saldo_pendiente) }}</td>
@@ -226,6 +228,26 @@ const MESES: ReadonlyArray<string> = [
                         </tr>
                       </tfoot>
                     </table>
+                    </table>
+                    
+                    <!-- Vista Móvil (Tarjetas) -->
+                    <div class="md:hidden flex flex-col gap-3 px-5 pb-5 mt-2">
+                      @for (d of deudas(); track d.monto_id) {
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex justify-between items-center">
+                          <div>
+                            <p class="font-bold text-slate-800 text-base">{{ d.concepto }}</p>
+                            <p class="text-sm text-slate-500 mt-0.5">{{ mesPeriodo(d.periodo_mes, d.periodo_anio) }}</p>
+                            @if (esAlmacen(d)) {
+                              <span class="mt-2 inline-block" [class]="espacioBadgeClass(d)">{{ espacioLabel(d) }}</span>
+                            }
+                          </div>
+                          <div class="text-right">
+                            <p class="text-xl font-extrabold text-red-600">{{ moneda(d.saldo_pendiente) }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
                   </div>
                 }
               }
@@ -243,7 +265,7 @@ const MESES: ReadonlyArray<string> = [
                 } @else {
                   <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                      <thead>
+                      <thead class="hidden md:table-header-group">
                         <tr class="bg-slate-50 border-b border-slate-100">
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Fecha</th>
                           <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Método</th>
@@ -251,7 +273,7 @@ const MESES: ReadonlyArray<string> = [
                           <th class="px-5 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Recibo</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody class="hidden md:table-row-group">
                         @for (p of historial(); track p.id) {
                           <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                               [class.opacity-60]="p.anulado">
@@ -292,6 +314,35 @@ const MESES: ReadonlyArray<string> = [
                         }
                       </tbody>
                     </table>
+
+                    <!-- Vista Móvil (Tarjetas Historial) -->
+                    <div class="md:hidden flex flex-col gap-3 px-5 pb-5 mt-2">
+                      @for (p of historial(); track p.id) {
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex justify-between items-center" [class.opacity-60]="p.anulado">
+                          <div>
+                            <p class="font-bold text-slate-800 text-base" [class.line-through]="p.anulado">{{ p.metodo_pago }}</p>
+                            <p class="text-sm text-slate-500">{{ fecha(p.fecha_pago) }}</p>
+                            @if (p.anulado) {
+                              <span class="mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Anulado</span>
+                            } @else {
+                              <button (click)="abrirReciboPdf(p)" [disabled]="generandoPdfId() === p.id" class="mt-2 text-brand-600 hover:text-brand-800 disabled:opacity-50 transition inline-flex items-center text-sm font-medium">
+                                @if (generandoPdfId() === p.id) {
+                                  <svg class="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                  Descargando...
+                                } @else {
+                                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                  Ver Recibo
+                                }
+                              </button>
+                            }
+                          </div>
+                          <div class="text-right">
+                            <p class="text-xl font-bold" [ngClass]="p.anulado ? 'text-slate-400 line-through' : 'text-slate-800'">{{ moneda(p.monto_total) }}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
                   </div>
                 }
               }
@@ -418,7 +469,7 @@ export class ConsultasComponent {
   }
 
   /** True si el cargo pertenece a un Almacén (código distinto al puesto principal). */
-  private esAlmacen(d: DeudaItem): boolean {
+  esAlmacen(d: DeudaItem | HistorialItem): boolean {
     return !!d.codigo_puesto && d.codigo_puesto !== this.seleccionado()?.codigo_puesto;
   }
 
