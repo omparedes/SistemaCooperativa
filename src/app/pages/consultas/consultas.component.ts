@@ -228,8 +228,7 @@ const MESES: ReadonlyArray<string> = [
                         </tr>
                       </tfoot>
                     </table>
-                    </table>
-                    
+
                     <!-- Vista Móvil (Tarjetas) -->
                     <div class="md:hidden flex flex-col gap-3 px-5 pb-5 mt-2">
                       @for (d of deudas(); track d.monto_id) {
@@ -337,7 +336,7 @@ const MESES: ReadonlyArray<string> = [
                             }
                           </div>
                           <div class="text-right">
-                            <p class="text-xl font-bold" [ngClass]="p.anulado ? 'text-slate-400 line-through' : 'text-slate-800'">{{ moneda(p.monto_total) }}</p>
+                            <p class="text-xl font-bold" [class]="p.anulado ? 'text-slate-400 line-through' : 'text-slate-800'">{{ moneda(p.monto_total) }}</p>
                           </div>
                         </div>
                       }
@@ -469,7 +468,7 @@ export class ConsultasComponent {
   }
 
   /** True si el cargo pertenece a un Almacén (código distinto al puesto principal). */
-  esAlmacen(d: DeudaItem | HistorialItem): boolean {
+  esAlmacen(d: DeudaItem): boolean {
     return !!d.codigo_puesto && d.codigo_puesto !== this.seleccionado()?.codigo_puesto;
   }
 
