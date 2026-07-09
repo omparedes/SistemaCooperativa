@@ -45,6 +45,13 @@ export interface SocioMorosoResumen {
   periodo_mas_antiguo: string; // "May-2024"
 }
 
+/** Payload de rpc_dashboard_ejecutivo (00087). */
+export interface DashboardEjecutivo {
+  mes: { desde: string; hasta: string; ingresos: number; egresos: number };
+  morosidad: { personas_con_deuda: number; total_personas: number; deuda_total: number };
+  deuda_por_concepto: Array<{ concepto: string; monto: number; cantidad: number }>;
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -77,6 +84,7 @@ export class DashboardService {
   private readonly _recaudacion6m       = signal<MesRecaudacion[]>([]);
   private readonly _morosos             = signal<SocioMorosoResumen[]>([]);
   private readonly _filtros             = signal({ socios: true, inquilinos: true, otros: true });
+  private readonly _ejecutivo           = signal<DashboardEjecutivo | null>(null);
 
   // --- API pública ---
   readonly loading = this._loading.asReadonly();
@@ -84,6 +92,7 @@ export class DashboardService {
   readonly morosos = this._morosos.asReadonly();
   readonly recaudacion6m = this._recaudacion6m.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly ejecutivo = this._ejecutivo.asReadonly();
 
   /** KPIs computados para las tarjetas de resumen. */
   readonly kpis = computed(() => ({
@@ -109,6 +118,7 @@ export class DashboardService {
         this.cargarRecaudacion(),
         this.cargarDeuda(),
         this.cargarMorosos(),
+        this.cargarEjecutivo(),
       ]);
     } catch (e: unknown) {
       this._error.set(e instanceof Error ? e.message : 'Error al cargar el dashboard');
@@ -246,6 +256,33 @@ export class DashboardService {
         periodo_mas_antiguo: formatPeriodoYYYYMM(Number(r.periodo_mas_antiguo_yyyymm)),
       })),
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Query 4 — rpc_dashboard_ejecutivo (panel visual: mes, morosidad, ranking)
+  // -------------------------------------------------------------------------
+  private async cargarEjecutivo(): Promise<void> {
+    const { data, error } = await this.db.rpc('rpc_dashboard_ejecutivo');
+    if (error) throw new Error(error.message);
+
+    const raw = data as unknown as DashboardEjecutivo;
+    this._ejecutivo.set({
+      mes: {
+        desde:    raw.mes.desde,
+        hasta:    raw.mes.hasta,
+        ingresos: round2(Number(raw.mes.ingresos)),
+        egresos:  round2(Number(raw.mes.egresos)),
+      },
+      morosidad: {
+        personas_con_deuda: Number(raw.morosidad.personas_con_deuda),
+        total_personas:     Number(raw.morosidad.total_personas),
+        deuda_total:        round2(Number(raw.morosidad.deuda_total)),
+      },
+      deuda_por_concepto: (raw.deuda_por_concepto ?? []).map(c => ({
+        ...c,
+        monto: round2(Number(c.monto)),
+      })),
+    });
   }
 
 }

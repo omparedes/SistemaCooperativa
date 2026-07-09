@@ -14,6 +14,7 @@ import {
   ApexTooltip,
 } from 'ng-apexcharts';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardEjecutivoComponent } from './dashboard-ejecutivo.component';
 
 // Formatea un número como moneda peruana sin librerías externas
 function fmtSoles(n: number): string {
@@ -23,7 +24,7 @@ function fmtSoles(n: number): string {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, NgApexchartsModule],
+  imports: [RouterLink, NgApexchartsModule, DashboardEjecutivoComponent],
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6 2xl:p-10">
 
@@ -396,6 +397,9 @@ function fmtSoles(n: number): string {
           </div>
         }
       </div>
+
+      <!-- ── Panel Ejecutivo (Ingresos vs Egresos · Morosidad · Ranking) ── -->
+      <app-dashboard-ejecutivo />
 
     </div>
   `,

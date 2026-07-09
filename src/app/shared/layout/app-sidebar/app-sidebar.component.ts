@@ -33,6 +33,7 @@ export class AppSidebarComponent {
       name: "Dashboard",
       subItems: [
         { name: "Metricas", path: "/" },
+        { name: "Asambleas", path: "/asambleas" },
       ],
     },
 

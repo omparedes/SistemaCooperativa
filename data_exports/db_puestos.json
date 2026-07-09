@@ -1,0 +1,1154 @@
+[
+  {
+    "id": 5,
+    "codigo_puesto": "1-E"
+  },
+  {
+    "id": 12,
+    "codigo_puesto": "2-E"
+  },
+  {
+    "id": 19,
+    "codigo_puesto": "3-E"
+  },
+  {
+    "id": 142,
+    "codigo_puesto": "54"
+  },
+  {
+    "id": 26,
+    "codigo_puesto": "4-E"
+  },
+  {
+    "id": 33,
+    "codigo_puesto": "5-E"
+  },
+  {
+    "id": 40,
+    "codigo_puesto": "6-E"
+  },
+  {
+    "id": 46,
+    "codigo_puesto": "7-E"
+  },
+  {
+    "id": 51,
+    "codigo_puesto": "8-E"
+  },
+  {
+    "id": 54,
+    "codigo_puesto": "9-E"
+  },
+  {
+    "id": 57,
+    "codigo_puesto": "10-E"
+  },
+  {
+    "id": 59,
+    "codigo_puesto": "11-E"
+  },
+  {
+    "id": 61,
+    "codigo_puesto": "12-E"
+  },
+  {
+    "id": 63,
+    "codigo_puesto": "13-E"
+  },
+  {
+    "id": 65,
+    "codigo_puesto": "14-E"
+  },
+  {
+    "id": 67,
+    "codigo_puesto": "15-E"
+  },
+  {
+    "id": 69,
+    "codigo_puesto": "16-E"
+  },
+  {
+    "id": 71,
+    "codigo_puesto": "17-E"
+  },
+  {
+    "id": 73,
+    "codigo_puesto": "18-E"
+  },
+  {
+    "id": 75,
+    "codigo_puesto": "19-E"
+  },
+  {
+    "id": 77,
+    "codigo_puesto": "20-E"
+  },
+  {
+    "id": 79,
+    "codigo_puesto": "21-E"
+  },
+  {
+    "id": 81,
+    "codigo_puesto": "22-E"
+  },
+  {
+    "id": 83,
+    "codigo_puesto": "23-E"
+  },
+  {
+    "id": 85,
+    "codigo_puesto": "24-E"
+  },
+  {
+    "id": 87,
+    "codigo_puesto": "25-E"
+  },
+  {
+    "id": 89,
+    "codigo_puesto": "26-E"
+  },
+  {
+    "id": 91,
+    "codigo_puesto": "27-E"
+  },
+  {
+    "id": 93,
+    "codigo_puesto": "28-E"
+  },
+  {
+    "id": 95,
+    "codigo_puesto": "29-E"
+  },
+  {
+    "id": 97,
+    "codigo_puesto": "30-E"
+  },
+  {
+    "id": 99,
+    "codigo_puesto": "31-E"
+  },
+  {
+    "id": 101,
+    "codigo_puesto": "32-E"
+  },
+  {
+    "id": 103,
+    "codigo_puesto": "33-E"
+  },
+  {
+    "id": 37,
+    "codigo_puesto": "6-D1"
+  },
+  {
+    "id": 105,
+    "codigo_puesto": "34-E"
+  },
+  {
+    "id": 109,
+    "codigo_puesto": "37-E"
+  },
+  {
+    "id": 111,
+    "codigo_puesto": "38-E"
+  },
+  {
+    "id": 113,
+    "codigo_puesto": "39-E"
+  },
+  {
+    "id": 115,
+    "codigo_puesto": "40-E"
+  },
+  {
+    "id": 117,
+    "codigo_puesto": "41-E"
+  },
+  {
+    "id": 119,
+    "codigo_puesto": "42-E"
+  },
+  {
+    "id": 121,
+    "codigo_puesto": "43-E"
+  },
+  {
+    "id": 123,
+    "codigo_puesto": "44-E"
+  },
+  {
+    "id": 125,
+    "codigo_puesto": "45-E"
+  },
+  {
+    "id": 127,
+    "codigo_puesto": "46-E"
+  },
+  {
+    "id": 129,
+    "codigo_puesto": "47-E"
+  },
+  {
+    "id": 131,
+    "codigo_puesto": "48-E"
+  },
+  {
+    "id": 133,
+    "codigo_puesto": "49-E"
+  },
+  {
+    "id": 135,
+    "codigo_puesto": "50-E"
+  },
+  {
+    "id": 137,
+    "codigo_puesto": "51-E"
+  },
+  {
+    "id": 139,
+    "codigo_puesto": "52-E"
+  },
+  {
+    "id": 141,
+    "codigo_puesto": "53-E"
+  },
+  {
+    "id": 143,
+    "codigo_puesto": "54-E"
+  },
+  {
+    "id": 145,
+    "codigo_puesto": "55-E"
+  },
+  {
+    "id": 147,
+    "codigo_puesto": "56-E"
+  },
+  {
+    "id": 149,
+    "codigo_puesto": "57-E"
+  },
+  {
+    "id": 151,
+    "codigo_puesto": "58-E"
+  },
+  {
+    "id": 153,
+    "codigo_puesto": "59-E"
+  },
+  {
+    "id": 155,
+    "codigo_puesto": "60-E"
+  },
+  {
+    "id": 157,
+    "codigo_puesto": "61-E"
+  },
+  {
+    "id": 159,
+    "codigo_puesto": "62-E"
+  },
+  {
+    "id": 1,
+    "codigo_puesto": "1"
+  },
+  {
+    "id": 8,
+    "codigo_puesto": "2"
+  },
+  {
+    "id": 15,
+    "codigo_puesto": "3"
+  },
+  {
+    "id": 22,
+    "codigo_puesto": "4"
+  },
+  {
+    "id": 29,
+    "codigo_puesto": "5"
+  },
+  {
+    "id": 36,
+    "codigo_puesto": "6"
+  },
+  {
+    "id": 48,
+    "codigo_puesto": "8"
+  },
+  {
+    "id": 52,
+    "codigo_puesto": "9"
+  },
+  {
+    "id": 55,
+    "codigo_puesto": "10"
+  },
+  {
+    "id": 60,
+    "codigo_puesto": "12"
+  },
+  {
+    "id": 62,
+    "codigo_puesto": "13"
+  },
+  {
+    "id": 64,
+    "codigo_puesto": "14"
+  },
+  {
+    "id": 66,
+    "codigo_puesto": "15"
+  },
+  {
+    "id": 68,
+    "codigo_puesto": "16"
+  },
+  {
+    "id": 70,
+    "codigo_puesto": "17"
+  },
+  {
+    "id": 72,
+    "codigo_puesto": "18"
+  },
+  {
+    "id": 74,
+    "codigo_puesto": "19"
+  },
+  {
+    "id": 76,
+    "codigo_puesto": "20"
+  },
+  {
+    "id": 78,
+    "codigo_puesto": "21"
+  },
+  {
+    "id": 80,
+    "codigo_puesto": "22"
+  },
+  {
+    "id": 82,
+    "codigo_puesto": "23"
+  },
+  {
+    "id": 84,
+    "codigo_puesto": "24"
+  },
+  {
+    "id": 86,
+    "codigo_puesto": "25"
+  },
+  {
+    "id": 88,
+    "codigo_puesto": "26"
+  },
+  {
+    "id": 90,
+    "codigo_puesto": "27"
+  },
+  {
+    "id": 92,
+    "codigo_puesto": "28"
+  },
+  {
+    "id": 94,
+    "codigo_puesto": "29"
+  },
+  {
+    "id": 96,
+    "codigo_puesto": "30"
+  },
+  {
+    "id": 98,
+    "codigo_puesto": "31"
+  },
+  {
+    "id": 100,
+    "codigo_puesto": "32"
+  },
+  {
+    "id": 102,
+    "codigo_puesto": "33"
+  },
+  {
+    "id": 104,
+    "codigo_puesto": "34"
+  },
+  {
+    "id": 106,
+    "codigo_puesto": "35"
+  },
+  {
+    "id": 107,
+    "codigo_puesto": "36"
+  },
+  {
+    "id": 108,
+    "codigo_puesto": "37"
+  },
+  {
+    "id": 110,
+    "codigo_puesto": "38"
+  },
+  {
+    "id": 112,
+    "codigo_puesto": "39"
+  },
+  {
+    "id": 114,
+    "codigo_puesto": "40"
+  },
+  {
+    "id": 116,
+    "codigo_puesto": "41"
+  },
+  {
+    "id": 118,
+    "codigo_puesto": "42"
+  },
+  {
+    "id": 120,
+    "codigo_puesto": "43"
+  },
+  {
+    "id": 122,
+    "codigo_puesto": "44"
+  },
+  {
+    "id": 124,
+    "codigo_puesto": "45"
+  },
+  {
+    "id": 126,
+    "codigo_puesto": "46"
+  },
+  {
+    "id": 128,
+    "codigo_puesto": "47"
+  },
+  {
+    "id": 130,
+    "codigo_puesto": "48"
+  },
+  {
+    "id": 132,
+    "codigo_puesto": "49"
+  },
+  {
+    "id": 134,
+    "codigo_puesto": "50"
+  },
+  {
+    "id": 136,
+    "codigo_puesto": "51"
+  },
+  {
+    "id": 138,
+    "codigo_puesto": "52"
+  },
+  {
+    "id": 140,
+    "codigo_puesto": "53"
+  },
+  {
+    "id": 53,
+    "codigo_puesto": "9-D2"
+  },
+  {
+    "id": 144,
+    "codigo_puesto": "55"
+  },
+  {
+    "id": 146,
+    "codigo_puesto": "56"
+  },
+  {
+    "id": 148,
+    "codigo_puesto": "57"
+  },
+  {
+    "id": 150,
+    "codigo_puesto": "58"
+  },
+  {
+    "id": 152,
+    "codigo_puesto": "59"
+  },
+  {
+    "id": 154,
+    "codigo_puesto": "60"
+  },
+  {
+    "id": 156,
+    "codigo_puesto": "61"
+  },
+  {
+    "id": 158,
+    "codigo_puesto": "62"
+  },
+  {
+    "id": 160,
+    "codigo_puesto": "63"
+  },
+  {
+    "id": 161,
+    "codigo_puesto": "64"
+  },
+  {
+    "id": 162,
+    "codigo_puesto": "65"
+  },
+  {
+    "id": 163,
+    "codigo_puesto": "66"
+  },
+  {
+    "id": 2,
+    "codigo_puesto": "1-D1"
+  },
+  {
+    "id": 9,
+    "codigo_puesto": "2-D1"
+  },
+  {
+    "id": 3,
+    "codigo_puesto": "1-D2"
+  },
+  {
+    "id": 4,
+    "codigo_puesto": "1-D3"
+  },
+  {
+    "id": 10,
+    "codigo_puesto": "2-D2"
+  },
+  {
+    "id": 11,
+    "codigo_puesto": "2-D3"
+  },
+  {
+    "id": 16,
+    "codigo_puesto": "3-D1"
+  },
+  {
+    "id": 17,
+    "codigo_puesto": "3-D2"
+  },
+  {
+    "id": 18,
+    "codigo_puesto": "3-D3"
+  },
+  {
+    "id": 23,
+    "codigo_puesto": "4-D1"
+  },
+  {
+    "id": 24,
+    "codigo_puesto": "4-D2"
+  },
+  {
+    "id": 25,
+    "codigo_puesto": "4-D3"
+  },
+  {
+    "id": 30,
+    "codigo_puesto": "5-D1"
+  },
+  {
+    "id": 31,
+    "codigo_puesto": "5-D2"
+  },
+  {
+    "id": 32,
+    "codigo_puesto": "5-D3"
+  },
+  {
+    "id": 38,
+    "codigo_puesto": "6-D2"
+  },
+  {
+    "id": 39,
+    "codigo_puesto": "6-D3"
+  },
+  {
+    "id": 43,
+    "codigo_puesto": "7-D1"
+  },
+  {
+    "id": 44,
+    "codigo_puesto": "7-D2"
+  },
+  {
+    "id": 45,
+    "codigo_puesto": "7-D3"
+  },
+  {
+    "id": 49,
+    "codigo_puesto": "8-D2"
+  },
+  {
+    "id": 50,
+    "codigo_puesto": "8-D3"
+  },
+  {
+    "id": 56,
+    "codigo_puesto": "10-D2"
+  },
+  {
+    "id": 58,
+    "codigo_puesto": "11-D2"
+  },
+  {
+    "id": 6,
+    "codigo_puesto": "1-EP"
+  },
+  {
+    "id": 13,
+    "codigo_puesto": "2-EP"
+  },
+  {
+    "id": 7,
+    "codigo_puesto": "1-SP"
+  },
+  {
+    "id": 14,
+    "codigo_puesto": "2-SP"
+  },
+  {
+    "id": 20,
+    "codigo_puesto": "3-EP"
+  },
+  {
+    "id": 21,
+    "codigo_puesto": "3-SP"
+  },
+  {
+    "id": 27,
+    "codigo_puesto": "4-EP"
+  },
+  {
+    "id": 28,
+    "codigo_puesto": "4-SP"
+  },
+  {
+    "id": 34,
+    "codigo_puesto": "5-EP"
+  },
+  {
+    "id": 35,
+    "codigo_puesto": "5-SP"
+  },
+  {
+    "id": 41,
+    "codigo_puesto": "6-EP"
+  },
+  {
+    "id": 42,
+    "codigo_puesto": "6-SP"
+  },
+  {
+    "id": 47,
+    "codigo_puesto": "7-EP"
+  },
+  {
+    "id": 164,
+    "codigo_puesto": "67"
+  },
+  {
+    "id": 165,
+    "codigo_puesto": "68"
+  },
+  {
+    "id": 166,
+    "codigo_puesto": "69"
+  },
+  {
+    "id": 167,
+    "codigo_puesto": "70"
+  },
+  {
+    "id": 168,
+    "codigo_puesto": "71"
+  },
+  {
+    "id": 169,
+    "codigo_puesto": "72"
+  },
+  {
+    "id": 170,
+    "codigo_puesto": "73"
+  },
+  {
+    "id": 171,
+    "codigo_puesto": "74"
+  },
+  {
+    "id": 172,
+    "codigo_puesto": "75"
+  },
+  {
+    "id": 173,
+    "codigo_puesto": "76"
+  },
+  {
+    "id": 174,
+    "codigo_puesto": "78"
+  },
+  {
+    "id": 175,
+    "codigo_puesto": "79"
+  },
+  {
+    "id": 176,
+    "codigo_puesto": "80"
+  },
+  {
+    "id": 177,
+    "codigo_puesto": "81"
+  },
+  {
+    "id": 178,
+    "codigo_puesto": "82"
+  },
+  {
+    "id": 179,
+    "codigo_puesto": "83"
+  },
+  {
+    "id": 180,
+    "codigo_puesto": "84"
+  },
+  {
+    "id": 181,
+    "codigo_puesto": "85"
+  },
+  {
+    "id": 182,
+    "codigo_puesto": "86"
+  },
+  {
+    "id": 183,
+    "codigo_puesto": "87"
+  },
+  {
+    "id": 184,
+    "codigo_puesto": "88"
+  },
+  {
+    "id": 185,
+    "codigo_puesto": "89"
+  },
+  {
+    "id": 186,
+    "codigo_puesto": "90"
+  },
+  {
+    "id": 187,
+    "codigo_puesto": "91"
+  },
+  {
+    "id": 188,
+    "codigo_puesto": "93"
+  },
+  {
+    "id": 189,
+    "codigo_puesto": "94"
+  },
+  {
+    "id": 190,
+    "codigo_puesto": "95"
+  },
+  {
+    "id": 191,
+    "codigo_puesto": "96"
+  },
+  {
+    "id": 192,
+    "codigo_puesto": "97"
+  },
+  {
+    "id": 193,
+    "codigo_puesto": "98"
+  },
+  {
+    "id": 194,
+    "codigo_puesto": "99"
+  },
+  {
+    "id": 195,
+    "codigo_puesto": "100"
+  },
+  {
+    "id": 196,
+    "codigo_puesto": "101"
+  },
+  {
+    "id": 197,
+    "codigo_puesto": "102"
+  },
+  {
+    "id": 198,
+    "codigo_puesto": "103"
+  },
+  {
+    "id": 199,
+    "codigo_puesto": "104"
+  },
+  {
+    "id": 200,
+    "codigo_puesto": "105"
+  },
+  {
+    "id": 201,
+    "codigo_puesto": "106"
+  },
+  {
+    "id": 202,
+    "codigo_puesto": "107"
+  },
+  {
+    "id": 203,
+    "codigo_puesto": "108"
+  },
+  {
+    "id": 204,
+    "codigo_puesto": "109"
+  },
+  {
+    "id": 205,
+    "codigo_puesto": "110"
+  },
+  {
+    "id": 206,
+    "codigo_puesto": "111"
+  },
+  {
+    "id": 207,
+    "codigo_puesto": "112"
+  },
+  {
+    "id": 208,
+    "codigo_puesto": "113"
+  },
+  {
+    "id": 209,
+    "codigo_puesto": "114"
+  },
+  {
+    "id": 210,
+    "codigo_puesto": "115"
+  },
+  {
+    "id": 211,
+    "codigo_puesto": "116"
+  },
+  {
+    "id": 212,
+    "codigo_puesto": "117"
+  },
+  {
+    "id": 213,
+    "codigo_puesto": "118"
+  },
+  {
+    "id": 214,
+    "codigo_puesto": "119"
+  },
+  {
+    "id": 215,
+    "codigo_puesto": "120"
+  },
+  {
+    "id": 216,
+    "codigo_puesto": "121"
+  },
+  {
+    "id": 217,
+    "codigo_puesto": "122"
+  },
+  {
+    "id": 218,
+    "codigo_puesto": "123"
+  },
+  {
+    "id": 219,
+    "codigo_puesto": "124"
+  },
+  {
+    "id": 220,
+    "codigo_puesto": "125"
+  },
+  {
+    "id": 221,
+    "codigo_puesto": "126"
+  },
+  {
+    "id": 222,
+    "codigo_puesto": "127"
+  },
+  {
+    "id": 223,
+    "codigo_puesto": "128"
+  },
+  {
+    "id": 224,
+    "codigo_puesto": "129"
+  },
+  {
+    "id": 225,
+    "codigo_puesto": "130"
+  },
+  {
+    "id": 226,
+    "codigo_puesto": "131"
+  },
+  {
+    "id": 227,
+    "codigo_puesto": "132"
+  },
+  {
+    "id": 228,
+    "codigo_puesto": "133"
+  },
+  {
+    "id": 229,
+    "codigo_puesto": "134"
+  },
+  {
+    "id": 230,
+    "codigo_puesto": "135"
+  },
+  {
+    "id": 231,
+    "codigo_puesto": "136"
+  },
+  {
+    "id": 232,
+    "codigo_puesto": "137"
+  },
+  {
+    "id": 233,
+    "codigo_puesto": "138"
+  },
+  {
+    "id": 234,
+    "codigo_puesto": "139"
+  },
+  {
+    "id": 235,
+    "codigo_puesto": "140"
+  },
+  {
+    "id": 236,
+    "codigo_puesto": "141"
+  },
+  {
+    "id": 237,
+    "codigo_puesto": "142"
+  },
+  {
+    "id": 238,
+    "codigo_puesto": "143"
+  },
+  {
+    "id": 239,
+    "codigo_puesto": "144"
+  },
+  {
+    "id": 240,
+    "codigo_puesto": "145"
+  },
+  {
+    "id": 241,
+    "codigo_puesto": "146"
+  },
+  {
+    "id": 242,
+    "codigo_puesto": "147"
+  },
+  {
+    "id": 243,
+    "codigo_puesto": "148"
+  },
+  {
+    "id": 244,
+    "codigo_puesto": "149"
+  },
+  {
+    "id": 245,
+    "codigo_puesto": "150"
+  },
+  {
+    "id": 246,
+    "codigo_puesto": "151"
+  },
+  {
+    "id": 247,
+    "codigo_puesto": "152"
+  },
+  {
+    "id": 248,
+    "codigo_puesto": "153"
+  },
+  {
+    "id": 249,
+    "codigo_puesto": "154"
+  },
+  {
+    "id": 250,
+    "codigo_puesto": "155"
+  },
+  {
+    "id": 251,
+    "codigo_puesto": "156"
+  },
+  {
+    "id": 252,
+    "codigo_puesto": "157"
+  },
+  {
+    "id": 253,
+    "codigo_puesto": "158"
+  },
+  {
+    "id": 254,
+    "codigo_puesto": "159"
+  },
+  {
+    "id": 255,
+    "codigo_puesto": "160"
+  },
+  {
+    "id": 256,
+    "codigo_puesto": "161"
+  },
+  {
+    "id": 257,
+    "codigo_puesto": "162"
+  },
+  {
+    "id": 258,
+    "codigo_puesto": "163"
+  },
+  {
+    "id": 259,
+    "codigo_puesto": "164"
+  },
+  {
+    "id": 260,
+    "codigo_puesto": "165"
+  },
+  {
+    "id": 261,
+    "codigo_puesto": "166"
+  },
+  {
+    "id": 262,
+    "codigo_puesto": "167"
+  },
+  {
+    "id": 263,
+    "codigo_puesto": "168"
+  },
+  {
+    "id": 264,
+    "codigo_puesto": "169"
+  },
+  {
+    "id": 265,
+    "codigo_puesto": "170"
+  },
+  {
+    "id": 266,
+    "codigo_puesto": "171"
+  },
+  {
+    "id": 267,
+    "codigo_puesto": "172"
+  },
+  {
+    "id": 268,
+    "codigo_puesto": "174"
+  },
+  {
+    "id": 269,
+    "codigo_puesto": "175"
+  },
+  {
+    "id": 270,
+    "codigo_puesto": "176"
+  },
+  {
+    "id": 271,
+    "codigo_puesto": "177"
+  },
+  {
+    "id": 272,
+    "codigo_puesto": "178"
+  },
+  {
+    "id": 273,
+    "codigo_puesto": "179"
+  },
+  {
+    "id": 274,
+    "codigo_puesto": "180"
+  },
+  {
+    "id": 275,
+    "codigo_puesto": "181"
+  },
+  {
+    "id": 276,
+    "codigo_puesto": "182"
+  },
+  {
+    "id": 277,
+    "codigo_puesto": "183"
+  },
+  {
+    "id": 278,
+    "codigo_puesto": "184"
+  },
+  {
+    "id": 279,
+    "codigo_puesto": "185"
+  },
+  {
+    "id": 280,
+    "codigo_puesto": "186"
+  },
+  {
+    "id": 281,
+    "codigo_puesto": "187"
+  },
+  {
+    "id": 282,
+    "codigo_puesto": "188"
+  },
+  {
+    "id": 283,
+    "codigo_puesto": "189"
+  },
+  {
+    "id": 284,
+    "codigo_puesto": "190"
+  },
+  {
+    "id": 285,
+    "codigo_puesto": "191"
+  },
+  {
+    "id": 286,
+    "codigo_puesto": "192"
+  },
+  {
+    "id": 287,
+    "codigo_puesto": "194"
+  },
+  {
+    "id": 288,
+    "codigo_puesto": "195"
+  }
+]

@@ -1,0 +1,6326 @@
+[
+  {
+    "id": 5944,
+    "puesto_id": 95,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2024,
+    "periodo_mes": 5,
+    "monto": 165.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "29-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6041,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 4.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 6042,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 350.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6043,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 10,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros Ingresos"
+    }
+  },
+  {
+    "id": 6190,
+    "puesto_id": 34,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 12,
+    "monto": 40.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 175,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 32,
+    "periodo_anio": 2025,
+    "periodo_mes": 12,
+    "monto": 4592.8,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Saldo Inicial 2025"
+    }
+  },
+  {
+    "id": 10794,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10795,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10796,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10797,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10831,
+    "puesto_id": 161,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 128.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "64"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10832,
+    "puesto_id": 161,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "64"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10884,
+    "puesto_id": 150,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "58"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10926,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10927,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10940,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 31.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10941,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10961,
+    "puesto_id": 287,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 798.8,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "194"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 8998,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 5.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 8999,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 9000,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 9001,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 9002,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 9003,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 9004,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11003,
+    "puesto_id": 266,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 56.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "171"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11027,
+    "puesto_id": 257,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 18.9,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "162"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11028,
+    "puesto_id": 257,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 118.2,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "162"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11039,
+    "puesto_id": 258,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 258.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "163"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11040,
+    "puesto_id": 258,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 145.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "163"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11063,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 18.9,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11064,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11065,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11066,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11146,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 26.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11147,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11148,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11149,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11158,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 18.8,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11159,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11160,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11161,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11191,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 8.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11192,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 17.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11206,
+    "puesto_id": 239,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "144"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11207,
+    "puesto_id": 239,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "144"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11208,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 35.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11209,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11211,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11228,
+    "puesto_id": 279,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 136.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "185"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11229,
+    "puesto_id": 279,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 12.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "185"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11240,
+    "puesto_id": 288,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 27.4,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "195"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11241,
+    "puesto_id": 288,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "195"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11267,
+    "puesto_id": 114,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "40"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11268,
+    "puesto_id": 114,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "40"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11273,
+    "puesto_id": 233,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "138"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11274,
+    "puesto_id": 233,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "138"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11277,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11278,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11279,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11280,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11301,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 884.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11302,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 27.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11303,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11304,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11325,
+    "puesto_id": 215,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 1141.4,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "120"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11326,
+    "puesto_id": 215,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 15.9,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "120"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11366,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11367,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11369,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11370,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 9292,
+    "puesto_id": 231,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "136"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11448,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 9446,
+    "puesto_id": 194,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 21.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "99"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 5922,
+    "puesto_id": 7,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2025,
+    "periodo_mes": 10,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "1-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 5933,
+    "puesto_id": 12,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 300.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "2-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 5948,
+    "puesto_id": 19,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2024,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11522,
+    "puesto_id": 170,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "73"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11523,
+    "puesto_id": 170,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "73"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11525,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 5965,
+    "puesto_id": 139,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 500.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "52-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 11526,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 9538,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 9539,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 9563,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 9564,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11544,
+    "puesto_id": 161,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "64"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11545,
+    "puesto_id": 161,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "64"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11553,
+    "puesto_id": 50,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "8-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11558,
+    "puesto_id": 150,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "58"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 5991,
+    "puesto_id": 6,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2025,
+    "periodo_mes": 10,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "1-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 6003,
+    "puesto_id": 14,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 450.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "2-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6004,
+    "puesto_id": 14,
+    "socio_id": null,
+    "concepto_id": 10,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "2-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros Ingresos"
+    }
+  },
+  {
+    "id": 6005,
+    "puesto_id": 14,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2025,
+    "periodo_mes": 10,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "2-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11580,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11581,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11592,
+    "puesto_id": 212,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "117"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11593,
+    "puesto_id": 212,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "117"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 6036,
+    "puesto_id": 75,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 500.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "19-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6038,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2025,
+    "periodo_mes": 6,
+    "monto": 44.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 6039,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2025,
+    "periodo_mes": 6,
+    "monto": 4.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 6040,
+    "puesto_id": 28,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 44.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-SP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11598,
+    "puesto_id": 9,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "2-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11599,
+    "puesto_id": 287,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "194"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11600,
+    "puesto_id": 287,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "194"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11601,
+    "puesto_id": 174,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "78"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 6049,
+    "puesto_id": 123,
+    "socio_id": null,
+    "concepto_id": 10,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "44-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros Ingresos"
+    }
+  },
+  {
+    "id": 11614,
+    "puesto_id": 262,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "167"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11615,
+    "puesto_id": 271,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "177"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11616,
+    "puesto_id": 271,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "177"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11632,
+    "puesto_id": 257,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "162"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11633,
+    "puesto_id": 257,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "162"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11634,
+    "puesto_id": 64,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "14"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11635,
+    "puesto_id": 64,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "14"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11638,
+    "puesto_id": 258,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "163"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11639,
+    "puesto_id": 258,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "163"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11650,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11651,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11656,
+    "puesto_id": 2,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "1-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11670,
+    "puesto_id": 183,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "87"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11671,
+    "puesto_id": 183,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "87"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11693,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11694,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11699,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11700,
+    "puesto_id": 177,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "81"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11701,
+    "puesto_id": 30,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 6059,
+    "puesto_id": 129,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 24.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "47-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 6060,
+    "puesto_id": 129,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 4.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "47-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 6061,
+    "puesto_id": 129,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 600.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "47-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6062,
+    "puesto_id": 129,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 600.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "47-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6063,
+    "puesto_id": 129,
+    "socio_id": null,
+    "concepto_id": 10,
+    "periodo_anio": 2025,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "47-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros Ingresos"
+    }
+  },
+  {
+    "id": 11704,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11705,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11710,
+    "puesto_id": 282,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "188"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11711,
+    "puesto_id": 282,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "188"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11716,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11717,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11732,
+    "puesto_id": 279,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "185"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11733,
+    "puesto_id": 279,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "185"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11751,
+    "puesto_id": 114,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "40"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11752,
+    "puesto_id": 114,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "40"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 6116,
+    "puesto_id": 93,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2025,
+    "periodo_mes": 1,
+    "monto": 17.4,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "28-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11755,
+    "puesto_id": 233,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "138"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11756,
+    "puesto_id": 233,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "138"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11757,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11758,
+    "puesto_id": 218,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "123"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 6117,
+    "puesto_id": 93,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2025,
+    "periodo_mes": 1,
+    "monto": 3.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "28-E"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11769,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11770,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11781,
+    "puesto_id": 215,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "120"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11782,
+    "puesto_id": 215,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "120"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11791,
+    "puesto_id": 274,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "180"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11792,
+    "puesto_id": 274,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "180"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11797,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11798,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11799,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11800,
+    "puesto_id": 15,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 6140,
+    "puesto_id": 41,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2022,
+    "periodo_mes": 8,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "6-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 6141,
+    "puesto_id": 41,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2024,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "6-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 6142,
+    "puesto_id": 41,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2025,
+    "periodo_mes": 7,
+    "monto": 300.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "6-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 11815,
+    "puesto_id": 162,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "65"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11816,
+    "puesto_id": 162,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "65"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11825,
+    "puesto_id": 181,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "85"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11826,
+    "puesto_id": 181,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "85"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11829,
+    "puesto_id": 276,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "182"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11830,
+    "puesto_id": 276,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "182"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11835,
+    "puesto_id": 182,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "86"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11836,
+    "puesto_id": 182,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "86"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11843,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11848,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11849,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 6176,
+    "puesto_id": 20,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2024,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 11873,
+    "puesto_id": 43,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "7-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 10085,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 6180,
+    "puesto_id": 25,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2025,
+    "periodo_mes": 10,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 6181,
+    "puesto_id": 25,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2025,
+    "periodo_mes": 11,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 6182,
+    "puesto_id": 25,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2025,
+    "periodo_mes": 12,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11880,
+    "puesto_id": 206,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "111"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11881,
+    "puesto_id": 206,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "111"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10137,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10138,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10145,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 6188,
+    "puesto_id": 34,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2023,
+    "periodo_mes": 8,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 6189,
+    "puesto_id": 34,
+    "socio_id": null,
+    "concepto_id": 11,
+    "periodo_anio": 2023,
+    "periodo_mes": 12,
+    "monto": 50.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-EP"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Alquiler"
+    }
+  },
+  {
+    "id": 10493,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11002,
+    "puesto_id": 266,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 0.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "171"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11210,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 32.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10150,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 10155,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 10140,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 10141,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 55.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10142,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 13.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10143,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 112.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10144,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10146,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 42.4,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10147,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 9.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10148,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10149,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10151,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 45.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 10152,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 9.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10153,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10154,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10068,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 45.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11439,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11440,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11841,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11842,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10069,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 11.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10491,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 240.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10492,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 20.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11469,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 240.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11470,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 20.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11862,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 240.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11863,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 20.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10482,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 16.8,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 10483,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10484,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10487,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 170.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10488,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 10489,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 10490,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11891,
+    "puesto_id": 60,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "12"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11892,
+    "puesto_id": 60,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "12"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11893,
+    "puesto_id": 60,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "12"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11894,
+    "puesto_id": 60,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "12"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11895,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11896,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11897,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11898,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11899,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11900,
+    "puesto_id": 55,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "10"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11904,
+    "puesto_id": 108,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 3900.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "37"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11905,
+    "puesto_id": 277,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 226.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "183"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11908,
+    "puesto_id": 277,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "183"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11917,
+    "puesto_id": 277,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "183"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11920,
+    "puesto_id": 277,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "183"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11925,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11926,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11927,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11928,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11929,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11930,
+    "puesto_id": 52,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "9"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11933,
+    "puesto_id": 30,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11934,
+    "puesto_id": 30,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 200.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "5-D1"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11935,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 55.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11936,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 4.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 11937,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11938,
+    "puesto_id": 221,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "126"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11939,
+    "puesto_id": 24,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 93.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "4-D2"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11941,
+    "puesto_id": 118,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "42"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11942,
+    "puesto_id": 118,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "42"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11943,
+    "puesto_id": 118,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 48.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "42"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11944,
+    "puesto_id": 118,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "42"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11945,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 226.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11946,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11947,
+    "puesto_id": 209,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "114"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11948,
+    "puesto_id": 116,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 72.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "41"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 11969,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11970,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11971,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11972,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11973,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11974,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11975,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11976,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 270.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11977,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 226.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11978,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 28.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11979,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11980,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11981,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11982,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11983,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11984,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11985,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11986,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11987,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11988,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 11989,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 11990,
+    "puesto_id": 167,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 28.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "70"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11991,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11992,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11993,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11994,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11995,
+    "puesto_id": 18,
+    "socio_id": null,
+    "concepto_id": 16,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 150.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "3-D3"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Deposito"
+    }
+  },
+  {
+    "id": 11997,
+    "puesto_id": 232,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "137"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11998,
+    "puesto_id": 232,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "137"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 11999,
+    "puesto_id": 232,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "137"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12000,
+    "puesto_id": 232,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "137"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12002,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 1000.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12003,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 93.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12004,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 391.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12005,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 186.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12006,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 121.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12007,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 206.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12008,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 403.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12009,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 2.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12010,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12011,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 22.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12012,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12013,
+    "puesto_id": 178,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 26.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "82"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12019,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 220.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12020,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 410.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12021,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12022,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12023,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 557.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12024,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12025,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12026,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 121.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12027,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 13.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12028,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12029,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12030,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 9,
+    "monto": 30.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12031,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 109.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12032,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 16.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12033,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12034,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12035,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 109.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12036,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 18.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12037,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12038,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12039,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 105.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12040,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 14.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12041,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 180.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 12042,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 12,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 12043,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 118.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12044,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 87.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12045,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 2,
+    "monto": 8.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12046,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 78.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12047,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 8.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12048,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 77.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12049,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 8.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12050,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 71.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12051,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12052,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 5,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12053,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 69.5,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12054,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 6,
+    "monto": 11.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12055,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 65.4,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12056,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 7,
+    "monto": 11.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12057,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 65.6,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 12058,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 8,
+    "monto": 15.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 12059,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 10,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12060,
+    "puesto_id": 142,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 1,
+    "monto": 38.3,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "54"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12061,
+    "puesto_id": 216,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 11,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "121"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 12062,
+    "puesto_id": 216,
+    "socio_id": null,
+    "concepto_id": 18,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 113.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "121"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Otros"
+    }
+  },
+  {
+    "id": 6710,
+    "puesto_id": 150,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 75.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "58"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 6968,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 6969,
+    "puesto_id": 175,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "79"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 7049,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 42.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 7050,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 7051,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 29.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 7052,
+    "puesto_id": 144,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "55"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 7217,
+    "puesto_id": 188,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "93"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 7338,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 8.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 7339,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 7333,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 3,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 7336,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 120.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 7337,
+    "puesto_id": 176,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 10.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "80"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 7839,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 19.8,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 7840,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 7841,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 7842,
+    "puesto_id": 265,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "170"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 7936,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 27.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 7937,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 7938,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 60.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  },
+  {
+    "id": 7939,
+    "puesto_id": 235,
+    "socio_id": null,
+    "concepto_id": 4,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 5.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "140"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Previsión social"
+    }
+  },
+  {
+    "id": 8055,
+    "puesto_id": 256,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 14.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "161"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 8056,
+    "puesto_id": 256,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "161"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 8540,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 8.1,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 8541,
+    "puesto_id": 238,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 17.7,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "143"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 8635,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 1,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 35.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Luz"
+    }
+  },
+  {
+    "id": 8636,
+    "puesto_id": 156,
+    "socio_id": null,
+    "concepto_id": 2,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 6.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "61"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Agua"
+    }
+  },
+  {
+    "id": 8794,
+    "puesto_id": 288,
+    "socio_id": null,
+    "concepto_id": 3,
+    "periodo_anio": 2026,
+    "periodo_mes": 4,
+    "monto": 108.0,
+    "estado": "Pendiente",
+    "puestos": {
+      "codigo_puesto": "195"
+    },
+    "socios": null,
+    "conceptos": {
+      "nombre": "Gastos administrativos"
+    }
+  }
+]

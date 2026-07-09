@@ -26,6 +26,12 @@ export const routes: Routes = [
           import('./pages/socios/socio-list.component').then(m => m.SocioListComponent),
         title: 'Listado de Socios | TailAdmin'
       },
+      {
+        path: 'asambleas',
+        loadComponent: () =>
+          import('./pages/asambleas/asambleas.component').then(m => m.AsambleasComponent),
+        title: 'Padrón Electoral | Cooperativa Primero de Mayo',
+      },
       // ── CRUD Socios (solo Administrador) ────────────────────────────────
       {
         path: 'socios/nuevo',

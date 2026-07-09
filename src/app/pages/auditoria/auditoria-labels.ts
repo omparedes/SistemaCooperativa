@@ -13,6 +13,7 @@ export const TABLA_LABELS: Record<string, string> = {
   gastos:                   'Gasto',
   caja_ajustes:             'Ajuste de Caja',
   distribuciones_mensuales: 'Distribución Mensual',
+  asistencias_asamblea:     'Asistencia a Asamblea',
 };
 
 export const COLUMN_LABELS: Record<string, string> = {

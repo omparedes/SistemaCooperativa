@@ -26,6 +26,24 @@ export interface LinhaRecibo {
   cubierto_completo: boolean;
 }
 
+export interface PadronElectoralPersona {
+  dni: string;
+  nombres: string;
+  apellidos: string;
+  codigo_puesto: string | null;
+}
+
+export interface PadronElectoralMorosoPdf extends PadronElectoralPersona {
+  deuda_total: number;
+}
+
+export interface PadronElectoralPdfDatos {
+  generado_en: string;
+  total_activos: number;
+  habiles: PadronElectoralPersona[];
+  inhabilitados: PadronElectoralMorosoPdf[];
+}
+
 export interface ReciboDatos {
   codigo_transaccion: string;
   fecha_pago: Date;
@@ -495,6 +513,148 @@ export class PdfGeneratorService {
           {
             columns: [
               { text: `Arqueo de Caja — ${formatFechaArqueo(r.fecha)} — Cooperativa Primero de Mayo`, fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
+            ],
+          },
+        ],
+      }),
+
+    } as unknown as DocDefinition;
+  }
+
+  // -------------------------------------------------------------------------
+  // Padrón Electoral (Asambleas)
+  // -------------------------------------------------------------------------
+
+  /** Genera el padrón electoral (hábiles/inhabilitados) y lo abre en nueva pestaña. */
+  async generarPadronElectoralYAbrir(datos: PadronElectoralPdfDatos): Promise<void> {
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumentoPadronElectoral(datos)).open();
+  }
+
+  /** Genera el padrón electoral y lo descarga. */
+  async descargarPadronElectoral(datos: PadronElectoralPdfDatos): Promise<void> {
+    const pm = await this.cargarModulo();
+    await pm.createPdf(this.construirDocumentoPadronElectoral(datos))
+      .download(`padron-electoral-${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  private construirDocumentoPadronElectoral(d: PadronElectoralPdfDatos): DocDefinition {
+    const layoutBordes: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+    };
+
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: C.azulClaro, alignment: al });
+
+    const encTHRojo = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: '#B91C1C', alignment: al });
+
+    const filasHabiles: TableCell[][] = d.habiles.map(s => [
+      { text: `${s.apellidos}, ${s.nombres}`, fontSize: 8, color: C.negro },
+      { text: s.dni, fontSize: 8, color: C.grisTxt, alignment: 'center' as const },
+      { text: s.codigo_puesto ?? '—', fontSize: 8, color: C.grisTxt, alignment: 'center' as const },
+    ]);
+
+    const filasInhabilitados: TableCell[][] = d.inhabilitados.map(s => [
+      { text: `${s.apellidos}, ${s.nombres}`, fontSize: 8, color: C.negro },
+      { text: s.dni, fontSize: 8, color: C.grisTxt, alignment: 'center' as const },
+      { text: s.codigo_puesto ?? '—', fontSize: 8, color: C.grisTxt, alignment: 'center' as const },
+      { text: `S/ ${s.deuda_total.toFixed(2)}`, fontSize: 8, bold: true, color: '#B91C1C', alignment: 'right' as const },
+    ]);
+
+    const totalDeuda = d.inhabilitados.reduce((s, r) => s + r.deuda_total, 0);
+    const filaTotalDeuda: TableCell[] = [
+      { text: 'TOTAL DEUDA PENDIENTE', fontSize: 8.5, bold: true, color: C.negro, colSpan: 3, fillColor: '#FEF2F2' },
+      {}, {},
+      { text: `S/ ${totalDeuda.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#B91C1C', alignment: 'right' as const, fillColor: '#FEF2F2' },
+    ];
+
+    return {
+      pageSize: 'A4',
+      pageMargins: [40, 48, 40, 60],
+      defaultStyle: { font: 'Roboto', fontSize: 9, lineHeight: 1.3 },
+
+      content: [
+        {
+          alignment: 'center',
+          stack: [
+            { text: 'COOPERATIVA DE COMERCIANTES', fontSize: 12, color: C.grisTxt },
+            { text: 'PRIMERO DE MAYO', fontSize: 20, bold: true, color: C.azul, margin: [0, 2, 0, 3] },
+            { text: 'Mercado Municipal', fontSize: 9, color: C.grisTxt },
+          ],
+        },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 2.5, lineColor: C.azulClaro }],
+          margin: [0, 8, 0, 10],
+        },
+        {
+          table: { widths: ['*'], body: [[{
+            text: 'P A D R Ó N   E L E C T O R A L   —   A S A M B L E A',
+            fontSize: 13, bold: true, alignment: 'center', color: 'white',
+            fillColor: C.azulClaro, margin: [0, 8, 0, 8],
+          }]] },
+          layout: 'noBorders',
+          margin: [0, 0, 0, 10],
+        },
+        {
+          columns: [
+            { text: `Socios activos: ${d.total_activos}`, fontSize: 10, bold: true, color: C.negro },
+            { text: `Hábiles: ${d.habiles.length}  ·  Inhabilitados: ${d.inhabilitados.length}`, fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
+            { text: `Generado: ${new Date(d.generado_en).toLocaleString('es-PE')}`, fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+          ],
+          margin: [0, 0, 0, 16],
+        },
+
+        { text: `SOCIOS HÁBILES (AL DÍA) — ${d.habiles.length}`, fontSize: 9, bold: true, decoration: 'underline', color: C.verde, margin: [0, 0, 0, 5] },
+        d.habiles.length > 0
+          ? {
+              table: {
+                headerRows: 1,
+                widths: ['*', '22%', '18%'],
+                body: [
+                  [encTH('Socio'), encTH('DNI', 'center'), encTH('Puesto', 'center')],
+                  ...filasHabiles,
+                ],
+              },
+              layout: layoutBordes,
+              margin: [0, 0, 0, 20],
+            }
+          : { text: 'Sin socios hábiles.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 20], italics: true },
+
+        { text: `SOCIOS INHABILITADOS (MOROSOS) — ${d.inhabilitados.length}`, fontSize: 9, bold: true, decoration: 'underline', color: '#B91C1C', margin: [0, 0, 0, 5] },
+        d.inhabilitados.length > 0
+          ? {
+              table: {
+                headerRows: 1,
+                widths: ['*', '18%', '15%', '18%'],
+                body: [
+                  [encTHRojo('Socio'), encTHRojo('DNI', 'center'), encTHRojo('Puesto', 'center'), encTHRojo('Deuda', 'right')],
+                  ...filasInhabilitados,
+                  filaTotalDeuda,
+                ],
+              },
+              layout: layoutBordes,
+            }
+          : { text: 'Sin socios inhabilitados. Padrón al día.', fontSize: 9, color: C.verde, italics: true },
+      ],
+
+      footer: (currentPage: number, pageCount: number, _ps: unknown) => ({
+        stack: [
+          { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          {
+            columns: [
+              { text: 'Padrón Electoral — Cooperativa Primero de Mayo', fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
               { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
             ],
           },
