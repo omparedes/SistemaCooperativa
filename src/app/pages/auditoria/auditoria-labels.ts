@@ -14,6 +14,7 @@ export const TABLA_LABELS: Record<string, string> = {
   caja_ajustes:             'Ajuste de Caja',
   distribuciones_mensuales: 'Distribución Mensual',
   asistencias_asamblea:     'Asistencia a Asamblea',
+  movimientos_bancarios:    'Movimiento Bancario',
 };
 
 export const COLUMN_LABELS: Record<string, string> = {
@@ -64,6 +65,11 @@ export const COLUMN_LABELS: Record<string, string> = {
   fecha:             'Fecha',
   tipo:              'Tipo',
   categoria_gasto_id:'Categoría',
+  // Movimientos bancarios
+  fecha_operacion:   'Fecha de operación',
+  cuenta_id:         'Cuenta bancaria',
+  motivo_detalle:    'Motivo / Detalle',
+  nro_operacion:     'N° de operación',
   // Soft delete
   deleted_at:        'Estado del registro',
   anulado_por:       'Anulado por',

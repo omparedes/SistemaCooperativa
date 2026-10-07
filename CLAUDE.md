@@ -9,7 +9,7 @@ Documentos hermanos: [CONTEXT.md](CONTEXT.md) (negocio y flujos) · [ARCHITECTUR
 
 ERP web administrativo para la **Cooperativa Primero de Mayo** (mercado), basado en el template **TailAdmin Angular**. Gestiona el ciclo completo: padrón de socios e inquilinos con control de puestos y almacenes, facturación mensual automatizada, tesorería diaria, cuenta corriente individual, bancos, inventario, reportes con drill-down y exportación Excel, portal público de consultas, dietas/provisión social, notificaciones y **auditoría narrativa inmutable** (timeline).
 
-**Estado actual (julio 2026):** Sistema **en producción (Go-Live)** con Supabase como backend real. Padrón consolidado de 288 registros tras el Hard Reset (`00036`); historial financiero de enero–junio 2026 cargado, regularizado y cuadrado al céntimo (00083). La deuda consolidada está unificada en una sola fuente de verdad (00082), los reportes agregan server-side (00085) y la auditoría es tipo timeline con motivos (00086). Última migración: `00086`.
+**Estado actual (julio 2026):** Sistema **en producción (Go-Live)** con Supabase como backend real. Padrón consolidado de 288 registros tras el Hard Reset (`00036`); historial financiero de enero–junio 2026 cargado, regularizado y cuadrado al céntimo (00083). La deuda consolidada está unificada en una sola fuente de verdad (00082), los reportes agregan server-side (00085) y la auditoría es tipo timeline con motivos (00086). Última migración: `00094`.
 
 ---
 

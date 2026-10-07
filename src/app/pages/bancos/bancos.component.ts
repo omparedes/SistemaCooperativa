@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import {
   BancosService,
   Moneda,
+  MovimientoBancario,
   MovimientoInput,
   TipoMovimiento,
   movimientoInputVacio,
 } from '../../core/services/bancos.service';
+import { AuthService } from '../../core/services/auth.service';
 
 // ---------------------------------------------------------------------------
 // Helpers de formato
@@ -46,14 +48,16 @@ function fmtFecha(yyyymmdd: string): string {
             }
           </p>
         </div>
-        <button
-          (click)="abrirForm()"
-          class="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-          </svg>
-          Registrar Movimiento
-        </button>
+        @if (puedeModificar()) {
+          <button
+            (click)="abrirForm()"
+            class="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 transition">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            Registrar Movimiento
+          </button>
+        }
       </div>
 
       <!-- ── Error ──────────────────────────────────────────────────────── -->
@@ -181,6 +185,7 @@ function fmtFecha(yyyymmdd: string): string {
                   <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Motivo / Detalle</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">N° Operación</th>
                   <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Monto</th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -228,10 +233,39 @@ function fmtFecha(yyyymmdd: string): string {
                         : 'text-red-600 dark:text-red-400'">
                       {{ m.tipo === 'Ingreso' ? '+' : '−' }} {{ fmtSoles(m.monto) }}
                     </td>
+
+                    <!-- Acciones -->
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                      @if (puedeModificar()) {
+                        <div class="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            (click)="abrirEdicion(m)"
+                            title="Editar movimiento"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-brand-400 transition">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            (click)="confirmarEliminacion(m)"
+                            title="Eliminar movimiento"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                          </button>
+                        </div>
+                      } @else {
+                        <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                      }
+                    </td>
+
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="6" class="px-4 py-14 text-center">
+                    <td colspan="7" class="px-4 py-14 text-center">
                       <div class="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-500">
                         <svg class="h-10 w-10 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
@@ -275,7 +309,7 @@ function fmtFecha(yyyymmdd: string): string {
       </div>
     </div>
 
-    <!-- ── Modal: Registrar Movimiento ─────────────────────────────────── -->
+    <!-- ── Modal: Registrar / Editar Movimiento ────────────────────────── -->
     @if (showForm()) {
       <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
@@ -285,7 +319,7 @@ function fmtFecha(yyyymmdd: string): string {
           (click)="$event.stopPropagation()">
 
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5">
-            Registrar Movimiento Bancario
+            {{ movimientoEnEdicion() ? 'Editar Movimiento Bancario' : 'Registrar Movimiento Bancario' }}
           </h3>
 
           <div class="space-y-4">
@@ -375,17 +409,104 @@ function fmtFecha(yyyymmdd: string): string {
                 </svg>
                 Guardando…
               } @else {
-                Guardar
+                {{ movimientoEnEdicion() ? 'Actualizar' : 'Guardar' }}
               }
             </button>
           </div>
         </div>
       </div>
     }
+
+    <!-- ── Modal: Confirmar Eliminación ────────────────────────────────── -->
+    @if (movimientoAEliminar(); as movElim) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+        (click)="cancelarEliminacion()">
+        <div
+          class="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800 p-6"
+          (click)="$event.stopPropagation()">
+
+          <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                Eliminar movimiento bancario
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                Confirmación requerida
+              </p>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+            ¿Seguro que deseas eliminar este movimiento? Esta acción retirará el registro de la lista de movimientos.
+          </p>
+
+          <div class="mb-5 rounded-xl border border-gray-100 bg-gray-50 p-3.5 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-300 space-y-1.5">
+            <div class="flex justify-between">
+              <span class="text-gray-400">Fecha:</span>
+              <span class="font-medium">{{ fmtFecha(movElim.fecha_operacion) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Banco:</span>
+              <span class="font-medium">{{ movElim.nombre_banco }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Tipo:</span>
+              <span class="font-semibold" [ngClass]="movElim.tipo === 'Ingreso' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                {{ movElim.tipo }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-400">Monto:</span>
+              <span class="font-bold tabular-nums" [ngClass]="movElim.tipo === 'Ingreso' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                {{ movElim.tipo === 'Ingreso' ? '+' : '−' }} {{ fmtSoles(movElim.monto) }}
+              </span>
+            </div>
+            @if (movElim.motivo_detalle) {
+              <div class="pt-1 text-gray-500 dark:text-gray-400 italic border-t border-gray-200 dark:border-gray-700">
+                "{{ movElim.motivo_detalle }}"
+              </div>
+            }
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              (click)="cancelarEliminacion()"
+              [disabled]="eliminando()"
+              class="rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 text-sm transition disabled:opacity-50">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="ejecutarEliminacion()"
+              [disabled]="eliminando()"
+              class="rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 text-sm font-semibold shadow-sm transition flex items-center gap-2">
+              @if (eliminando()) {
+                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Eliminando…
+              } @else {
+                Eliminar
+              }
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
   `,
 })
 export class BancosComponent implements OnInit, OnDestroy {
-  private readonly svc = inject(BancosService);
+  private readonly svc  = inject(BancosService);
+  private readonly auth = inject(AuthService);
 
   readonly cuentas     = this.svc.cuentas;
   readonly movimientos = this.svc.movimientos;
@@ -395,6 +516,14 @@ export class BancosComponent implements OnInit, OnDestroy {
   readonly realtimeActivo = signal(false);
   readonly showForm       = signal(false);
   readonly guardando      = signal(false);
+  readonly eliminando     = signal(false);
+
+  // Edición y Eliminación
+  readonly movimientoEnEdicion = signal<MovimientoBancario | null>(null);
+  readonly movimientoAEliminar = signal<MovimientoBancario | null>(null);
+
+  // Permisos: solo roles de gestión financiera pueden registrar, editar o eliminar
+  readonly puedeModificar = computed(() => this.auth.esCaja() || this.auth.esAdmin());
 
   // Filtros
   readonly filtroCuenta = signal<number>(0);
@@ -464,12 +593,27 @@ export class BancosComponent implements OnInit, OnDestroy {
   // ── Formulario ────────────────────────────────────────────────────────────
 
   abrirForm(): void {
+    this.movimientoEnEdicion.set(null);
     this.formInput.set(movimientoInputVacio());
+    this.showForm.set(true);
+  }
+
+  abrirEdicion(m: MovimientoBancario): void {
+    this.movimientoEnEdicion.set(m);
+    this.formInput.set({
+      cuenta_id:       m.cuenta_id,
+      fecha_operacion: m.fecha_operacion,
+      tipo:            m.tipo,
+      monto:           m.monto,
+      motivo_detalle:  m.motivo_detalle,
+      nro_operacion:   m.nro_operacion,
+    });
     this.showForm.set(true);
   }
 
   cerrarForm(): void {
     this.showForm.set(false);
+    this.movimientoEnEdicion.set(null);
   }
 
   actualizarForm<K extends keyof MovimientoInput>(key: K, value: MovimientoInput[K]): void {
@@ -480,7 +624,12 @@ export class BancosComponent implements OnInit, OnDestroy {
     if (this.errorValidacion() || this.guardando()) return;
     this.guardando.set(true);
     try {
-      await this.svc.crearMovimiento(this.formInput());
+      const editando = this.movimientoEnEdicion();
+      if (editando) {
+        await this.svc.actualizarMovimiento(editando.id, this.formInput());
+      } else {
+        await this.svc.crearMovimiento(this.formInput());
+      }
       this.cerrarForm();
     } catch {
       // Error ya reflejado en el signal del servicio.
@@ -488,4 +637,29 @@ export class BancosComponent implements OnInit, OnDestroy {
       this.guardando.set(false);
     }
   }
+
+  // ── Eliminación ───────────────────────────────────────────────────────────
+
+  confirmarEliminacion(m: MovimientoBancario): void {
+    this.movimientoAEliminar.set(m);
+  }
+
+  cancelarEliminacion(): void {
+    this.movimientoAEliminar.set(null);
+  }
+
+  async ejecutarEliminacion(): Promise<void> {
+    const mov = this.movimientoAEliminar();
+    if (!mov || this.eliminando()) return;
+    this.eliminando.set(true);
+    try {
+      await this.svc.eliminarMovimiento(mov.id);
+      this.cancelarEliminacion();
+    } catch {
+      // Error ya reflejado en el signal del servicio.
+    } finally {
+      this.eliminando.set(false);
+    }
+  }
 }
+

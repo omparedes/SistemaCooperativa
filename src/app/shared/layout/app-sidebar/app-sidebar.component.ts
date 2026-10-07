@@ -68,6 +68,7 @@ export class AppSidebarComponent {
       subItems: [
         { name: 'Arqueo de Caja Diario', path: '/reportes/arqueo-diario', pro: false },
         { name: 'Central de Reportes', path: '/reportes', pro: false },
+        { name: 'Movimientos Bancarios', path: '/reportes/movimientos-bancarios', pro: false },
         { name: 'Reporte de Dietas', path: '/reportes/dietas', pro: false },
         { name: 'Provisión Social', path: '/reportes/provision-social', pro: false }
       ]

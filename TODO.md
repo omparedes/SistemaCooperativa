@@ -60,3 +60,4 @@
 - [x] Central de Reportes v2: agregación server-side, drill-down, filtro socios/inquilinos, Excel multi-hoja (00085).
 - [x] Auditoría narrativa tipo timeline con motivo transaccional (00086).
 - [x] Limpieza de prototipos mock (registro-pago, auditoria.component, reportes.component.html).
+- [x] Módulo Bancos: edición y soft-delete con saldo atómico + nuevo reporte de movimientos bancarios y exportación PDF (00094, 2026-10-07).

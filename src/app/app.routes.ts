@@ -106,6 +106,13 @@ export const routes: Routes = [
         title: 'Reporte de Provisión Social | Cooperativa Primero de Mayo',
         data: { tipo: 'provision_social', titulo: 'Reporte de Provisión Social' }
       },
+      {
+        path: 'reportes/movimientos-bancarios',
+        loadComponent: () =>
+          import('./pages/reportes/movimientos-bancarios-reporte.component')
+            .then(m => m.MovimientosBancariosReporteComponent),
+        title: 'Reporte de Movimientos Bancarios | Cooperativa Primero de Mayo',
+      },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
         path: 'configuracion/tarifas',

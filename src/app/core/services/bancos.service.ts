@@ -169,6 +169,97 @@ export class BancosService {
     }
   }
 
+  async actualizarMovimiento(id: number, input: MovimientoInput): Promise<void> {
+    this._error.set(null);
+    try {
+      const { error } = await this.db.rpc('rpc_editar_movimiento_bancario', {
+        p_id:              id,
+        p_cuenta_id:       input.cuenta_id,
+        p_fecha_operacion: input.fecha_operacion,
+        p_tipo:            input.tipo,
+        p_monto:           input.monto,
+        p_motivo_detalle:  input.motivo_detalle || null,
+        p_nro_operacion:   input.nro_operacion  || null,
+        p_motivo_audit:    'Edición de movimiento bancario',
+      });
+
+      if (error) throw new Error(error.message);
+      await this.cargarTodo();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al actualizar el movimiento';
+      this._error.set(msg);
+      throw e;
+    }
+  }
+
+  async eliminarMovimiento(id: number): Promise<void> {
+    this._error.set(null);
+    try {
+      const { error } = await this.db.rpc('rpc_eliminar_movimiento_bancario', {
+        p_id:           id,
+        p_motivo_audit: 'Eliminación desde módulo de bancos',
+      });
+
+      if (error) throw new Error(error.message);
+      await this.cargarTodo();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al eliminar el movimiento';
+      this._error.set(msg);
+      throw e;
+    }
+  }
+
+  // ── Reportes ──────────────────────────────────────────────────────────────
+
+  async consultarMovimientosReporte(filtros: {
+    desde?: string;
+    hasta?: string;
+    cuenta_id?: number;
+    tipo?: string;
+  }): Promise<MovimientoBancario[]> {
+    let query = this.db
+      .from('movimientos_bancarios')
+      .select(`
+        id, cuenta_id, fecha_operacion, tipo, monto,
+        motivo_detalle, nro_operacion, created_at, created_by,
+        cuenta:bancos_cuentas!cuenta_id(nombre_banco, numero_cuenta)
+      `)
+      .is('deleted_at', null)
+      .order('fecha_operacion', { ascending: false })
+      .order('created_at',      { ascending: false });
+
+    if (filtros.desde) {
+      query = query.gte('fecha_operacion', filtros.desde);
+    }
+    if (filtros.hasta) {
+      query = query.lte('fecha_operacion', filtros.hasta);
+    }
+    if (filtros.cuenta_id && filtros.cuenta_id > 0) {
+      query = query.eq('cuenta_id', filtros.cuenta_id);
+    }
+    if (filtros.tipo && (filtros.tipo === 'Ingreso' || filtros.tipo === 'Egreso')) {
+      query = query.eq('tipo', filtros.tipo);
+    }
+
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+
+    return ((data ?? []) as unknown as MovimientoRawRow[]).map(r => ({
+      id:              r.id,
+      cuenta_id:       r.cuenta_id,
+      fecha_operacion: r.fecha_operacion,
+      tipo:            r.tipo as TipoMovimiento,
+      monto:           Number(r.monto),
+      motivo_detalle:  r.motivo_detalle,
+      nro_operacion:   r.nro_operacion,
+      created_at:      r.created_at,
+      created_by:      r.created_by,
+      nombre_banco:    r.cuenta?.nombre_banco  ?? '—',
+      numero_cuenta:   r.cuenta?.numero_cuenta ?? '—',
+    }));
+  }
+
+
   // ── Realtime (saldo en vivo) ──────────────────────────────────────────────
 
   conectarRealtime(): void {

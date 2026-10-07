@@ -44,6 +44,29 @@ export interface PadronElectoralPdfDatos {
   inhabilitados: PadronElectoralMorosoPdf[];
 }
 
+export interface MovimientoBancarioPdfItem {
+  fecha: string;
+  banco: string;
+  cuenta: string;
+  tipo: 'Ingreso' | 'Egreso';
+  motivo: string | null;
+  nro_operacion: string | null;
+  monto: number;
+}
+
+export interface ReporteMovimientosPdfDatos {
+  periodo_desde: string;
+  periodo_hasta: string;
+  filtro_cuenta: string;
+  filtro_tipo: string;
+  generado_en: string;
+  total_movimientos: number;
+  total_ingresos: number;
+  total_egresos: number;
+  movimiento_neto: number;
+  movimientos: MovimientoBancarioPdfItem[];
+}
+
 export interface ReciboDatos {
   codigo_transaccion: string;
   fecha_pago: Date;
@@ -656,6 +679,198 @@ export class PdfGeneratorService {
             columns: [
               { text: 'Padrón Electoral — Cooperativa Primero de Mayo', fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
               { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
+            ],
+          },
+        ],
+      }),
+
+    } as unknown as DocDefinition;
+  }
+
+  // -------------------------------------------------------------------------
+  // Reporte de Movimientos Bancarios
+  // -------------------------------------------------------------------------
+
+  /** Genera el reporte de movimientos bancarios y lo abre en nueva pestaña. */
+  async generarReporteMovimientosYAbrir(datos: ReporteMovimientosPdfDatos): Promise<void> {
+    const [pm, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    await pm.createPdf(this.construirDocumentoReporteMovimientos(datos, logoB64)).open();
+  }
+
+  /** Genera el reporte de movimientos bancarios y lo descarga. */
+  async descargarReporteMovimientos(datos: ReporteMovimientosPdfDatos): Promise<void> {
+    const [pm, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    const filename = `reporte-movimientos-${datos.periodo_desde}-a-${datos.periodo_hasta}.pdf`;
+    await pm.createPdf(this.construirDocumentoReporteMovimientos(datos, logoB64)).download(filename);
+  }
+
+  private construirDocumentoReporteMovimientos(d: ReporteMovimientosPdfDatos, logoB64: string | null): DocDefinition {
+    const layoutBordes: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+    };
+
+    const layoutBordesResumen: CustomTableLayout = {
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: () => C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? '#F3F4F6' : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+    };
+
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 8, bold: true, color: 'white', fillColor: C.azulClaro, alignment: al });
+
+    const filasMovimientos: TableCell[][] = d.movimientos.map(m => [
+      { text: m.fecha, fontSize: 8, color: C.grisTxt, alignment: 'center' as const },
+      {
+        stack: [
+          { text: m.banco, fontSize: 8, bold: true, color: C.negro },
+          { text: m.cuenta, fontSize: 7, color: C.grisTxt },
+        ],
+      },
+      {
+        text: m.tipo,
+        fontSize: 7.5,
+        bold: true,
+        alignment: 'center' as const,
+        color: m.tipo === 'Ingreso' ? C.verde : '#B91C1C',
+      },
+      { text: m.motivo || '—', fontSize: 8, color: C.grisOsc },
+      { text: m.nro_operacion || '—', fontSize: 7.5, alignment: 'center' as const, color: C.grisTxt },
+      {
+        text: `${m.tipo === 'Ingreso' ? '+' : '−'} S/ ${m.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        fontSize: 8,
+        bold: true,
+        alignment: 'right' as const,
+        color: m.tipo === 'Ingreso' ? C.verde : '#B91C1C',
+      },
+    ]);
+
+    const headerColumns: unknown[] = [];
+    if (logoB64) {
+      headerColumns.push({
+        image: logoB64,
+        width: 48,
+        fit: [48, 48],
+        margin: [0, 0, 12, 0],
+      });
+    }
+    headerColumns.push({
+      width: '*',
+      stack: [
+        { text: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO LTDA.', fontSize: 13, bold: true, color: C.azul },
+        { text: 'REPORTE DE MOVIMIENTOS BANCARIOS', fontSize: 11, bold: true, color: C.negro, margin: [0, 2, 0, 2] },
+        { text: `Período: ${d.periodo_desde} al ${d.periodo_hasta}   ·   Cuenta: ${d.filtro_cuenta}   ·   Tipo: ${d.filtro_tipo}`, fontSize: 8.5, color: C.grisTxt },
+      ],
+    });
+    headerColumns.push({
+      width: 'auto',
+      alignment: 'right',
+      stack: [
+        { text: `Generado: ${d.generado_en}`, fontSize: 8, color: C.grisTxt },
+      ],
+    });
+
+    const bodyTabla: TableCell[][] = [
+      [
+        encTH('Fecha', 'center'),
+        encTH('Banco / Cuenta'),
+        encTH('Tipo', 'center'),
+        encTH('Motivo / Detalle'),
+        encTH('N.º Operación', 'center'),
+        encTH('Monto', 'right'),
+      ],
+    ];
+
+    if (filasMovimientos.length > 0) {
+      bodyTabla.push(...filasMovimientos);
+    } else {
+      bodyTabla.push([
+        {
+          text: 'No se encontraron movimientos bancarios para el período seleccionado.',
+          colSpan: 6,
+          alignment: 'center' as const,
+          fontSize: 8.5,
+          color: C.grisTxt,
+          italics: true,
+          margin: [0, 10, 0, 10],
+        },
+        {}, {}, {}, {}, {},
+      ]);
+    }
+
+    return {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      pageMargins: [35, 35, 35, 45],
+      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
+
+      content: [
+        { columns: headerColumns, margin: [0, 0, 0, 8] },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 772, y2: 0, lineWidth: 1.5, lineColor: C.azulClaro }],
+          margin: [0, 0, 0, 10],
+        },
+        // Resumen
+        {
+          table: {
+            widths: ['25%', '25%', '25%', '25%'],
+            body: [
+              [
+                { text: 'TOTAL MOVIMIENTOS', fontSize: 7.5, bold: true, color: C.grisTxt, alignment: 'center' },
+                { text: 'TOTAL INGRESOS', fontSize: 7.5, bold: true, color: C.verde, alignment: 'center' },
+                { text: 'TOTAL EGRESOS', fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                { text: 'MOVIMIENTO NETO DEL PERÍODO', fontSize: 7.5, bold: true, color: C.azul, alignment: 'center' },
+              ],
+              [
+                { text: `${d.total_movimientos}`, fontSize: 11, bold: true, color: C.negro, alignment: 'center' },
+                { text: `+ S/ ${d.total_ingresos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 11, bold: true, color: C.verde, alignment: 'center' },
+                { text: `− S/ ${d.total_egresos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 11, bold: true, color: '#B91C1C', alignment: 'center' },
+                { text: `${d.movimiento_neto >= 0 ? '+' : '−'} S/ ${Math.abs(d.movimiento_neto).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 11, bold: true, color: d.movimiento_neto >= 0 ? C.azul : '#B91C1C', alignment: 'center' },
+              ],
+            ],
+          },
+          layout: layoutBordesResumen,
+          margin: [0, 0, 0, 12],
+        },
+        // Tabla de datos
+        {
+          table: {
+            headerRows: 1,
+            widths: ['9%', '21%', '9%', '38%', '11%', '12%'],
+            body: bodyTabla,
+          },
+          layout: layoutBordes,
+        },
+      ],
+
+      footer: (currentPage: number, pageCount: number, _ps: unknown) => ({
+        stack: [
+          { canvas: [{ type: 'line', x1: 35, y1: 0, x2: 807, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          {
+            columns: [
+              { text: 'Reporte de Movimientos Bancarios — Cooperativa Primero de Mayo', fontSize: 7, color: '#9CA3AF', margin: [35, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 35, 0] },
             ],
           },
         ],
