@@ -67,6 +67,72 @@ export interface ReporteMovimientosPdfDatos {
   movimientos: MovimientoBancarioPdfItem[];
 }
 
+export interface ResumenDeudaPersonaPdfItem {
+  tipo: 'Socio' | 'Inquilino';
+  identificacion: string;
+  nombre: string;
+  puesto: string;
+  cant_pendientes: number;
+  total_pendiente: number;
+}
+
+export interface ResumenDeudasPdfDatos {
+  generado_en: string;
+  filtro_tipo: string;
+  filtro_estado: string;
+  total_personas: number;
+  personas_con_deuda: number;
+  deuda_socios: number;
+  deuda_inquilinos: number;
+  total_pendiente: number;
+  personas: ResumenDeudaPersonaPdfItem[];
+}
+
+export interface EstadoCuentaFilaPendientePdf {
+  periodo: string;
+  concepto: string;
+  puesto: string;
+  monto_original: number;
+  ya_pagado: number;
+  saldo_pendiente: number;
+}
+
+export interface EstadoCuentaFilaPagoPdf {
+  fecha: string;
+  codigo_transaccion: string;
+  metodo_pago: string;
+  conceptos: string;
+  comprobante: string;
+  monto: number;
+}
+
+export interface EstadoCuentaFilaCompletoPdf {
+  fecha: string;
+  tipo: 'Cargo' | 'Pago';
+  periodo: string;
+  concepto: string;
+  comprobante: string;
+  cargo: number;
+  pago: number;
+}
+
+export interface EstadoCuentaIndividualPdfDatos {
+  generado_en: string;
+  tipo_persona: 'Socio' | 'Inquilino';
+  nombre: string;
+  dni: string;
+  puesto: string;
+  sub_vista: 'pendientes' | 'pagos' | 'completo';
+  periodo_label: string;
+  saldo_pendiente_actual: number;
+  saldo_a_favor?: number;
+  total_cargos_periodo?: number;
+  total_pagos_periodo?: number;
+  filas_pendientes?: EstadoCuentaFilaPendientePdf[];
+  filas_pagos?: EstadoCuentaFilaPagoPdf[];
+  filas_completo?: EstadoCuentaFilaCompletoPdf[];
+}
+
 export interface ReciboDatos {
   codigo_transaccion: string;
   fecha_pago: Date;
@@ -876,6 +942,461 @@ export class PdfGeneratorService {
         ],
       }),
 
+    } as unknown as DocDefinition;
+  }
+
+  // -------------------------------------------------------------------------
+  // Reporte de Estados de Cuenta — Resumen Consolidado de Deudas
+  // -------------------------------------------------------------------------
+
+  /** Genera el resumen consolidado de deudas en PDF y lo descarga. */
+  async descargarPdfResumenDeudas(datos: ResumenDeudasPdfDatos): Promise<void> {
+    const [pm, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    const cleanFecha = datos.generado_en.replace(/[^a-zA-Z0-9-]/g, '_');
+    const filename = `resumen-deudas-${datos.filtro_tipo.toLowerCase()}-${cleanFecha}.pdf`;
+    await pm.createPdf(this.construirDocumentoResumenDeudas(datos, logoB64)).download(filename);
+  }
+
+  private construirDocumentoResumenDeudas(d: ResumenDeudasPdfDatos, logoB64: string | null): DocDefinition {
+    const layoutBordes: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 5,
+      paddingRight: () => 5,
+    };
+
+    const layoutResumen: CustomTableLayout = {
+      hLineWidth: () => 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: () => C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? '#F3F4F6' : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
+    };
+
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 8, bold: true, color: 'white', fillColor: C.azul, alignment: al });
+
+    const headerColumns: unknown[] = [];
+    if (logoB64) {
+      headerColumns.push({
+        image: logoB64,
+        width: 44,
+        fit: [44, 44],
+        margin: [0, 0, 10, 0],
+      });
+    }
+
+    headerColumns.push({
+      stack: [
+        { text: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO LTDA.', fontSize: 11, bold: true, color: C.azul },
+        { text: 'REPORTE DE CUENTAS PENDIENTES — RESUMEN DE DEUDAS', fontSize: 13, bold: true, color: C.negro, margin: [0, 2, 0, 2] },
+        { text: `Tipo: ${d.filtro_tipo}   ·   Filtro: ${d.filtro_estado}   ·   Emisión: ${d.generado_en}`, fontSize: 8, color: C.grisTxt },
+      ],
+    });
+
+    const bodyTabla: TableCell[][] = [
+      [
+        encTH('Tipo', 'center'),
+        encTH('Identificación', 'center'),
+        encTH('Persona / Razón Social', 'left'),
+        encTH('Puesto / Ref', 'center'),
+        encTH('Pendientes', 'center'),
+        encTH('Total Deuda', 'right'),
+      ],
+    ];
+
+    if (d.personas.length > 0) {
+      for (const p of d.personas) {
+        bodyTabla.push([
+          { text: p.tipo, fontSize: 8, alignment: 'center', color: p.tipo === 'Socio' ? C.azul : C.amber, bold: true },
+          { text: p.identificacion || '—', fontSize: 8, alignment: 'center' },
+          { text: p.nombre, fontSize: 8, bold: true },
+          { text: p.puesto || '—', fontSize: 8, alignment: 'center' },
+          { text: `${p.cant_pendientes}`, fontSize: 8, alignment: 'center' },
+          {
+            text: p.total_pendiente > 0 ? `S/ ${p.total_pendiente.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'S/ 0.00',
+            fontSize: 8,
+            alignment: 'right',
+            bold: p.total_pendiente > 0,
+            color: p.total_pendiente > 0 ? '#B91C1C' : C.grisTxt,
+          },
+        ]);
+      }
+
+      // Fila total consolidado
+      bodyTabla.push([
+        { text: 'TOTAL GENERAL CONSOLIDADO', colSpan: 5, alignment: 'right', fontSize: 8.5, bold: true, fillColor: '#F3F4F6' },
+        {}, {}, {}, {},
+        {
+          text: `S/ ${d.total_pendiente.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          fontSize: 9,
+          bold: true,
+          alignment: 'right',
+          color: '#B91C1C',
+          fillColor: '#F3F4F6',
+        },
+      ]);
+    } else {
+      bodyTabla.push([
+        {
+          text: 'No se encontraron personas con los filtros seleccionados.',
+          colSpan: 6,
+          alignment: 'center',
+          fontSize: 8.5,
+          color: C.grisTxt,
+          italics: true,
+          margin: [0, 10, 0, 10],
+        },
+        {}, {}, {}, {}, {},
+      ]);
+    }
+
+    return {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      pageMargins: [35, 30, 35, 40],
+      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
+
+      content: [
+        { columns: headerColumns, margin: [0, 0, 0, 8] },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 772, y2: 0, lineWidth: 1.5, lineColor: C.azulClaro }],
+          margin: [0, 0, 0, 10],
+        },
+        // Bloque de KPIs
+        {
+          table: {
+            widths: d.filtro_tipo === 'Socios' || d.filtro_tipo === 'Inquilinos'
+              ? ['34%', '33%', '33%']
+              : ['25%', '25%', '25%', '25%'],
+            body: d.filtro_tipo === 'Socios'
+              ? [
+                  [
+                    { text: 'SOCIOS CON DEUDA', fontSize: 7.5, bold: true, color: C.azul, alignment: 'center' },
+                    { text: 'DEUDA DE SOCIOS', fontSize: 7.5, bold: true, color: C.azul, alignment: 'center' },
+                    { text: 'TOTAL PENDIENTE', fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                  [
+                    { text: `${d.personas_con_deuda} de ${d.total_personas} socios`, fontSize: 10.5, bold: true, color: C.negro, alignment: 'center' },
+                    { text: `S/ ${d.deuda_socios.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: C.azul, alignment: 'center' },
+                    { text: `S/ ${d.total_pendiente.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                ]
+              : d.filtro_tipo === 'Inquilinos'
+              ? [
+                  [
+                    { text: 'INQUILINOS CON DEUDA', fontSize: 7.5, bold: true, color: C.amber, alignment: 'center' },
+                    { text: 'DEUDA DE INQUILINOS', fontSize: 7.5, bold: true, color: C.amber, alignment: 'center' },
+                    { text: 'TOTAL PENDIENTE', fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                  [
+                    { text: `${d.personas_con_deuda} de ${d.total_personas} inquilinos`, fontSize: 10.5, bold: true, color: C.negro, alignment: 'center' },
+                    { text: `S/ ${d.deuda_inquilinos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: C.amber, alignment: 'center' },
+                    { text: `S/ ${d.total_pendiente.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                ]
+              : [
+                  [
+                    { text: 'PERSONAS CON DEUDA', fontSize: 7.5, bold: true, color: C.grisTxt, alignment: 'center' },
+                    { text: 'DEUDA DE SOCIOS', fontSize: 7.5, bold: true, color: C.azul, alignment: 'center' },
+                    { text: 'DEUDA DE INQUILINOS', fontSize: 7.5, bold: true, color: C.amber, alignment: 'center' },
+                    { text: 'TOTAL PENDIENTE', fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                  [
+                    { text: `${d.personas_con_deuda} de ${d.total_personas}`, fontSize: 10.5, bold: true, color: C.negro, alignment: 'center' },
+                    { text: `S/ ${d.deuda_socios.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: C.azul, alignment: 'center' },
+                    { text: `S/ ${d.deuda_inquilinos.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: C.amber, alignment: 'center' },
+                    { text: `S/ ${d.total_pendiente.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 10.5, bold: true, color: '#B91C1C', alignment: 'center' },
+                  ],
+                ],
+          },
+          layout: layoutResumen,
+          margin: [0, 0, 0, 12],
+        },
+        // Tabla de personas
+        {
+          table: {
+            headerRows: 1,
+            widths: ['10%', '13%', '38%', '13%', '11%', '15%'],
+            body: bodyTabla,
+          },
+          layout: layoutBordes,
+        },
+      ],
+
+      footer: (currentPage: number, pageCount: number) => ({
+        stack: [
+          { canvas: [{ type: 'line', x1: 35, y1: 0, x2: 807, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          {
+            columns: [
+              { text: 'Reporte de Cuentas Pendientes — Cooperativa Primero de Mayo', fontSize: 7, color: '#9CA3AF', margin: [35, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 35, 0] },
+            ],
+          },
+        ],
+      }),
+    } as unknown as DocDefinition;
+  }
+
+  // -------------------------------------------------------------------------
+  // Reporte de Estado de Cuenta Individual
+  // -------------------------------------------------------------------------
+
+  /** Genera el estado de cuenta individual en PDF y lo descarga. */
+  async descargarPdfEstadoCuentaIndividual(datos: EstadoCuentaIndividualPdfDatos): Promise<void> {
+    const [pm, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.fetchImageAsBase64('/images/logo/logo2.png'),
+    ]);
+    const cleanNombre = datos.nombre.replace(/[^a-zA-Z0-9-]/g, '_').slice(0, 25);
+    const filename = `estado-cuenta-${datos.tipo_persona.toLowerCase()}-${cleanNombre}-${datos.sub_vista}.pdf`;
+    await pm.createPdf(this.construirDocumentoEstadoCuentaIndividual(datos, logoB64)).download(filename);
+  }
+
+  private construirDocumentoEstadoCuentaIndividual(d: EstadoCuentaIndividualPdfDatos, logoB64: string | null): DocDefinition {
+    const layoutBordes: CustomTableLayout = {
+      hLineWidth: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? 1.5 : 0.5,
+      vLineWidth: () => 0.5,
+      hLineColor: (i, node: { table: { body: unknown[] } }) =>
+        i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
+      vLineColor: () => C.grisBorde,
+      fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 5,
+      paddingRight: () => 5,
+    };
+
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
+      ({ text: t, fontSize: 8, bold: true, color: 'white', fillColor: C.azul, alignment: al });
+
+    const headerColumns: unknown[] = [];
+    if (logoB64) {
+      headerColumns.push({
+        image: logoB64,
+        width: 44,
+        fit: [44, 44],
+        margin: [0, 0, 10, 0],
+      });
+    }
+
+    const subVistaTitulo =
+      d.sub_vista === 'pendientes' ? 'DEUDAS PENDIENTES' :
+      d.sub_vista === 'pagos' ? 'HISTORIAL DE PAGOS' : 'ESTADO COMPLETO DE CUENTA';
+
+    headerColumns.push({
+      stack: [
+        { text: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO LTDA.', fontSize: 10, bold: true, color: C.azul },
+        { text: `ESTADO DE CUENTA — ${subVistaTitulo}`, fontSize: 12, bold: true, color: C.negro, margin: [0, 2, 0, 2] },
+        { text: `Período: ${d.periodo_label}   ·   Fecha de Emisión: ${d.generado_en}`, fontSize: 8, color: C.grisTxt },
+      ],
+    });
+
+    // Ficha Persona + Saldo
+    const stackDerecha: TableCell[] = [
+      { text: 'SALDO PENDIENTE ACTUAL', fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'right' },
+      { text: `S/ ${d.saldo_pendiente_actual.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, fontSize: 13, bold: true, color: '#B91C1C', alignment: 'right' },
+    ];
+    if (d.saldo_a_favor && d.saldo_a_favor > 0) {
+      stackDerecha.push({ text: `Saldo a favor: S/ ${d.saldo_a_favor.toFixed(2)}`, fontSize: 7.5, color: C.verde, alignment: 'right' });
+    }
+
+    const infoPersonaTabla: TableCell[][] = [
+      [
+        {
+          stack: [
+            { text: `${d.tipo_persona.toUpperCase()}: ${d.nombre}`, fontSize: 9.5, bold: true, color: C.negro },
+            { text: `Documento / DNI: ${d.dni || '—'}    ·    Puesto / Referencia: ${d.puesto || '—'}`, fontSize: 8, color: C.grisTxt, margin: [0, 2, 0, 0] },
+          ],
+          border: [false, false, false, false],
+        },
+        {
+          stack: stackDerecha,
+          border: [false, false, false, false],
+        } as unknown as TableCell,
+      ],
+    ];
+
+    // Construcción de la tabla según sub_vista
+    let bodyTabla: TableCell[][] = [];
+    let tableWidths: (string | number)[] = [];
+
+    if (d.sub_vista === 'pendientes') {
+      tableWidths = ['16%', '34%', '14%', '12%', '12%', '12%'];
+      bodyTabla.push([
+        encTH('Período', 'center'),
+        encTH('Concepto / Cargo', 'left'),
+        encTH('Puesto / Ref', 'center'),
+        encTH('Importe', 'right'),
+        encTH('Ya Pagado', 'right'),
+        encTH('Saldo Pend.', 'right'),
+      ]);
+
+      const filas = d.filas_pendientes ?? [];
+      if (filas.length > 0) {
+        for (const f of filas) {
+          bodyTabla.push([
+            { text: f.periodo, fontSize: 8, alignment: 'center' },
+            { text: f.concepto, fontSize: 8, bold: true },
+            { text: f.puesto || '—', fontSize: 8, alignment: 'center' },
+            { text: `S/ ${f.monto_original.toFixed(2)}`, fontSize: 8, alignment: 'right' },
+            { text: f.ya_pagado > 0 ? `S/ ${f.ya_pagado.toFixed(2)}` : '—', fontSize: 8, alignment: 'right', color: f.ya_pagado > 0 ? C.verde : C.grisTxt },
+            { text: `S/ ${f.saldo_pendiente.toFixed(2)}`, fontSize: 8, alignment: 'right', bold: true, color: '#B91C1C' },
+          ]);
+        }
+        bodyTabla.push([
+          { text: 'TOTAL DEUDA PENDIENTE', colSpan: 5, alignment: 'right', fontSize: 8.5, bold: true, fillColor: '#F3F4F6' },
+          {}, {}, {}, {},
+          { text: `S/ ${d.saldo_pendiente_actual.toFixed(2)}`, fontSize: 9, bold: true, alignment: 'right', color: '#B91C1C', fillColor: '#F3F4F6' },
+        ]);
+      } else {
+        bodyTabla.push([
+          { text: 'No se encontraron obligaciones pendientes.', colSpan: 6, alignment: 'center', fontSize: 8.5, color: C.grisTxt, italics: true, margin: [0, 8, 0, 8] },
+          {}, {}, {}, {}, {},
+        ]);
+      }
+    } else if (d.sub_vista === 'pagos') {
+      tableWidths = ['14%', '17%', '13%', '30%', '12%', '14%'];
+      bodyTabla.push([
+        encTH('Fecha', 'center'),
+        encTH('N.º Transacción', 'left'),
+        encTH('Método', 'center'),
+        encTH('Conceptos Cubiertos', 'left'),
+        encTH('Comprobante', 'center'),
+        encTH('Monto', 'right'),
+      ]);
+
+      const filas = d.filas_pagos ?? [];
+      if (filas.length > 0) {
+        for (const f of filas) {
+          bodyTabla.push([
+            { text: f.fecha, fontSize: 8, alignment: 'center' },
+            { text: f.codigo_transaccion, fontSize: 8, bold: true },
+            { text: f.metodo_pago, fontSize: 8, alignment: 'center' },
+            { text: f.conceptos || '—', fontSize: 8 },
+            { text: f.comprobante || '—', fontSize: 8, alignment: 'center' },
+            { text: `S/ ${f.monto.toFixed(2)}`, fontSize: 8, alignment: 'right', bold: true, color: C.verde },
+          ]);
+        }
+        bodyTabla.push([
+          { text: 'TOTAL PAGOS DEL PERÍODO', colSpan: 5, alignment: 'right', fontSize: 8.5, bold: true, fillColor: '#F3F4F6' },
+          {}, {}, {}, {},
+          { text: `S/ ${(d.total_pagos_periodo ?? 0).toFixed(2)}`, fontSize: 9, bold: true, alignment: 'right', color: C.verde, fillColor: '#F3F4F6' },
+        ]);
+      } else {
+        bodyTabla.push([
+          { text: 'No se encontraron pagos para el período seleccionado.', colSpan: 6, alignment: 'center', fontSize: 8.5, color: C.grisTxt, italics: true, margin: [0, 8, 0, 8] },
+          {}, {}, {}, {}, {},
+        ]);
+      }
+    } else {
+      // completo
+      tableWidths = ['13%', '11%', '13%', '31%', '12%', '10%', '10%'];
+      bodyTabla.push([
+        encTH('Fecha', 'center'),
+        encTH('Tipo', 'center'),
+        encTH('Período', 'center'),
+        encTH('Concepto / Detalle', 'left'),
+        encTH('Doc / Ref', 'center'),
+        encTH('Cargo', 'right'),
+        encTH('Pago', 'right'),
+      ]);
+
+      const filas = d.filas_completo ?? [];
+      if (filas.length > 0) {
+        for (const f of filas) {
+          bodyTabla.push([
+            { text: f.fecha, fontSize: 8, alignment: 'center' },
+            { text: f.tipo, fontSize: 8, alignment: 'center', bold: true, color: f.tipo === 'Cargo' ? '#B91C1C' : C.verde },
+            { text: f.periodo || '—', fontSize: 8, alignment: 'center' },
+            { text: f.concepto, fontSize: 8 },
+            { text: f.comprobante || '—', fontSize: 8, alignment: 'center' },
+            { text: f.cargo > 0 ? `S/ ${f.cargo.toFixed(2)}` : '—', fontSize: 8, alignment: 'right', color: f.cargo > 0 ? '#B91C1C' : C.grisTxt },
+            { text: f.pago > 0 ? `S/ ${f.pago.toFixed(2)}` : '—', fontSize: 8, alignment: 'right', color: f.pago > 0 ? C.verde : C.grisTxt },
+          ]);
+        }
+        bodyTabla.push([
+          { text: 'TOTALES DEL PERÍODO', colSpan: 5, alignment: 'right', fontSize: 8.5, bold: true, fillColor: '#F3F4F6' },
+          {}, {}, {}, {},
+          { text: `S/ ${(d.total_cargos_periodo ?? 0).toFixed(2)}`, fontSize: 8.5, bold: true, alignment: 'right', color: '#B91C1C', fillColor: '#F3F4F6' },
+          { text: `S/ ${(d.total_pagos_periodo ?? 0).toFixed(2)}`, fontSize: 8.5, bold: true, alignment: 'right', color: C.verde, fillColor: '#F3F4F6' },
+        ]);
+      } else {
+        bodyTabla.push([
+          { text: 'No se encontraron movimientos para el período seleccionado.', colSpan: 7, alignment: 'center', fontSize: 8.5, color: C.grisTxt, italics: true, margin: [0, 8, 0, 8] },
+          {}, {}, {}, {}, {}, {},
+        ]);
+      }
+    }
+
+    return {
+      pageSize: 'A4',
+      pageOrientation: 'portrait',
+      pageMargins: [40, 35, 40, 45],
+      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
+
+      content: [
+        { columns: headerColumns, margin: [0, 0, 0, 8] },
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.5, lineColor: C.azulClaro }],
+          margin: [0, 0, 0, 10],
+        },
+        // Tarjeta Persona
+        {
+          table: {
+            widths: ['60%', '40%'],
+            body: infoPersonaTabla,
+          },
+          layout: {
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => C.grisBorde,
+            vLineColor: () => C.grisBorde,
+            fillColor: () => '#F9FAFB',
+            paddingTop: () => 8,
+            paddingBottom: () => 8,
+            paddingLeft: () => 10,
+            paddingRight: () => 10,
+          },
+          margin: [0, 0, 0, 14],
+        },
+        // Tabla de Datos
+        {
+          table: {
+            headerRows: 1,
+            widths: tableWidths,
+            body: bodyTabla,
+          },
+          layout: layoutBordes,
+        },
+      ],
+
+      footer: (currentPage: number, pageCount: number) => ({
+        stack: [
+          { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          {
+            columns: [
+              { text: 'Cooperativa de Servicios Especiales Primero de Mayo Ltda. — Estado de Cuenta', fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
+            ],
+          },
+        ],
+      }),
     } as unknown as DocDefinition;
   }
 

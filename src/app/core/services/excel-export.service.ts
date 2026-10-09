@@ -20,6 +20,21 @@ export class ExcelExportService {
 
     for (const hoja of hojas) {
       const ws = XLSX.utils.json_to_sheet(hoja.filas.length > 0 ? hoja.filas : [{ '(sin datos)': '' }]);
+      if (hoja.filas.length > 0) {
+        const keys = Object.keys(hoja.filas[0]);
+        ws['!cols'] = keys.map(k => {
+          let maxLen = k.length;
+          const sampleRows = Math.min(hoja.filas.length, 50);
+          for (let i = 0; i < sampleRows; i++) {
+            const v = String(hoja.filas[i][k] ?? '');
+            if (v.length > maxLen) maxLen = v.length;
+          }
+          return { wch: Math.min(Math.max(maxLen + 3, 10), 45) };
+        });
+        if (ws['!ref']) {
+          ws['!autofilter'] = { ref: ws['!ref'] };
+        }
+      }
       XLSX.utils.book_append_sheet(wb, ws, hoja.nombre.slice(0, 31));
     }
 

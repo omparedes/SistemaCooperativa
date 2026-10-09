@@ -70,7 +70,8 @@ export class AppSidebarComponent {
         { name: 'Central de Reportes', path: '/reportes', pro: false },
         { name: 'Movimientos Bancarios', path: '/reportes/movimientos-bancarios', pro: false },
         { name: 'Reporte de Dietas', path: '/reportes/dietas', pro: false },
-        { name: 'Provisión Social', path: '/reportes/provision-social', pro: false }
+        { name: 'Provisión Social', path: '/reportes/provision-social', pro: false },
+        { name: 'Estados de Cuenta', path: '/reportes/estados-cuenta', pro: false }
       ]
     },
     {

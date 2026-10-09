@@ -113,6 +113,13 @@ export const routes: Routes = [
             .then(m => m.MovimientosBancariosReporteComponent),
         title: 'Reporte de Movimientos Bancarios | Cooperativa Primero de Mayo',
       },
+      {
+        path: 'reportes/estados-cuenta',
+        loadComponent: () =>
+          import('./pages/reportes/estados-cuenta-reporte.component')
+            .then(m => m.EstadosCuentaReporteComponent),
+        title: 'Estados de Cuenta | Cooperativa Primero de Mayo',
+      },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
         path: 'configuracion/tarifas',
