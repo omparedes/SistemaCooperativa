@@ -75,14 +75,13 @@ export class CuentaCorrienteService {
       observacion:    form.observacion || null,
       created_by:     userId,
     };
-    // XOR: puesto o socio
-    if (puestoId && tipo !== 'socio') {
-      payload['puesto_id'] = puestoId;
-    } else if (tipo === 'socio') {
+    // Origen XOR (chk_montos_origen_xor): puesto_id XOR socio_id XOR inquilino_id
+    if (tipo === 'socio') {
       // Para socios, cargos de puesto van a puesto_id si existe, personales a socio_id
       payload[puestoId ? 'puesto_id' : 'socio_id'] = puestoId ?? personaId;
     } else {
-      payload['puesto_id'] = puestoId;
+      // Para inquilinos, cargos de puesto van a puesto_id si existe, directos a inquilino_id
+      payload[puestoId ? 'puesto_id' : 'inquilino_id'] = puestoId ?? personaId;
     }
 
     const { error } = await this.db.from('montos_por_cobrar').insert(payload);
