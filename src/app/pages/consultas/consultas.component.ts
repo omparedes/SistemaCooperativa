@@ -84,7 +84,7 @@ const MESES: ReadonlyArray<string> = [
               {{ resultados().length }} resultados — seleccione uno
             </p>
             <div class="flex flex-col gap-2">
-              @for (r of resultados(); track r.puesto_id) {
+              @for (r of resultados(); track (r.tipo + '-' + r.persona_id + '-' + (r.puesto_id ?? 'sin-puesto'))) {
                 <button
                   (click)="seleccionar(r)"
                   class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 hover:border-brand-400 hover:bg-brand-50 transition text-left group"

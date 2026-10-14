@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { SUPABASE_CLIENT } from './supabase.client';
 import {
+  AlmacenOcupado,
   ArriendoHistorial,
   InquilinoConPuesto,
   InquilinoDetalle,
@@ -50,6 +51,17 @@ interface InquilinoListaRow {
       dni: string;
     } | null;
   }>;
+  almacenes_vigentes: Array<{
+    id: number;
+    fecha_inicio: string;
+    fecha_fin: string | null;
+    costo_alquiler: number | null;
+    puesto: {
+      id: number;
+      codigo_puesto: string;
+      estado: string;
+    } | null;
+  }>;
 }
 
 interface InquilinoDetalleRow {
@@ -76,6 +88,17 @@ interface InquilinoDetalleRow {
       id: number;
       apellidos: string;
       dni: string;
+    } | null;
+  }>;
+  ocupaciones_almacenes: Array<{
+    id: number;
+    fecha_inicio: string;
+    fecha_fin: string | null;
+    costo_alquiler: number | null;
+    puesto: {
+      id: number;
+      codigo_puesto: string;
+      estado: string;
     } | null;
   }>;
 }
@@ -105,10 +128,15 @@ export class InquilinosService {
             fecha_inicio, fecha_fin, monto_arriendo,
             puesto:puestos ( id, codigo_puesto, estado ),
             titular:socios!socio_titular_id ( id, apellidos, dni )
+          ),
+          almacenes_vigentes:ocupaciones_almacenes (
+            id, fecha_inicio, fecha_fin, costo_alquiler,
+            puesto:puestos ( id, codigo_puesto, estado )
           )
         `)
         .is('deleted_at', null)
         .is('arriendo_vigente.fecha_fin', null)
+        .is('almacenes_vigentes.fecha_fin', null)
         .order('apellidos', { ascending: true });
 
       if (error) throw new Error(error.message);
@@ -132,6 +160,10 @@ export class InquilinosService {
           id, fecha_inicio, fecha_fin, motivo_termino, monto_arriendo,
           puesto:puestos ( id, codigo_puesto, estado, giro:giros(nombre) ),
           titular:socios!socio_titular_id ( id, apellidos, dni )
+        ),
+        ocupaciones_almacenes (
+          id, fecha_inicio, fecha_fin, costo_alquiler,
+          puesto:puestos ( id, codigo_puesto, estado )
         )
       `)
       .eq('id', id)
@@ -235,6 +267,18 @@ export class InquilinosService {
     const arriendo = row.arriendo_vigente[0] ?? null;
     const puesto = arriendo?.puesto ?? null;
     const titular = arriendo?.titular ?? null;
+
+    const almacenes: AlmacenOcupado[] = (row.almacenes_vigentes ?? [])
+      .filter(a => a.puesto !== null && a.fecha_fin === null)
+      .map(a => ({
+        id: a.puesto!.id,
+        ocupacion_id: a.id,
+        codigo: a.puesto!.codigo_puesto,
+        estado: a.puesto!.estado,
+        fecha_inicio: a.fecha_inicio,
+        costo_alquiler: a.costo_alquiler !== null ? Number(a.costo_alquiler) : null,
+      }));
+
     return {
       id: row.id,
       dni: row.dni,
@@ -255,6 +299,7 @@ export class InquilinosService {
       titular: titular
         ? { id: titular.id, apellidos: titular.apellidos, dni: titular.dni }
         : null,
+      almacenes: almacenes.length > 0 ? almacenes : undefined,
     };
   }
 
@@ -282,6 +327,17 @@ export class InquilinosService {
 
     const arriendo_vigente = arriendos.find(a => a.vigente) ?? null;
 
+    const almacenes_vigentes: AlmacenOcupado[] = (row.ocupaciones_almacenes ?? [])
+      .filter(a => a.puesto !== null && a.fecha_fin === null)
+      .map(a => ({
+        id: a.puesto!.id,
+        ocupacion_id: a.id,
+        codigo: a.puesto!.codigo_puesto,
+        estado: a.puesto!.estado,
+        fecha_inicio: a.fecha_inicio,
+        costo_alquiler: a.costo_alquiler !== null ? Number(a.costo_alquiler) : null,
+      }));
+
     return {
       id: row.id,
       dni: row.dni,
@@ -292,6 +348,7 @@ export class InquilinosService {
       email: row.email,
       arriendos,
       arriendo_vigente,
+      almacenes_vigentes: almacenes_vigentes.length > 0 ? almacenes_vigentes : undefined,
     };
   }
 }

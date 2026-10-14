@@ -32,6 +32,10 @@ interface InquilinoBusquedaRow {
     fecha_fin: string | null;
     puesto: { id: number; codigo_puesto: string } | null;
   }>;
+  almacenes_vigentes: Array<{
+    fecha_fin: string | null;
+    puesto: { id: number; codigo_puesto: string } | null;
+  }>;
 }
 
 interface PuestoBusquedaRow {
@@ -40,6 +44,14 @@ interface PuestoBusquedaRow {
   titular_vigente: Array<{
     fecha_fin: string | null;
     socio: { id: number; dni: string; nombres: string; apellidos: string } | null;
+  }>;
+  arriendo_vigente: Array<{
+    fecha_fin: string | null;
+    inquilino: { id: number; dni: string; nombres: string; apellidos: string } | null;
+  }>;
+  ocupacion_vigente: Array<{
+    fecha_fin: string | null;
+    inquilino: { id: number; dni: string; nombres: string; apellidos: string } | null;
   }>;
 }
 
@@ -101,10 +113,15 @@ export class PagosService {
           arriendo_vigente:historial_arriendos(
             fecha_fin,
             puesto:puestos(id, codigo_puesto)
+          ),
+          almacenes_vigentes:ocupaciones_almacenes(
+            fecha_fin,
+            puesto:puestos(id, codigo_puesto)
           )
         `)
         .is('deleted_at', null)
         .is('arriendo_vigente.fecha_fin', null)
+        .is('almacenes_vigentes.fecha_fin', null)
         .or(`dni.ilike.%${termino}%,nombres.ilike.%${termino}%,apellidos.ilike.%${termino}%`)
         .limit(8),
 
@@ -115,37 +132,93 @@ export class PagosService {
           titular_vigente:historial_titularidad(
             fecha_fin,
             socio:socios(id, dni, nombres, apellidos)
+          ),
+          arriendo_vigente:historial_arriendos(
+            fecha_fin,
+            inquilino:inquilinos(id, dni, nombres, apellidos)
+          ),
+          ocupacion_vigente:ocupaciones_almacenes(
+            fecha_fin,
+            inquilino:inquilinos(id, dni, nombres, apellidos)
           )
         `)
         .is('deleted_at', null)
         .is('titular_vigente.fecha_fin', null)
+        .is('arriendo_vigente.fecha_fin', null)
+        .is('ocupacion_vigente.fecha_fin', null)
         .ilike('codigo_puesto', `%${termino}%`)
-        .limit(5),
+        .limit(8),
     ]);
 
     const resultados: BusquedaResultado[] = [];
-    const puestosVistos = new Set<number>();
+    const clavesVistas = new Set<string>();
 
     for (const row of (socioRes.data ?? []) as unknown as SocioBusquedaRow[]) {
       const puesto = row.titularidad_vigente[0]?.puesto;
-      if (!puesto || puestosVistos.has(puesto.id)) continue;
-      puestosVistos.add(puesto.id);
+      if (!puesto) continue;
+      const key = `socio-${row.id}-${puesto.id}`;
+      if (clavesVistas.has(key)) continue;
+      clavesVistas.add(key);
       resultados.push(this.mapearResultado('socio', row.id, row.dni, row.nombres, row.apellidos, puesto.id, puesto.codigo_puesto));
     }
 
     for (const row of (inquilinoRes.data ?? []) as unknown as InquilinoBusquedaRow[]) {
-      const puesto = row.arriendo_vigente[0]?.puesto;
-      if (!puesto || puestosVistos.has(puesto.id)) continue;
-      puestosVistos.add(puesto.id);
-      resultados.push(this.mapearResultado('inquilino', row.id, row.dni, row.nombres, row.apellidos, puesto.id, puesto.codigo_puesto));
+      const key = `inquilino-${row.id}`;
+      if (clavesVistas.has(key)) continue;
+      clavesVistas.add(key);
+
+      const puestoArriendo = row.arriendo_vigente?.[0]?.puesto;
+      const almacenes = (row.almacenes_vigentes ?? [])
+        .map(a => a.puesto?.codigo_puesto)
+        .filter((c): c is string => !!c);
+
+      let puestoId: number | null = null;
+      let codigoPuesto = '—';
+
+      if (puestoArriendo) {
+        puestoId = puestoArriendo.id;
+        codigoPuesto = puestoArriendo.codigo_puesto;
+        if (almacenes.length > 0) {
+          codigoPuesto += ` (+ Alm: ${almacenes.join(', ')})`;
+        }
+      } else if (almacenes.length > 0) {
+        puestoId = row.almacenes_vigentes?.[0]?.puesto?.id ?? null;
+        codigoPuesto = almacenes.join(', ');
+      }
+
+      resultados.push(this.mapearResultado('inquilino', row.id, row.dni, row.nombres, row.apellidos, puestoId, codigoPuesto));
     }
 
     for (const row of (puestoRes.data ?? []) as unknown as PuestoBusquedaRow[]) {
-      if (puestosVistos.has(row.id)) continue;
+      // 1. Socio titular
       const socio = row.titular_vigente[0]?.socio;
-      if (!socio) continue;
-      puestosVistos.add(row.id);
-      resultados.push(this.mapearResultado('socio', socio.id, socio.dni, socio.nombres, socio.apellidos, row.id, row.codigo_puesto));
+      if (socio) {
+        const key = `socio-${socio.id}-${row.id}`;
+        if (!clavesVistas.has(key)) {
+          clavesVistas.add(key);
+          resultados.push(this.mapearResultado('socio', socio.id, socio.dni, socio.nombres, socio.apellidos, row.id, row.codigo_puesto));
+        }
+      }
+
+      // 2. Inquilino por arriendo de puesto comercial
+      const inquilinoArriendo = row.arriendo_vigente[0]?.inquilino;
+      if (inquilinoArriendo) {
+        const key = `inquilino-${inquilinoArriendo.id}`;
+        if (!clavesVistas.has(key)) {
+          clavesVistas.add(key);
+          resultados.push(this.mapearResultado('inquilino', inquilinoArriendo.id, inquilinoArriendo.dni, inquilinoArriendo.nombres, inquilinoArriendo.apellidos, row.id, row.codigo_puesto));
+        }
+      }
+
+      // 3. Inquilino por ocupación de almacén o depósito
+      const inquilinoAlmacen = row.ocupacion_vigente[0]?.inquilino;
+      if (inquilinoAlmacen) {
+        const key = `inquilino-${inquilinoAlmacen.id}`;
+        if (!clavesVistas.has(key)) {
+          clavesVistas.add(key);
+          resultados.push(this.mapearResultado('inquilino', inquilinoAlmacen.id, inquilinoAlmacen.dni, inquilinoAlmacen.nombres, inquilinoAlmacen.apellidos, row.id, row.codigo_puesto));
+        }
+      }
     }
 
     return resultados.slice(0, 10);
@@ -156,7 +229,7 @@ export class PagosService {
    * cargos personales + puesto principal + todos los almacenes vigentes.
    * Misma fuente canónica que Cuenta Corriente y el Portal Público.
    */
-  async cargarDeudasPuesto(puestoId: number, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
+  async cargarDeudasPuesto(puestoId: number | null, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
     const { data, error } = await this.db.rpc('rpc_caja_cargar_deudas', {
       p_puesto_id:  puestoId,
       p_persona_id: personaId ?? null,
@@ -337,14 +410,15 @@ export class PagosService {
     dni: string,
     nombres: string,
     apellidos: string,
-    puestoId: number,
+    puestoId: number | null,
     codigoPuesto: string,
   ): BusquedaResultado {
+    const nombreCompleto = nombres?.trim() ? `${apellidos}, ${nombres}` : apellidos;
     return {
       tipo,
       persona_id: personaId,
       dni,
-      nombre_completo: `${apellidos}, ${nombres}`,
+      nombre_completo: nombreCompleto,
       puesto_id: puestoId,
       codigo_puesto: codigoPuesto,
     };

@@ -117,12 +117,33 @@ const MOTIVOS_ANULACION = [
                   }
                 </div>
               } @else {
-                <p class="text-sm text-gray-400 dark:text-gray-500 italic">Sin arriendo activo</p>
+                <p class="text-sm text-gray-400 dark:text-gray-500 italic">Sin arriendo de puesto comercial</p>
               }
             </div>
 
+            @if (d.almacenes_vigentes && d.almacenes_vigentes.length > 0) {
+              <div class="border-t border-gray-100 dark:border-gray-700 mt-4 pt-4">
+                <dt class="text-xs uppercase text-gray-500 dark:text-gray-400 tracking-wide mb-2">Almacenes / Depósitos vigentes</dt>
+                <div class="space-y-2">
+                  @for (alm of d.almacenes_vigentes; track alm.id) {
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                        {{ alm.codigo }}
+                      </span>
+                      @if (alm.costo_alquiler) {
+                        <span class="text-xs text-gray-600 dark:text-gray-300 tabular-nums">
+                          S/ {{ alm.costo_alquiler | number:'1.2-2' }}/mes
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @let tieneEspacio = !!d.arriendo_vigente || (d.almacenes_vigentes && d.almacenes_vigentes.length > 0);
             <button (click)="irARegistrarPago()"
-              [disabled]="!d.arriendo_vigente"
+              [disabled]="!tieneEspacio && totalDeuda() === 0"
               class="mt-6 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium shadow-sm transition">
               💰 Registrar Pago
             </button>
@@ -136,9 +157,9 @@ const MOTIVOS_ANULACION = [
                 Editar Datos
               </button>
             }
-            @if (!d.arriendo_vigente) {
+            @if (!tieneEspacio && totalDeuda() === 0) {
               <p class="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">
-                Sin arriendo vigente: no se pueden registrar pagos.
+                Sin arriendo ni deudas pendientes: no requiere pagos.
               </p>
             }
           </aside>
@@ -346,7 +367,7 @@ const MOTIVOS_ANULACION = [
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <p class="font-medium text-gray-700 dark:text-gray-300">Inquilino al día</p>
-                    <p class="text-sm mt-1">Este inquilino no tiene deudas pendientes en el puesto.</p>
+                    <p class="text-sm mt-1">Este inquilino no tiene deudas pendientes.</p>
                   </div>
 
                 } @else {
@@ -355,6 +376,7 @@ const MOTIVOS_ANULACION = [
                       <thead class="bg-gray-50 dark:bg-gray-900/50 text-gray-600 dark:text-gray-400 uppercase text-xs">
                         <tr>
                           <th class="px-3 py-2.5 text-left font-medium">Concepto</th>
+                          <th class="px-3 py-2.5 text-left font-medium">Espacio</th>
                           <th class="px-3 py-2.5 text-left font-medium">Periodo</th>
                           <th class="px-3 py-2.5 text-right font-medium">Monto Original</th>
                           <th class="px-3 py-2.5 text-right font-medium">Pagado</th>
@@ -365,6 +387,15 @@ const MOTIVOS_ANULACION = [
                         @for (d of deudas(); track d.monto_id) {
                           <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
                             <td class="px-3 py-2.5 font-medium text-gray-900 dark:text-white">{{ d.concepto }}</td>
+                            <td class="px-3 py-2.5 text-xs text-gray-600 dark:text-gray-400">
+                              @if (d.codigo_puesto) {
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                  {{ d.codigo_puesto }}
+                                </span>
+                              } @else {
+                                <span>—</span>
+                              }
+                            </td>
                             <td class="px-3 py-2.5 text-gray-600 dark:text-gray-400">{{ formatPeriodo(d.periodo_anio, d.periodo_mes) }}</td>
                             <td class="px-3 py-2.5 text-right tabular-nums text-gray-600 dark:text-gray-400">S/ {{ d.monto_original.toFixed(2) }}</td>
                             <td class="px-3 py-2.5 text-right tabular-nums text-gray-600 dark:text-gray-400">S/ {{ d.ya_pagado.toFixed(2) }}</td>
@@ -374,7 +405,7 @@ const MOTIVOS_ANULACION = [
                       </tbody>
                       <tfoot class="bg-gray-50 dark:bg-gray-900/30 font-semibold border-t border-gray-200 dark:border-gray-700">
                         <tr>
-                          <td colspan="4" class="px-3 py-2.5 text-right text-gray-700 dark:text-gray-300">
+                          <td colspan="5" class="px-3 py-2.5 text-right text-gray-700 dark:text-gray-300">
                             Total Pendiente:
                           </td>
                           <td class="px-3 py-2.5 text-right tabular-nums font-bold text-red-600 dark:text-red-400">
@@ -587,8 +618,15 @@ export class InquilinoDetailComponent implements OnDestroy {
       ]);
       this.detalle.set(det);
 
+      // Preload debts so totalDeuda() and the tab count badge are accurate immediately
+      const puestoId = det.arriendo_vigente?.puesto.id ?? det.almacenes_vigentes?.[0]?.id ?? null;
+      void this.cargarDeudas(puestoId);
+
       this.cleanupRealtime = this.pagosSvc.suscribirCambiosDePagos(
-        id, 'inquilino', () => void this.cargarHistorial(id),
+        id, 'inquilino', () => {
+          void this.cargarHistorial(id);
+          void this.cargarDeudas(puestoId);
+        },
       );
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Error al cargar el detalle');
@@ -615,11 +653,11 @@ export class InquilinoDetailComponent implements OnDestroy {
 
   cargarDeudasTab(): void {
     const d = this.detalle();
-    if (!d?.arriendo_vigente) return;
-    void this.cargarDeudas(d.arriendo_vigente.puesto.id);
+    const puestoId = d?.arriendo_vigente?.puesto.id ?? d?.almacenes_vigentes?.[0]?.id ?? null;
+    void this.cargarDeudas(puestoId);
   }
 
-  private async cargarDeudas(puestoId: number): Promise<void> {
+  private async cargarDeudas(puestoId: number | null): Promise<void> {
     this.deudasLoading.set(true);
     this.deudasError.set(null);
     try {
@@ -633,7 +671,18 @@ export class InquilinoDetailComponent implements OnDestroy {
   }
 
   irARegistrarPago(): void {
-    void this.router.navigate(['/pagos/registrar']);
+    const d = this.detalle();
+    if (!d) {
+      void this.router.navigate(['/pagos/registrar']);
+      return;
+    }
+    void this.router.navigate(['/pagos/registrar'], {
+      queryParams: {
+        tipo: 'inquilino',
+        id: d.id,
+        q: d.dni || d.apellidos,
+      },
+    });
   }
 
   // ─── Anulación ─────────────────────────────────────────────────────────────

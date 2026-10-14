@@ -31,7 +31,7 @@ export class ConsultasPublicasService {
    * Invoca `rpc_public_cargar_deudas` (SECURITY DEFINER, accesible por anon).
    * Devuelve los saldos pendientes de un puesto (saldo_pendiente > 0).
    */
-  async cargarDeudasPuesto(puestoId: number, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
+  async cargarDeudasPuesto(puestoId: number | null, personaId?: number, tipo?: 'socio' | 'inquilino'): Promise<DeudaItem[]> {
     const { data, error } = await this.db.rpc('rpc_public_cargar_deudas', {
       p_puesto_id: puestoId,
       p_persona_id: personaId,

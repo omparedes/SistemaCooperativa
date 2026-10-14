@@ -22,9 +22,19 @@ export interface TitularReferencia {
   dni: string;
 }
 
+export interface AlmacenOcupado {
+  id: number;
+  ocupacion_id: number;
+  codigo: string;
+  estado: string;
+  fecha_inicio: string;
+  costo_alquiler: number | null;
+}
+
 export interface InquilinoConPuesto extends Inquilino {
   puesto: PuestoArrendado | null;
   titular: TitularReferencia | null;
+  almacenes?: AlmacenOcupado[];
 }
 
 export interface ArriendoHistorial {
@@ -46,4 +56,5 @@ export interface ArriendoHistorial {
 export interface InquilinoDetalle extends Inquilino {
   arriendos: ArriendoHistorial[];
   arriendo_vigente: ArriendoHistorial | null;
+  almacenes_vigentes?: AlmacenOcupado[];
 }

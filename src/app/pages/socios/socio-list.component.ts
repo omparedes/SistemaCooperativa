@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { SociosService } from '../../core/services/socios.service';
 import { InquilinosService } from '../../core/services/inquilinos.service';
 import { AuthService } from '../../core/services/auth.service';
+import { InquilinoConPuesto } from './inquilino.model';
 
 type Tab = 'socios' | 'inquilinos';
 
@@ -168,7 +169,7 @@ type Tab = 'socios' | 'inquilinos';
                 <tr>
                   <th class="px-4 py-3 text-left font-medium">DNI</th>
                   <th class="px-4 py-3 text-left font-medium">Apellidos y nombres</th>
-                  <th class="px-4 py-3 text-left font-medium">Puesto arrendado</th>
+                  <th class="px-4 py-3 text-left font-medium">Puesto / Espacio</th>
                   <th class="px-4 py-3 text-right font-medium">Arriendo (S/)</th>
                   <th class="px-4 py-3 text-left font-medium">Desde</th>
                   <th class="px-4 py-3 text-right font-medium">Acciones</th>
@@ -182,19 +183,27 @@ type Tab = 'socios' | 'inquilinos';
                       {{ i.apellidos }}{{ i.nombres ? ', ' + i.nombres : '' }}
                     </td>
                     <td class="px-4 py-3">
-                      @if (i.puesto) {
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
-                          {{ i.puesto.codigo }}
-                        </span>
-                      } @else {
-                        <span class="text-xs text-gray-400 dark:text-gray-500">— sin arriendo vigente —</span>
-                      }
+                      <div class="flex flex-wrap gap-1">
+                        @if (i.puesto) {
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">
+                            {{ i.puesto.codigo }}
+                          </span>
+                        }
+                        @for (alm of i.almacenes ?? []; track alm.id) {
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                            {{ alm.codigo }}
+                          </span>
+                        }
+                        @if (!i.puesto && (!i.almacenes || i.almacenes.length === 0)) {
+                          <span class="text-xs text-gray-400 dark:text-gray-500">— sin espacio asignado —</span>
+                        }
+                      </div>
                     </td>
                     <td class="px-4 py-3 text-right tabular-nums text-gray-700 dark:text-gray-300">
-                      {{ i.puesto?.monto_arriendo ? (i.puesto?.monto_arriendo | number:'1.2-2') : '—' }}
+                      {{ totalAlquiler(i) ? (totalAlquiler(i) | number:'1.2-2') : '—' }}
                     </td>
                     <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap">
-                      {{ i.puesto ? (i.puesto.fecha_inicio_arriendo | date:'dd/MM/yyyy') : '—' }}
+                      {{ i.puesto ? (i.puesto.fecha_inicio_arriendo | date:'dd/MM/yyyy') : (i.almacenes?.[0]?.fecha_inicio | date:'dd/MM/yyyy') || '—' }}
                     </td>
                     <td class="px-4 py-3 text-right">
                       <a [routerLink]="['/inquilinos', i.id]"
@@ -257,9 +266,19 @@ export class SocioListComponent implements OnInit {
       i.apellidos.toLowerCase().includes(q) ||
       i.nombres.toLowerCase().includes(q) ||
       i.dni.toLowerCase().includes(q) ||
-      (i.puesto?.codigo.toLowerCase().includes(q) ?? false)
+      (i.puesto?.codigo.toLowerCase().includes(q) ?? false) ||
+      (i.almacenes?.some(a => a.codigo.toLowerCase().includes(q)) ?? false)
     );
   });
+
+  totalAlquiler(i: InquilinoConPuesto): number | null {
+    if (i.puesto?.monto_arriendo) return i.puesto.monto_arriendo;
+    if (i.almacenes && i.almacenes.length > 0) {
+      const sum = i.almacenes.reduce((acc, a) => acc + (a.costo_alquiler ?? 0), 0);
+      return sum > 0 ? sum : null;
+    }
+    return null;
+  }
 
   ngOnInit(): void {
     void this.sociosSvc.cargar();

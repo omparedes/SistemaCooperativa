@@ -1,4 +1,5 @@
-import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
@@ -102,11 +103,11 @@ function formatSoles(n: number): string {
           <!-- Resultados -->
           @if (resultados().length > 0) {
             <ul class="mt-4 divide-y divide-gray-100 rounded-xl border border-gray-200 dark:divide-gray-700 dark:border-gray-700 overflow-hidden">
-              @for (r of resultados(); track r.puesto_id) {
+              @for (r of resultados(); track (r.tipo + '-' + r.persona_id + '-' + (r.puesto_id ?? 'sin-puesto'))) {
                 <li>
                   <button
                     class="flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-brand-50 dark:hover:bg-gray-700"
-                    [class]="seleccionado()?.puesto_id === r.puesto_id
+                    [class]="seleccionado()?.persona_id === r.persona_id && seleccionado()?.tipo === r.tipo && seleccionado()?.puesto_id === r.puesto_id
                       ? 'bg-brand-50 dark:bg-gray-700'
                       : 'bg-white dark:bg-gray-800'"
                     (click)="seleccionar(r)">
@@ -118,7 +119,7 @@ function formatSoles(n: number): string {
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="truncate text-sm font-medium text-gray-800 dark:text-white">{{ r.nombre_completo }}</p>
-                      <p class="text-xs text-gray-400">DNI {{ r.dni }} · Puesto {{ r.codigo_puesto }}</p>
+                      <p class="text-xs text-gray-400">DNI {{ r.dni }} · Espacio: {{ r.codigo_puesto }}</p>
                     </div>
                     <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
                           [class]="r.tipo === 'socio'
@@ -145,7 +146,7 @@ function formatSoles(n: number): string {
                 <p class="text-sm text-red-500">{{ errorDeudas() }}</p>
               } @else if (deudas().length === 0) {
                 <p class="text-sm font-medium text-green-600 dark:text-green-400">
-                  ✓ Sin deudas pendientes — este puesto está al día.
+                  ✓ Sin deudas pendientes — este pagador está al día.
                 </p>
               } @else {
                 <div class="flex items-center justify-between mb-3">
@@ -154,7 +155,7 @@ function formatSoles(n: number): string {
                       {{ seleccionado()!.nombre_completo }}
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">
-                      Puesto {{ seleccionado()!.codigo_puesto }} ·
+                      Espacio: {{ seleccionado()!.codigo_puesto }} ·
                       {{ seleccionado()!.tipo === 'socio' ? 'Socio titular' : 'Inquilino' }}
                     </p>
                   </div>
@@ -211,7 +212,7 @@ function formatSoles(n: number): string {
           <div class="mb-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-700/50">
             <div>
               <p class="text-sm font-medium text-gray-800 dark:text-white">{{ seleccionado()!.nombre_completo }}</p>
-              <p class="text-xs text-gray-400">Puesto {{ seleccionado()!.codigo_puesto }} · {{ seleccionado()!.tipo === 'socio' ? 'Socio' : 'Inquilino' }}</p>
+              <p class="text-xs text-gray-400">Espacio: {{ seleccionado()!.codigo_puesto }} · {{ seleccionado()!.tipo === 'socio' ? 'Socio' : 'Inquilino' }}</p>
             </div>
             <p class="text-sm font-bold text-red-500">Debe: {{ formatSoles(totalDeuda()) }}</p>
           </div>
@@ -525,7 +526,7 @@ function formatSoles(n: number): string {
                 </p>
               </div>
               <div class="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/50">
-                <p class="text-xs text-gray-400 dark:text-gray-500">Puesto</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">Espacio</p>
                 <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">{{ seleccionado()!.codigo_puesto }}</p>
               </div>
               <div class="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/50">
@@ -635,9 +636,10 @@ function formatSoles(n: number): string {
     </div>
   `,
 })
-export class PagoWizardComponent {
+export class PagoWizardComponent implements OnInit {
   private readonly pagosService = inject(PagosService);
   private readonly pdfService = inject(PdfGeneratorService);
+  private readonly route = inject(ActivatedRoute);
 
   private readonly buscadorCaja = viewChild<ElementRef<HTMLInputElement>>('buscadorCaja');
 
@@ -647,6 +649,28 @@ export class PagoWizardComponent {
   constructor() {
     // El cursor arranca en la barra de búsqueda: la cajera escribe el DNI sin tocar el mouse.
     afterNextRender(() => this.buscadorCaja()?.nativeElement.focus());
+  }
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const q = params.get('q');
+    const tipo = params.get('tipo');
+    const id = params.get('id');
+
+    if (q) {
+      this.query.set(q);
+      void this.buscar().then(() => {
+        if (id && tipo) {
+          const numId = Number(id);
+          const match = this.resultados().find(
+            r => r.tipo === tipo && r.persona_id === numId,
+          );
+          if (match) {
+            void this.seleccionar(match);
+          }
+        }
+      });
+    }
   }
 
   readonly metodos: MetodoPago[] = ['Efectivo', 'Transferencia'];

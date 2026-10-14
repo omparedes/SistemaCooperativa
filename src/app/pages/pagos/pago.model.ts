@@ -6,7 +6,7 @@ export interface BusquedaResultado {
   persona_id: number;
   dni: string;
   nombre_completo: string;
-  puesto_id: number;
+  puesto_id: number | null;
   codigo_puesto: string;
 }
 
