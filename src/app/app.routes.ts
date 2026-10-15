@@ -195,6 +195,13 @@ export const routes: Routes = [
         title: 'Cuenta Corriente | Cooperativa Primero de Mayo',
       },
       {
+        path: 'cuenta-corriente/gestion-ingresos',
+        loadComponent: () =>
+          import('./pages/cuenta-corriente/gestion-ingresos/gestion-ingresos.component')
+            .then(m => m.GestionIngresosComponent),
+        title: 'Gestión de Ingresos | Cooperativa Primero de Mayo',
+      },
+      {
         path: 'cuenta-corriente/:tipo/:id',
         loadComponent: () =>
           import('./pages/cuenta-corriente/cuenta-corriente-detail.component')

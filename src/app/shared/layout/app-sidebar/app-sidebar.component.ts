@@ -60,6 +60,7 @@ export class AppSidebarComponent {
       icon: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M2 10h20M6 15h4M14 15h4"/></svg>`,
       subItems: [
         { name: 'Gestión Financiera',   path: '/cuenta-corriente', pro: false },
+        { name: 'Gestión de Ingresos',  path: '/cuenta-corriente/gestion-ingresos', pro: false },
       ]
     },
     {
