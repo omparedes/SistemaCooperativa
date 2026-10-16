@@ -3,7 +3,15 @@ import {
   ConfiguracionRecibos,
   ConfiguracionRecibosService,
 } from './configuracion-recibos.service';
-import type { ArqueoConcepto, ArqueoPago, ArqueoResumen, GastoArqueoRow } from './reportes.service';
+import type {
+  ArqueoConcepto,
+  ArqueoPago,
+  ArqueoResumen,
+  BloqueIngresos,
+  CajaAjuste,
+  GastoArqueoRow,
+  SubgrupoMetodo,
+} from './reportes.service';
 // @types/pdfmake no re-exporta TDocumentDefinitions ni TVirtualFileSystem desde
 // su API pública, pero sí las usa en las firmas de sus funciones exportadas.
 // Usamos `import type * as` para obtener el tipo del namespace y extraemos
@@ -292,7 +300,7 @@ export class PdfGeneratorService {
 
   private construirDocumentoArqueo(r: ArqueoResumen, cajero: string): DocDefinition {
     const pct = (n: number) =>
-      r.total_dia > 0 ? `${((n / r.total_dia) * 100).toFixed(0)}%` : '0%';
+      r.total_dia > 0 ? `${((n / r.total_dia) * 100).toFixed(1)}%` : '0.0%';
 
     // ── Layouts reutilizables ──────────────────────────────────────────────
     const layoutBordes: CustomTableLayout = {
@@ -303,10 +311,10 @@ export class PdfGeneratorService {
         i === 0 || i === node.table.body.length ? C.azul : C.grisBorde,
       vLineColor: () => C.grisBorde,
       fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? C.fondoFila : null),
-      paddingTop: () => 4,
-      paddingBottom: () => 4,
-      paddingLeft: () => 6,
-      paddingRight: () => 6,
+      paddingTop: () => 3.5,
+      paddingBottom: () => 3.5,
+      paddingLeft: () => 5,
+      paddingRight: () => 5,
     };
 
     const layoutResumen: CustomTableLayout = {
@@ -316,19 +324,19 @@ export class PdfGeneratorService {
       hLineColor: (i, node: { table: { body: unknown[] } }) =>
         i === 0 || i === node.table.body.length || i === node.table.body.length - 1 ? C.azul : C.grisBorde,
       vLineColor: () => C.grisBorde,
-      paddingTop: () => 5,
-      paddingBottom: () => 5,
-      paddingLeft: () => 8,
-      paddingRight: () => 8,
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      paddingLeft: () => 6,
+      paddingRight: () => 6,
     };
 
-    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
-      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: C.azulClaro, alignment: al });
+    const encTH = (t: string, al: 'left' | 'center' | 'right' = 'left', bg: string = C.azulClaro): TableCell =>
+      ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: bg, alignment: al });
 
     const encTHRojo = (t: string, al: 'left' | 'center' | 'right' = 'left'): TableCell =>
       ({ text: t, fontSize: 7.5, bold: true, color: 'white', fillColor: '#B91C1C', alignment: al });
 
-    // ── Tabla KPI (4 columnas: Ingresos, Efectivo, Transferencia, Saldo Neto) ─
+    // ── 1. TABLA KPI SUPERIOR (4 tarjetas compactas) ─────────────────────────
     const saldoColor = r.saldo_neto >= 0 ? C.verde : '#B91C1C';
     const saldoBg    = r.saldo_neto >= 0 ? '#F0FDF4' : '#FEF2F2';
     const kpiTable: DocDefinition = {
@@ -337,35 +345,35 @@ export class PdfGeneratorService {
         body: [[
           {
             stack: [
-              { text: 'INGRESOS TOTALES', fontSize: 8, bold: true, color: C.grisTxt },
-              { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 18, bold: true, color: C.azul, margin: [0, 4, 0, 2] },
-              { text: `${r.cantidad_recibos} recibo${r.cantidad_recibos !== 1 ? 's' : ''}`, fontSize: 8, color: C.grisTxt },
+              { text: 'INGRESOS TOTALES', fontSize: 7.5, bold: true, color: C.grisTxt },
+              { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 16, bold: true, color: C.azul, margin: [0, 3, 0, 2] },
+              { text: `${r.cantidad_recibos + r.cantidad_ingresos_internos + r.cantidad_recaudacion_tarjeta} cobros válidos`, fontSize: 7.5, color: C.grisTxt },
             ],
-            fillColor: '#F0F4FF', margin: [8, 8, 8, 8],
+            fillColor: '#F0F4FF', margin: [6, 6, 6, 6],
           },
           {
             stack: [
-              { text: 'EFECTIVO (GAVETA)', fontSize: 8, bold: true, color: '#166534' },
-              { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 18, bold: true, color: C.verde, margin: [0, 4, 0, 2] },
-              { text: pct(r.total_efectivo), fontSize: 8, color: '#166534' },
+              { text: 'EFECTIVO (GAVETA)', fontSize: 7.5, bold: true, color: '#166534' },
+              { text: `S/ ${r.efectivo_fisico_caja.toFixed(2)}`, fontSize: 16, bold: true, color: C.verde, margin: [0, 3, 0, 2] },
+              { text: `Cobrado Ef.: S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 7.5, color: '#166534' },
             ],
-            fillColor: '#F0FDF4', margin: [8, 8, 8, 8],
+            fillColor: '#F0FDF4', margin: [6, 6, 6, 6],
           },
           {
             stack: [
-              { text: 'EGRESOS DEL DÍA', fontSize: 8, bold: true, color: '#92400E' },
-              { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 18, bold: true, color: '#D97706', margin: [0, 4, 0, 2] },
-              { text: `${r.gastos.length} egreso${r.gastos.length !== 1 ? 's' : ''}`, fontSize: 8, color: '#92400E' },
+              { text: 'EGRESOS DEL DÍA', fontSize: 7.5, bold: true, color: '#92400E' },
+              { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 16, bold: true, color: '#D97706', margin: [0, 3, 0, 2] },
+              { text: `${r.gastos.length} egreso${r.gastos.length !== 1 ? 's' : ''}`, fontSize: 7.5, color: '#92400E' },
             ],
-            fillColor: '#FFFBEB', margin: [8, 8, 8, 8],
+            fillColor: '#FFFBEB', margin: [6, 6, 6, 6],
           },
           {
             stack: [
-              { text: 'SALDO NETO EN CAJA', fontSize: 8, bold: true, color: saldoColor },
-              { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 18, bold: true, color: saldoColor, margin: [0, 4, 0, 2] },
-              { text: 'Ingresos − Egresos', fontSize: 8, color: saldoColor },
+              { text: 'SALDO NETO CONTABLE', fontSize: 7.5, bold: true, color: saldoColor },
+              { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 16, bold: true, color: saldoColor, margin: [0, 3, 0, 2] },
+              { text: 'Ingresos − Egresos', fontSize: 7.5, color: saldoColor },
             ],
-            fillColor: saldoBg, margin: [8, 8, 8, 8],
+            fillColor: saldoBg, margin: [6, 6, 6, 6],
           },
         ]],
       },
@@ -373,88 +381,375 @@ export class PdfGeneratorService {
         hLineWidth: () => 1, vLineWidth: () => 1,
         hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde,
       },
-      margin: [0, 0, 0, 16],
+      margin: [0, 0, 0, 12],
     } as unknown as DocDefinition;
 
-    // ── Tabla Resumen Financiero ───────────────────────────────────────────
-    const resumenFinanciero: DocDefinition = {
+    // ── 2. MATRIZ DE RESUMEN CONSOLIDADO (Origen vs Método) ─────────────────
+    const filasMatriz: TableCell[][] = [
+      [
+        { text: '1. Ingresos de Socios', fontSize: 8.5, bold: true, color: '#065F46' },
+        { text: `S/ ${r.matrizConsolidada.sociosEfectivo.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.sociosTransferencia.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.sociosTotal.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#065F46', alignment: 'right' as const },
+        { text: pct(r.matrizConsolidada.sociosTotal), fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+      ],
+      [
+        { text: '2. Ingresos de Inquilinos', fontSize: 8.5, bold: true, color: '#1E40AF' },
+        { text: `S/ ${r.matrizConsolidada.inquilinosEfectivo.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.inquilinosTransferencia.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.inquilinosTotal.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#1E40AF', alignment: 'right' as const },
+        { text: pct(r.matrizConsolidada.inquilinosTotal), fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+      ],
+      [
+        { text: '3. Otros Ingresos (Caja Rápida)', fontSize: 8.5, bold: true, color: '#92400E' },
+        { text: `S/ ${r.matrizConsolidada.otrosEfectivo.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.otrosTransferencia.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.matrizConsolidada.otrosTotal.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#92400E', alignment: 'right' as const },
+        { text: pct(r.matrizConsolidada.otrosTotal), fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+      ],
+    ];
+
+    if (r.bloquePendientes && r.bloquePendientes.cantidadTotal > 0) {
+      filasMatriz.push([
+        { text: '4. Pendientes de Clasificación', fontSize: 8.5, bold: true, color: '#B91C1C' },
+        { text: `S/ ${r.bloquePendientes.totalEfectivo.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.bloquePendientes.totalTransferencia.toFixed(2)}`, fontSize: 8.5, alignment: 'right' as const },
+        { text: `S/ ${r.bloquePendientes.totalGeneral.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#B91C1C', alignment: 'right' as const },
+        { text: pct(r.bloquePendientes.totalGeneral), fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
+      ]);
+    }
+
+    const filaTotalMatriz: TableCell[] = [
+      { text: 'TOTAL INGRESOS DEL DÍA', fontSize: 8.5, bold: true, color: C.azul },
+      { text: `S/ ${r.matrizConsolidada.totalEfectivo.toFixed(2)}`, fontSize: 8.5, bold: true, color: C.verde, alignment: 'right' as const },
+      { text: `S/ ${r.matrizConsolidada.totalTransferencia.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#1D4ED8', alignment: 'right' as const },
+      { text: `S/ ${r.matrizConsolidada.totalGeneral.toFixed(2)}`, fontSize: 9.5, bold: true, color: C.azul, alignment: 'right' as const },
+      { text: '100.0%', fontSize: 8.5, bold: true, color: C.grisTxt, alignment: 'right' as const },
+    ];
+
+    const tablaMatriz: DocDefinition = {
       table: {
-        widths: ['*', '30%'],
+        headerRows: 1,
+        widths: ['34%', '20%', '20%', '16%', '10%'],
         body: [
           [
-            { text: 'Ingresos totales del día', fontSize: 9, color: C.grisOsc },
-            { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 9, bold: true, color: C.negro, alignment: 'right' as const },
+            encTH('Origen / Sector Comercial'),
+            encTH('Efectivo (Gaveta)', 'right'),
+            encTH('Transferencia / QR', 'right'),
+            encTH('Total General', 'right'),
+            encTH('% Part.', 'right'),
           ],
-          [
-            { text: '(−) Egresos del día', fontSize: 9, color: '#B91C1C' },
-            { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 9, bold: true, color: '#B91C1C', alignment: 'right' as const },
-          ],
-          [
-            { text: '(=) SALDO NETO EN CAJA', fontSize: 10, bold: true, color: saldoColor, fillColor: saldoBg },
-            { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 11, bold: true, color: saldoColor, alignment: 'right' as const, fillColor: saldoBg },
-          ],
+          ...filasMatriz,
+          filaTotalMatriz,
         ],
       },
       layout: layoutResumen,
-      margin: [0, 0, 0, 20],
+      margin: [0, 0, 0, 14],
     } as unknown as DocDefinition;
 
-    // ── Tabla desglose por concepto ────────────────────────────────────────
+    // ── 3. CONCILIACIÓN DE CAJA FÍSICA Y SALDO CONTABLE ──────────────────────
+    const tablaConciliacion: DocDefinition = {
+      table: {
+        widths: ['48%', '4%', '48%'],
+        body: [
+          [
+            // Columna Izquierda: Cuadre de Gaveta Física
+            {
+              stack: [
+                { text: 'CONCILIACIÓN GAVETA FÍSICA', fontSize: 8, bold: true, color: '#166534', margin: [0, 0, 0, 4] },
+                {
+                  table: {
+                    widths: ['*', '36%'],
+                    body: [
+                      [{ text: '(+) Saldo Inicial (Apertura)', fontSize: 7.5, color: C.grisOsc }, { text: `S/ ${r.apertura_monto.toFixed(2)}`, fontSize: 7.5, alignment: 'right' as const }],
+                      [{ text: '(+) Cobranza en Efectivo', fontSize: 7.5, color: C.grisOsc }, { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 7.5, alignment: 'right' as const }],
+                      [{ text: '(−) Egresos en Efectivo', fontSize: 7.5, color: '#B91C1C' }, { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 7.5, color: '#B91C1C', alignment: 'right' as const }],
+                      [{ text: '(−) Faltantes / (+) Sobrantes', fontSize: 7.5, color: C.grisOsc }, { text: `S/ ${(r.total_sobrantes - r.total_faltantes).toFixed(2)}`, fontSize: 7.5, alignment: 'right' as const }],
+                      [{ text: '(=) EFECTIVO REAL EN GAVETA', fontSize: 8.5, bold: true, color: '#166534', fillColor: '#F0FDF4' }, { text: `S/ ${r.efectivo_fisico_caja.toFixed(2)}`, fontSize: 9, bold: true, color: '#166534', alignment: 'right' as const, fillColor: '#F0FDF4' }],
+                    ],
+                  },
+                  layout: 'noBorders',
+                },
+              ],
+            },
+            // Separador vertical
+            { text: '' },
+            // Columna Derecha: Conciliación Contable Total
+            {
+              stack: [
+                { text: 'CONCILIACIÓN CONTABLE TOTAL', fontSize: 8, bold: true, color: C.azul, margin: [0, 0, 0, 4] },
+                {
+                  table: {
+                    widths: ['*', '36%'],
+                    body: [
+                      [{ text: '(+) Total Ingresos del Día', fontSize: 7.5, color: C.grisOsc }, { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 7.5, alignment: 'right' as const }],
+                      [{ text: '(−) Total Egresos del Día', fontSize: 7.5, color: '#B91C1C' }, { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 7.5, color: '#B91C1C', alignment: 'right' as const }],
+                      [{ text: '(=) SALDO NETO DEL DÍA', fontSize: 8.5, bold: true, color: saldoColor, fillColor: saldoBg }, { text: `S/ ${r.saldo_neto.toFixed(2)}`, fontSize: 9, bold: true, color: saldoColor, alignment: 'right' as const, fillColor: saldoBg }],
+                      [{ text: '• Cobros Efectivo', fontSize: 7, color: C.grisTxt }, { text: `S/ ${r.total_efectivo.toFixed(2)}`, fontSize: 7, color: C.grisTxt, alignment: 'right' as const }],
+                      [{ text: '• Transferencias (Banco)', fontSize: 7, color: C.grisTxt }, { text: `S/ ${r.total_transferencia.toFixed(2)}`, fontSize: 7, color: C.grisTxt, alignment: 'right' as const }],
+                    ],
+                  },
+                  layout: 'noBorders',
+                },
+              ],
+            },
+          ],
+        ],
+      },
+      layout: {
+        hLineWidth: () => 0.5, vLineWidth: () => 0,
+        hLineColor: () => C.grisBorde,
+        paddingTop: () => 4, paddingBottom: () => 4,
+        paddingLeft: () => 4, paddingRight: () => 4,
+      },
+      margin: [0, 0, 0, 14],
+    } as unknown as DocDefinition;
+
+    // ── 4. DESGLOSE POR CONCEPTO COMERCIAL ──────────────────────────────────
     const filasConcepto: TableCell[][] = r.por_concepto.map((c: ArqueoConcepto) => [
-      { text: c.concepto, fontSize: 9, color: C.grisOsc },
-      { text: String(c.cantidad), fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
-      { text: `S/ ${c.monto.toFixed(2)}`, fontSize: 9, bold: true, color: C.negro, alignment: 'right' as const },
-      { text: pct(c.monto), fontSize: 9, color: C.grisTxt, alignment: 'right' as const },
+      { text: c.concepto, fontSize: 8, color: C.grisOsc },
+      { text: String(c.cantidad), fontSize: 8, color: C.grisOsc, alignment: 'center' as const },
+      { text: `S/ ${c.monto.toFixed(2)}`, fontSize: 8, bold: true, color: C.negro, alignment: 'right' as const },
+      { text: pct(c.monto), fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
     ]);
 
     const filaTotalConcepto: TableCell[] = [
-      { text: 'TOTAL', fontSize: 9, bold: true, color: C.azul },
+      { text: 'TOTAL', fontSize: 8.5, bold: true, color: C.azul },
       { text: String(r.por_concepto.reduce((s, c) => s + c.cantidad, 0)),
-        fontSize: 9, bold: true, color: C.azul, alignment: 'center' as const },
-      { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 11, bold: true, color: C.azulClaro, alignment: 'right' as const },
-      { text: '100%', fontSize: 9, color: C.grisTxt, alignment: 'right' as const },
+        fontSize: 8.5, bold: true, color: C.azul, alignment: 'center' as const },
+      { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 9, bold: true, color: C.azulClaro, alignment: 'right' as const },
+      { text: '100.0%', fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
     ];
 
-    // ── Tabla recibos ──────────────────────────────────────────────────────
-    const filasRecibos: TableCell[][] = r.recibos.map((p: ArqueoPago) => [
-      { text: formatHoraISO(p.fecha_pago), fontSize: 8, color: C.grisOsc },
-      { text: p.codigo_transaccion, fontSize: 7.5, color: C.azulClaro },
-      { text: p.pagador, fontSize: 8, color: C.grisOsc },
-      { text: p.codigo_puesto, fontSize: 8, color: C.grisOsc, alignment: 'center' as const },
-      { text: p.conceptos.join(', '), fontSize: 7.5, color: C.grisTxt },
-      { text: p.metodo_pago, fontSize: 8, color: p.metodo_pago === 'Efectivo' ? C.verde : '#1D4ED8', alignment: 'center' as const },
-      { text: `S/ ${p.monto_total.toFixed(2)}`, fontSize: 8, bold: true, color: C.negro, alignment: 'right' as const },
-    ]);
+    const tablaConceptos: DocDefinition = (r.por_concepto.length > 0
+      ? {
+          table: {
+            headerRows: 1,
+            widths: ['*', '14%', '20%', '14%'],
+            body: [
+              [encTH('Concepto'), encTH('Recibos', 'center'), encTH('Monto', 'right'), encTH('% Día', 'right')],
+              ...filasConcepto,
+              filaTotalConcepto,
+            ],
+          },
+          layout: layoutBordes,
+          margin: [0, 0, 0, 14],
+        }
+      : { text: 'Sin cobros en esta fecha.', fontSize: 8, color: C.grisTxt, margin: [0, 0, 0, 14], italics: true }
+    ) as unknown as DocDefinition;
 
-    const filaTotalRecibos: TableCell[] = [
-      { text: 'TOTAL INGRESOS', fontSize: 9, bold: true, color: C.azul, colSpan: 6, alignment: 'right' as const },
-      {}, {}, {}, {}, {},
-      { text: `S/ ${r.total_dia.toFixed(2)}`, fontSize: 10, bold: true, color: C.azulClaro, alignment: 'right' as const },
-    ];
+    // ── 5. SECCIÓN DE FIRMAS DE CONFORMIDAD ───────────────────────────────────
+    const seccionFirmas: DocDefinition = {
+      columns: [
+        {
+          width: '32%',
+          stack: [
+            { text: '\n\n' },
+            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 130, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 3 } }] },
+            { text: 'Cajero(a) Responsable', fontSize: 7, color: '#9CA3AF', margin: [0, 2, 0, 0] },
+            { text: cajero, fontSize: 8, bold: true, color: C.grisOsc, margin: [0, 1, 0, 0] },
+          ],
+        },
+        {
+          width: '32%',
+          stack: [
+            { text: '\n\n' },
+            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 130, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 3 } }] },
+            { text: 'Administración / Gerencia', fontSize: 7, color: '#9CA3AF', margin: [0, 2, 0, 0] },
+            { text: 'V°B° Administración', fontSize: 8, bold: true, color: C.grisOsc, margin: [0, 1, 0, 0] },
+          ],
+        },
+        {
+          width: '36%',
+          alignment: 'center',
+          stack: [
+            {
+              table: {
+                widths: ['*'],
+                body: [[{
+                  text: 'CONSEJO DE VIGILANCIA\n☐ Conforme   ☐ Con observaciones',
+                  fontSize: 7.5, color: C.grisOsc, alignment: 'center' as const, margin: [6, 4, 6, 4],
+                }]],
+              },
+              layout: {
+                hLineWidth: () => 0.75, vLineWidth: () => 0.75,
+                hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde,
+              },
+              margin: [10, 8, 0, 0],
+            },
+          ],
+        },
+      ],
+      margin: [0, 6, 0, 0],
+    } as unknown as DocDefinition;
 
-    // ── Sección de Egresos (condicional) ───────────────────────────────────
+    // ═════════════════════════════════════════════════════════════════════════
+    // PÁGINAS 2+: DETALLE OPERATIVO DE RECIBOS (EXCLUYENDO ANULADOS)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    const construirTablaSubgrupo = (
+      subgrupo: SubgrupoMetodo,
+      nombreSubgrupo: string,
+      colorHeader: string,
+      labelPagador: string,
+    ): DocDefinition[] => {
+      if (subgrupo.cantidad === 0) return [];
+
+      const filas: TableCell[][] = subgrupo.recibos.map((p: ArqueoPago) => [
+        { text: formatHoraISO(p.fecha_pago), fontSize: 7.5, color: C.grisOsc, alignment: 'center' as const },
+        {
+          text: p.codigo_transaccion,
+          fontSize: 7.5,
+          bold: true,
+          color: p.es_recaudacion_tarjeta ? C.verde : p.es_ingreso_interno ? '#7C3AED' : C.azulClaro,
+        },
+        { text: p.pagador, fontSize: 7.5, color: C.grisOsc },
+        { text: p.codigo_puesto, fontSize: 7.5, color: C.grisOsc, alignment: 'center' as const },
+        { text: p.conceptos.join(', '), fontSize: 7, color: C.grisTxt },
+        { text: `S/ ${p.monto_total.toFixed(2)}`, fontSize: 7.5, bold: true, color: C.negro, alignment: 'right' as const },
+      ]);
+
+      const filaSubtotal: TableCell[] = [
+        {
+          text: `Subtotal ${nombreSubgrupo} (${subgrupo.cantidad} cobros):`,
+          fontSize: 7.5,
+          bold: true,
+          color: colorHeader,
+          colSpan: 5,
+          alignment: 'right' as const,
+        },
+        {}, {}, {}, {},
+        {
+          text: `S/ ${subgrupo.subtotal.toFixed(2)}`,
+          fontSize: 8,
+          bold: true,
+          color: colorHeader,
+          alignment: 'right' as const,
+        },
+      ];
+
+      return [
+        {
+          text: `Cobros en ${subgrupo.metodo} (${subgrupo.cantidad} cobros)`,
+          fontSize: 8,
+          bold: true,
+          color: subgrupo.metodo === 'Efectivo' ? '#166534' : '#1D4ED8',
+          margin: [0, 4, 0, 3],
+        } as unknown as DocDefinition,
+        {
+          table: {
+            headerRows: 1,
+            dontBreakRows: true,
+            widths: ['8%', '18%', '26%', '9%', '*', '13%'],
+            body: [
+              [
+                encTH('Hora', 'center', colorHeader),
+                encTH('Código', 'left', colorHeader),
+                encTH(labelPagador, 'left', colorHeader),
+                encTH('Puesto', 'center', colorHeader),
+                encTH('Conceptos', 'left', colorHeader),
+                encTH('Monto', 'right', colorHeader),
+              ],
+              ...filas,
+              filaSubtotal,
+            ],
+          },
+          layout: layoutBordes,
+          margin: [0, 0, 0, 8],
+        } as unknown as DocDefinition,
+      ];
+    };
+
+    const construirSeccionBloque = (
+      bloque: BloqueIngresos,
+      colorTema: string,
+      labelPagador: string,
+    ): DocDefinition[] => {
+      const elementos: DocDefinition[] = [
+        {
+          text: bloque.titulo.toUpperCase(),
+          fontSize: 9,
+          bold: true,
+          color: colorTema,
+          margin: [0, 8, 0, 2],
+        } as unknown as DocDefinition,
+      ];
+
+      if (bloque.cantidadTotal === 0) {
+        elementos.push({
+          text: 'Sin cobros registrados para este sector en esta fecha.',
+          fontSize: 7.5,
+          italics: true,
+          color: C.grisTxt,
+          margin: [0, 2, 0, 8],
+        } as unknown as DocDefinition);
+        return elementos;
+      }
+
+      elementos.push(
+        ...construirTablaSubgrupo(bloque.subgrupoEfectivo, `${bloque.titulo} (Efectivo)`, colorTema, labelPagador),
+        ...construirTablaSubgrupo(bloque.subgrupoTransferencia, `${bloque.titulo} (Transferencia)`, colorTema, labelPagador),
+      );
+
+      // Resumen del bloque
+      elementos.push({
+        table: {
+          widths: ['*'],
+          body: [[{
+            text: `TOTAL ${bloque.titulo.toUpperCase()}: S/ ${bloque.totalGeneral.toFixed(2)}  (Efectivo: S/ ${bloque.totalEfectivo.toFixed(2)}  ·  Transferencia: S/ ${bloque.totalTransferencia.toFixed(2)}  ·  ${bloque.cantidadTotal} cobros)`,
+            fontSize: 8,
+            bold: true,
+            color: colorTema,
+            fillColor: colorTema === '#059669' ? '#ECFDF5' : colorTema === '#2563EB' ? '#EFF6FF' : '#FFFBEB',
+            alignment: 'right' as const,
+            margin: [4, 3, 4, 3],
+          }]],
+        },
+        layout: 'noBorders',
+        margin: [0, 0, 0, 10],
+      } as unknown as DocDefinition);
+
+      return elementos;
+    };
+
+    // ── Bloque 1: Socios ───────────────────────────────────────────────────
+    const seccionSocios = construirSeccionBloque(r.bloqueSocios, '#059669', 'Socio Titular');
+
+    // ── Bloque 2: Inquilinos ───────────────────────────────────────────────
+    const seccionInquilinos = construirSeccionBloque(r.bloqueInquilinos, '#2563EB', 'Inquilino');
+
+    // ── Bloque 3: Otros Ingresos (Caja Rápida) ─────────────────────────────
+    const seccionOtros = construirSeccionBloque(r.bloqueOtros, '#D97706', 'Concepto / Detalle');
+
+    // ── Bloque Control: Pendientes ─────────────────────────────────────────
+    const seccionPendientes = (r.bloquePendientes && r.bloquePendientes.cantidadTotal > 0)
+      ? construirSeccionBloque(r.bloquePendientes, '#B91C1C', 'Pagador')
+      : [];
+
+    // ── Sección de Egresos (Gastos) ────────────────────────────────────────
     const filasGastos: TableCell[][] = r.gastos.map((g: GastoArqueoRow) => [
-      { text: g.fecha, fontSize: 8, color: C.grisOsc },
-      { text: g.comprobante_ref ?? '—', fontSize: 8, color: C.grisOsc },
-      { text: g.responsable ?? '—', fontSize: 8, color: C.grisOsc },
-      { text: g.categoria_nombre, fontSize: 8, color: C.grisOsc },
-      { text: g.descripcion ?? '—', fontSize: 7.5, color: C.grisTxt },
-      { text: `S/ ${g.monto.toFixed(2)}`, fontSize: 8, bold: true, color: '#B91C1C', alignment: 'right' as const },
+      { text: g.fecha, fontSize: 7.5, color: C.grisOsc },
+      { text: g.comprobante_ref ?? '—', fontSize: 7.5, color: C.grisOsc },
+      { text: g.responsable ?? '—', fontSize: 7.5, color: C.grisOsc },
+      { text: g.categoria_nombre, fontSize: 7.5, color: C.grisOsc },
+      { text: g.descripcion ?? '—', fontSize: 7, color: C.grisTxt },
+      { text: `S/ ${g.monto.toFixed(2)}`, fontSize: 7.5, bold: true, color: '#B91C1C', alignment: 'right' as const },
     ]);
 
     const filaTotalGastos: TableCell[] = [
-      { text: 'TOTAL EGRESOS', fontSize: 9, bold: true, color: '#B91C1C', colSpan: 5, alignment: 'right' as const },
+      { text: 'TOTAL EGRESOS DEL DÍA', fontSize: 8, bold: true, color: '#B91C1C', colSpan: 5, alignment: 'right' as const },
       {}, {}, {}, {},
-      { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 10, bold: true, color: '#B91C1C', alignment: 'right' as const },
+      { text: `S/ ${r.total_gastos.toFixed(2)}`, fontSize: 8.5, bold: true, color: '#B91C1C', alignment: 'right' as const },
     ];
 
-    const seccionGastos = r.gastos.length > 0
+    const seccionGastos: DocDefinition[] = r.gastos.length > 0
       ? [
-          { text: 'EGRESOS DEL DÍA', fontSize: 9, bold: true, decoration: 'underline', color: '#B91C1C', margin: [0, 0, 0, 5] },
+          { text: 'EGRESOS DEL DÍA (SALIDAS DE CAJA FÍSICA)', fontSize: 9, bold: true, color: '#B91C1C', margin: [0, 8, 0, 3] } as unknown as DocDefinition,
           {
             table: {
               headerRows: 1,
-              widths: ['12%', '14%', '18%', '16%', '*', '14%'],
+              dontBreakRows: true,
+              widths: ['10%', '15%', '18%', '16%', '*', '13%'],
               body: [
                 [
                   encTHRojo('Fecha'),
@@ -473,136 +768,130 @@ export class PdfGeneratorService {
               hLineColor: (i: number, node: { table: { body: unknown[] } }) =>
                 i === 0 || i === node.table.body.length ? '#B91C1C' : C.grisBorde,
             } as CustomTableLayout,
-            margin: [0, 0, 0, 20],
-          },
+            margin: [0, 0, 0, 10],
+          } as unknown as DocDefinition,
         ]
       : [];
 
-    // ── Documento ──────────────────────────────────────────────────────────
+    // ── Sección de Ajustes Físicos (Faltantes / Sobrantes) ──────────────────
+    const seccionAjustes: DocDefinition[] = r.ajustes.length > 0
+      ? [
+          { text: 'AJUSTES DE CUADRE FÍSICO (FALTANTES / SOBRANTES)', fontSize: 8.5, bold: true, color: '#92400E', margin: [0, 6, 0, 3] } as unknown as DocDefinition,
+          {
+            table: {
+              headerRows: 1,
+              dontBreakRows: true,
+              widths: ['20%', '*', '20%'],
+              body: [
+                [
+                  encTH('Tipo Ajuste', 'left', '#D97706'),
+                  encTH('Descripción', 'left', '#D97706'),
+                  encTH('Monto', 'right', '#D97706'),
+                ],
+                ...r.ajustes.map((a: CajaAjuste) => [
+                  { text: a.tipo === 'FALTANTE' ? '− FALTANTE' : '+ SOBRANTE', fontSize: 7.5, bold: true, color: a.tipo === 'FALTANTE' ? '#B91C1C' : '#059669' },
+                  { text: a.descripcion ?? '—', fontSize: 7.5, color: C.grisOsc },
+                  { text: `${a.tipo === 'FALTANTE' ? '−' : '+'} S/ ${a.monto.toFixed(2)}`, fontSize: 7.5, bold: true, color: a.tipo === 'FALTANTE' ? '#B91C1C' : '#059669', alignment: 'right' as const },
+                ]),
+              ],
+            },
+            layout: layoutBordes,
+            margin: [0, 0, 0, 10],
+          } as unknown as DocDefinition,
+        ]
+      : [];
+
+    // ── Documento Completo ─────────────────────────────────────────────────
     return {
       pageSize: 'A4',
-      pageMargins: [40, 48, 40, 60],
-      defaultStyle: { font: 'Roboto', fontSize: 9, lineHeight: 1.3 },
+      pageMargins: [35, 40, 35, 45],
+      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
 
       content: [
-
-        // Encabezado
+        // ── PÁGINA 1: RESUMEN EJECUTIVO ──────────────────────────────────────
         {
           alignment: 'center',
           stack: [
-            { text: 'COOPERATIVA DE COMERCIANTES', fontSize: 12, color: C.grisTxt },
-            { text: 'PRIMERO DE MAYO', fontSize: 20, bold: true, color: C.azul, margin: [0, 2, 0, 3] },
-            { text: 'Mercado Municipal', fontSize: 9, color: C.grisTxt },
+            { text: 'COOPERATIVA DE COMERCIANTES PRIMERO DE MAYO', fontSize: 11, bold: true, color: C.grisTxt },
+            { text: 'A R Q U E O   D E   C A J A   D I A R I O', fontSize: 16, bold: true, color: C.azul, margin: [0, 2, 0, 2] },
+            { text: 'Reporte Oficial de Cuadre Diario de Ingresos y Egresos', fontSize: 8, color: C.grisTxt },
           ],
         },
         {
-          canvas: [{ type: 'line', x1: 0, y1: 4, x2: 515, y2: 4, lineWidth: 2.5, lineColor: C.azulClaro }],
-          margin: [0, 8, 0, 10],
+          canvas: [{ type: 'line', x1: 0, y1: 2, x2: 525, y2: 2, lineWidth: 2, lineColor: C.azulClaro }],
+          margin: [0, 4, 0, 8],
         },
         {
-          table: { widths: ['*'], body: [[{
-            text: 'A R Q U E O   D E   C A J A   D I A R I O',
-            fontSize: 14, bold: true, alignment: 'center', color: 'white',
-            fillColor: C.azulClaro, margin: [0, 8, 0, 8],
-          }]] },
-          layout: 'noBorders',
+          columns: [
+            { text: `Fecha del Arqueo: ${formatFechaArqueo(r.fecha)}`, fontSize: 9.5, bold: true, color: C.negro },
+            { text: `Cajero: ${cajero}`, fontSize: 8.5, color: C.grisOsc, alignment: 'center' as const },
+            { text: `Emisión: ${new Date().toLocaleString('es-PE')}`, fontSize: 7.5, color: C.grisTxt, alignment: 'right' as const },
+          ],
           margin: [0, 0, 0, 10],
         },
-        {
-          columns: [
-            { text: `Fecha: ${formatFechaArqueo(r.fecha)}`, fontSize: 10, bold: true, color: C.negro },
-            { text: `Cajero: ${cajero}`, fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
-            { text: `Impreso: ${new Date().toLocaleString('es-PE')}`, fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
-          ],
-          margin: [0, 0, 0, 16],
-        },
 
-        // KPIs (4 bloques: Ingresos, Efectivo, Egresos, Saldo Neto)
+        // Tarjetas KPI
         kpiTable,
 
-        // Resumen financiero (tabla de deducción)
-        { text: 'RESUMEN FINANCIERO', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
-        resumenFinanciero,
+        // Cuadro de Resumen Consolidado (Matriz Origen vs Método)
+        { text: 'RESUMEN CONSOLIDADO DE INGRESOS (POR ORIGEN Y MÉTODO)', fontSize: 8.5, bold: true, color: C.azul, margin: [0, 0, 0, 3] },
+        tablaMatriz,
 
-        // Desglose por concepto
-        { text: 'DESGLOSE POR CONCEPTO DE INGRESOS', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
-        r.por_concepto.length > 0
-          ? {
-              table: {
-                headerRows: 1,
-                widths: ['*', '12%', '18%', '12%'],
-                body: [
-                  [encTH('Concepto'), encTH('Recibos', 'center'), encTH('Monto', 'right'), encTH('% Día', 'right')],
-                  ...filasConcepto,
-                  filaTotalConcepto,
-                ],
-              },
-              layout: layoutBordes,
-              margin: [0, 0, 0, 20],
-            }
-          : { text: 'Sin cobros en esta fecha.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 20], italics: true },
+        // Conciliación de Caja Física y Saldo Contable
+        tablaConciliacion,
 
-        // Lista de recibos
-        { text: 'DETALLE DE RECIBOS EMITIDOS', fontSize: 9, bold: true, decoration: 'underline', color: C.azul, margin: [0, 0, 0, 5] },
-        r.recibos.length > 0
-          ? {
-              table: {
-                headerRows: 1,
-                widths: ['7%', '22%', '22%', '8%', '*', '10%', '12%'],
-                body: [
-                  [
-                    encTH('Hora'), encTH('Código'), encTH('Pagador'),
-                    encTH('Puesto', 'center'), encTH('Conceptos'),
-                    encTH('Método', 'center'), encTH('Monto', 'right'),
-                  ],
-                  ...filasRecibos,
-                  filaTotalRecibos,
-                ],
-              },
-              layout: layoutBordes,
-              margin: [0, 0, 0, r.gastos.length > 0 ? 16 : 24],
-            }
-          : { text: 'Sin recibos registrados.', fontSize: 9, color: C.grisTxt, margin: [0, 0, 0, 16], italics: true },
+        // Desglose por Concepto Comercial
+        { text: 'DESGLOSE POR CONCEPTO DE INGRESOS', fontSize: 8.5, bold: true, color: C.azul, margin: [0, 0, 0, 3] },
+        tablaConceptos,
 
-        // Sección egresos (condicional)
-        ...seccionGastos,
+        // Espacio para Firmas
+        seccionFirmas,
 
-        // Firma
+        // Salto de página para el detalle operativo
+        { text: '', pageBreak: 'before' },
+
+        // ── PÁGINAS 2+: DETALLE OPERATIVO PARA AUDITORÍA ───────────────────────
         {
           columns: [
-            {
-              width: '55%',
-              stack: [
-                { text: '\n\n' },
-                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 4 } }] },
-                { text: 'Firma del cajero responsable', fontSize: 7.5, color: '#9CA3AF', margin: [0, 3, 0, 0] },
-                { text: cajero, fontSize: 9, bold: true, color: C.grisOsc, margin: [0, 2, 0, 0] },
-              ],
-            },
-            {
-              width: '45%',
-              alignment: 'center',
-              stack: [{
-                table: { widths: ['*'], body: [[{
-                  text: '☐  Conforme\n☐  Con observaciones',
-                  fontSize: 9, color: C.grisOsc, margin: [12, 8, 12, 8],
-                }]] },
-                layout: { hLineWidth: () => 1, vLineWidth: () => 1,
-                          hLineColor: () => C.grisBorde, vLineColor: () => C.grisBorde },
-                margin: [20, 0, 0, 0],
-              }],
-            },
+            { text: 'DETALLE OPERATIVO DE INGRESOS Y EGRESOS', fontSize: 10, bold: true, color: C.azul },
+            { text: `Fecha: ${formatFechaArqueo(r.fecha)}`, fontSize: 8.5, color: C.grisOsc, alignment: 'right' as const },
           ],
+          margin: [0, 0, 0, 4],
         },
+        {
+          text: '* Todos los recibos y cobros listados a continuación corresponden a operaciones vigentes. Los movimientos anulados han sido excluidos del arqueo.',
+          fontSize: 7,
+          italics: true,
+          color: C.grisTxt,
+          margin: [0, 0, 0, 8],
+        },
+
+        // Bloque 1: Socios
+        ...seccionSocios,
+
+        // Bloque 2: Inquilinos
+        ...seccionInquilinos,
+
+        // Bloque 3: Otros Ingresos
+        ...seccionOtros,
+
+        // Bloque 4: Pendientes (si existen)
+        ...seccionPendientes,
+
+        // Egresos del Día
+        ...seccionGastos,
+
+        // Ajustes Físicos
+        ...seccionAjustes,
       ],
 
-      footer: (currentPage: number, pageCount: number, _ps: unknown) => ({
+      footer: (currentPage: number, pageCount: number) => ({
         stack: [
-          { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
+          { canvas: [{ type: 'line', x1: 35, y1: 0, x2: 560, y2: 0, lineWidth: 0.5, lineColor: C.grisBorde }] },
           {
             columns: [
-              { text: `Arqueo de Caja — ${formatFechaArqueo(r.fecha)} — Cooperativa Primero de Mayo`, fontSize: 7, color: '#9CA3AF', margin: [40, 4, 0, 0] },
-              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right', margin: [0, 4, 40, 0] },
+              { text: `Arqueo de Caja — ${formatFechaArqueo(r.fecha)} — Cooperativa Primero de Mayo`, fontSize: 7, color: '#9CA3AF', margin: [35, 4, 0, 0] },
+              { text: `Página ${currentPage} de ${pageCount}`, fontSize: 7, color: '#9CA3AF', alignment: 'right' as const, margin: [0, 4, 35, 0] },
             ],
           },
         ],

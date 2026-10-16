@@ -4,6 +4,8 @@ import { SUPABASE_CLIENT } from './supabase.client';
 // ---------------------------------------------------------------------------
 // Tipos públicos del arqueo
 // ---------------------------------------------------------------------------
+export type OrigenIngreso = 'SOCIOS' | 'INQUILINOS' | 'OTROS' | 'PENDIENTES';
+
 export interface ArqueoPago {
   id: number;
   codigo_transaccion: string;
@@ -19,12 +21,55 @@ export interface ArqueoPago {
   motivo_anulacion: string | null;
   es_ingreso_interno: boolean;    // true → fila de ingresos_internos (sin recibo)
   es_recaudacion_tarjeta: boolean; // true → abono semanal de recaudación tarjeta
+  origen: OrigenIngreso;
+  socio_id?: number | null;
+  inquilino_id?: number | null;
 }
 
 export interface ArqueoConcepto {
   concepto: string;
   monto: number;
   cantidad: number;
+}
+
+export interface SubgrupoMetodo {
+  metodo: 'Efectivo' | 'Transferencia';
+  recibos: ArqueoPago[];
+  cantidad: number;
+  subtotal: number;
+}
+
+export interface BloqueIngresos {
+  origen: OrigenIngreso;
+  titulo: string;
+  subgrupoEfectivo: SubgrupoMetodo;
+  subgrupoTransferencia: SubgrupoMetodo;
+  totalEfectivo: number;
+  totalTransferencia: number;
+  totalGeneral: number;
+  cantidadTotal: number;
+}
+
+export interface ResumenConsolidadoMatriz {
+  sociosEfectivo: number;
+  sociosTransferencia: number;
+  sociosTotal: number;
+
+  inquilinosEfectivo: number;
+  inquilinosTransferencia: number;
+  inquilinosTotal: number;
+
+  otrosEfectivo: number;
+  otrosTransferencia: number;
+  otrosTotal: number;
+
+  pendientesEfectivo?: number;
+  pendientesTransferencia?: number;
+  pendientesTotal?: number;
+
+  totalEfectivo: number;
+  totalTransferencia: number;
+  totalGeneral: number;
 }
 
 export interface GastoArqueoRow {
@@ -61,8 +106,15 @@ export interface ArqueoResumen {
   cantidad_recibos: number;
   cantidad_ingresos_internos: number;
   cantidad_recaudacion_tarjeta: number;
+  cantidad_anulados: number;
   por_concepto: ArqueoConcepto[];
-  recibos: ArqueoPago[];
+  recibos: ArqueoPago[];            // SOLO recibos válidos (deleted_at IS NULL)
+  recibos_anulados: ArqueoPago[];   // recibos anulados excluidos del arqueo
+  bloqueSocios: BloqueIngresos;
+  bloqueInquilinos: BloqueIngresos;
+  bloqueOtros: BloqueIngresos;
+  bloquePendientes: BloqueIngresos | null;
+  matrizConsolidada: ResumenConsolidadoMatriz;
   total_gastos: number;             // egresos del día (salen de caja física)
   saldo_neto: number;               // total_dia - total_gastos (contable total)
   gastos: GastoArqueoRow[];
@@ -88,6 +140,8 @@ interface PagoArqueoRow {
   created_by: string | null;
   deleted_at: string | null;
   motivo_anulacion: string | null;
+  socio_id: number | null;
+  inquilino_id: number | null;
   puesto: { codigo_puesto: string } | null;
   socio: { apellidos: string; nombres: string } | null;
   inquilino: { apellidos: string; nombres: string } | null;
@@ -277,7 +331,7 @@ export class ReportesService {
       .from('pagos')
       .select(`
         id, codigo_transaccion, fecha_pago, monto_total, metodo_pago, comprobante, created_by,
-        deleted_at, motivo_anulacion,
+        deleted_at, motivo_anulacion, socio_id, inquilino_id,
         puesto:puestos(codigo_puesto),
         socio:socios(apellidos, nombres),
         inquilino:inquilinos(apellidos, nombres),
@@ -391,7 +445,7 @@ export class ReportesService {
     let totalTransferencia = 0;
     const conceptoMap = new Map<string, { monto: number; cantidad: number }>();
 
-    // ── Pagos tradicionales ─────────────────────────────────────────────────
+    // ── Pagos tradicionales (Socios e Inquilinos con recibo) ─────────────────
     const recibos: ArqueoPago[] = rows.map(row => {
       const monto     = Number(row.monto_total);
       const esAnulado = row.deleted_at !== null;
@@ -425,6 +479,13 @@ export class ReportesService {
           ? `${row.inquilino.apellidos}, ${row.inquilino.nombres}`
           : '—';
 
+      let origen: OrigenIngreso = 'PENDIENTES';
+      if (row.socio_id !== null || row.socio) {
+        origen = 'SOCIOS';
+      } else if (row.inquilino_id !== null || row.inquilino) {
+        origen = 'INQUILINOS';
+      }
+
       const perfil = row.created_by ? perfilMap.get(row.created_by) : null;
 
       return {
@@ -442,10 +503,13 @@ export class ReportesService {
         motivo_anulacion: row.motivo_anulacion,
         es_ingreso_interno: false,
         es_recaudacion_tarjeta: false,
+        origen,
+        socio_id: row.socio_id,
+        inquilino_id: row.inquilino_id,
       };
     });
 
-    // ── Ingresos internos (filtrados por deleted_at IS NULL) ─────────────────
+    // ── Ingresos internos (Caja Rápida / Sin Recibo: SS.HH., Parqueo, etc.) ──
     const filasInternas: ArqueoPago[] = ingresos.map(row => {
       const monto = Number(row.monto);
 
@@ -453,17 +517,14 @@ export class ReportesService {
       else totalTransferencia += monto;
 
       const nombreConcepto = row.concepto?.nombre ?? 'Sin concepto';
-      const grupoConcepto  = row.concepto?.grupo ?? 'OTROS';
-
       const prev = conceptoMap.get(nombreConcepto) ?? { monto: 0, cantidad: 0 };
       conceptoMap.set(nombreConcepto, {
         monto:    prev.monto + monto,
         cantidad: prev.cantidad + 1,
       });
 
-      const pagadorLabel = grupoConcepto === 'INQUILINOS'
-        ? 'Para Inquilinos'
-        : 'Otros Ingresos';
+      const observacion = row.observacion?.trim();
+      const pagadorLabel = observacion ? `${nombreConcepto} (${observacion})` : nombreConcepto;
 
       const perfil = row.created_by ? perfilMap.get(row.created_by) : null;
       const codigoRef = `INT-${String(row.id).padStart(6, '0')}`;
@@ -483,14 +544,15 @@ export class ReportesService {
         motivo_anulacion: null,
         es_ingreso_interno: true,
         es_recaudacion_tarjeta: false,
+        origen: 'OTROS' as OrigenIngreso,
       };
     });
 
-    // ── Recaudación por Tarjeta (abonos semanales → saldo_a_favor) ───────────
+    // ── Recaudación por Tarjeta (abonos semanales de socios en efectivo) ──────
     const CONCEPTO_TARJETA = 'Recaudación Tarjeta';
     const filasRecaudacion: ArqueoPago[] = recaudaciones.map(row => {
       const monto = Number(row.monto);
-      totalEfectivo += monto;  // se acumula como efectivo (prepago físico)
+      totalEfectivo += monto;  // prepago físico en efectivo
 
       const prev = conceptoMap.get(CONCEPTO_TARJETA) ?? { monto: 0, cantidad: 0 };
       conceptoMap.set(CONCEPTO_TARJETA, {
@@ -517,13 +579,97 @@ export class ReportesService {
         motivo_anulacion:        null,
         es_ingreso_interno:      false,
         es_recaudacion_tarjeta:  true,
+        origen:                  'SOCIOS' as OrigenIngreso,
       };
     });
 
-    // ── Mezclar recibos por fecha desc ───────────────────────────────────────
-    const todosRecibos = [...recibos, ...filasInternas, ...filasRecaudacion].sort(
+    // ── Separación de movimientos válidos vs anulados ───────────────────────
+    // Los movimientos anulados quedan completamente excluidos del arqueo oficial.
+    const recibosAnulados = recibos.filter(r => r.anulado);
+    const recibosValidos = recibos.filter(r => !r.anulado);
+
+    // Colección cronológica de recibos válidos del día
+    const todosRecibosValidos = [...recibosValidos, ...filasInternas, ...filasRecaudacion].sort(
       (a, b) => new Date(b.fecha_pago).getTime() - new Date(a.fecha_pago).getTime(),
     );
+
+    // ── Agrupación en Bloques por Origen y Método de Pago ───────────────────
+    const crearSubgrupo = (recibosList: ArqueoPago[], metodo: 'Efectivo' | 'Transferencia'): SubgrupoMetodo => {
+      const items = recibosList.filter(r => r.metodo_pago === metodo);
+      const subtotal = round2(items.reduce((s, r) => s + r.monto_total, 0));
+      return {
+        metodo,
+        recibos: items,
+        cantidad: items.length,
+        subtotal,
+      };
+    };
+
+    const crearBloque = (origen: OrigenIngreso, titulo: string, recibosList: ArqueoPago[]): BloqueIngresos => {
+      const subgrupoEfectivo = crearSubgrupo(recibosList, 'Efectivo');
+      const subgrupoTransferencia = crearSubgrupo(recibosList, 'Transferencia');
+      const totalEf = subgrupoEfectivo.subtotal;
+      const totalTr = subgrupoTransferencia.subtotal;
+      const totalGeneral = round2(totalEf + totalTr);
+      const cantidadTotal = subgrupoEfectivo.cantidad + subgrupoTransferencia.cantidad;
+
+      return {
+        origen,
+        titulo,
+        subgrupoEfectivo,
+        subgrupoTransferencia,
+        totalEfectivo: totalEf,
+        totalTransferencia: totalTr,
+        totalGeneral,
+        cantidadTotal,
+      };
+    };
+
+    const bloqueSocios = crearBloque(
+      'SOCIOS',
+      'Ingresos de Socios',
+      todosRecibosValidos.filter(r => r.origen === 'SOCIOS'),
+    );
+
+    const bloqueInquilinos = crearBloque(
+      'INQUILINOS',
+      'Ingresos de Inquilinos',
+      todosRecibosValidos.filter(r => r.origen === 'INQUILINOS'),
+    );
+
+    const bloqueOtros = crearBloque(
+      'OTROS',
+      'Otros Ingresos (Caja Rápida)',
+      todosRecibosValidos.filter(r => r.origen === 'OTROS'),
+    );
+
+    const recibosPendientes = todosRecibosValidos.filter(r => r.origen === 'PENDIENTES');
+    const bloquePendientes = recibosPendientes.length > 0
+      ? crearBloque('PENDIENTES', 'Pendientes de Clasificación', recibosPendientes)
+      : null;
+
+    // ── Matriz Consolidada de Resumen Ejecutivo (Origen vs Método) ───────────
+    const matrizConsolidada: ResumenConsolidadoMatriz = {
+      sociosEfectivo: bloqueSocios.totalEfectivo,
+      sociosTransferencia: bloqueSocios.totalTransferencia,
+      sociosTotal: bloqueSocios.totalGeneral,
+
+      inquilinosEfectivo: bloqueInquilinos.totalEfectivo,
+      inquilinosTransferencia: bloqueInquilinos.totalTransferencia,
+      inquilinosTotal: bloqueInquilinos.totalGeneral,
+
+      otrosEfectivo: bloqueOtros.totalEfectivo,
+      otrosTransferencia: bloqueOtros.totalTransferencia,
+      otrosTotal: bloqueOtros.totalGeneral,
+
+      pendientesEfectivo: bloquePendientes?.totalEfectivo ?? 0,
+      pendientesTransferencia: bloquePendientes?.totalTransferencia ?? 0,
+      pendientesTotal: bloquePendientes?.totalGeneral ?? 0,
+
+      totalEfectivo: round2(totalEfectivo),
+      totalTransferencia: round2(totalTransferencia),
+      totalGeneral: round2(totalEfectivo + totalTransferencia),
+    };
 
     const por_concepto: ArqueoConcepto[] = [...conceptoMap.entries()]
       .map(([concepto, { monto, cantidad }]) => ({
@@ -566,11 +712,18 @@ export class ReportesService {
       total_dia,
       total_efectivo:                round2(totalEfectivo),
       total_transferencia:           round2(totalTransferencia),
-      cantidad_recibos:              recibos.filter(r => !r.anulado).length,
+      cantidad_recibos:              recibosValidos.length,
       cantidad_ingresos_internos:    filasInternas.length,
       cantidad_recaudacion_tarjeta:  filasRecaudacion.length,
+      cantidad_anulados:             recibosAnulados.length,
       por_concepto,
-      recibos:                       todosRecibos,
+      recibos:                       todosRecibosValidos,
+      recibos_anulados:              recibosAnulados,
+      bloqueSocios,
+      bloqueInquilinos,
+      bloqueOtros,
+      bloquePendientes,
+      matrizConsolidada,
       total_gastos:                  totalGastos,
       saldo_neto,
       gastos,

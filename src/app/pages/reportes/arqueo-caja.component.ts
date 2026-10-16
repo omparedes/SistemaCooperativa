@@ -323,6 +323,144 @@ function fmtFechaCorta(yyyymmdd: string): string {
           </div>
         </div>
 
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- NUEVO: Resumen Consolidado de Ingresos (Matriz Origen vs Método)-->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-dark">
+          <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-3 dark:border-gray-700">
+            <div>
+              <h3 class="text-base font-semibold text-gray-800 dark:text-white">Resumen Consolidado de Ingresos</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Distribución por sector comercial y método de cobro</p>
+            </div>
+            @if (r.cantidad_anulados > 0) {
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800/40">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                {{ r.cantidad_anulados }} recibo{{ r.cantidad_anulados !== 1 ? 's' : '' }} anulado{{ r.cantidad_anulados !== 1 ? 's' : '' }} excluido{{ r.cantidad_anulados !== 1 ? 's' : '' }} del arqueo
+              </span>
+            }
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 text-xs font-semibold uppercase text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                <tr>
+                  <th class="px-4 py-3 text-left">Origen / Sector</th>
+                  <th class="px-4 py-3 text-right">Efectivo (Gaveta)</th>
+                  <th class="px-4 py-3 text-right">Transferencia / QR</th>
+                  <th class="px-4 py-3 text-right">Total General</th>
+                  <th class="px-4 py-3 text-right">% Participación</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+                <!-- Fila 1: Socios -->
+                <tr class="hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10">
+                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                    <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                    1. Ingresos de Socios
+                    <span class="text-xs text-gray-400 font-normal">({{ r.bloqueSocios.cantidadTotal }} cobros)</span>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.sociosEfectivo) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.sociosTransferencia) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.sociosTotal) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-gray-500 tabular-nums">
+                    {{ r.total_dia > 0 ? ((r.matrizConsolidada.sociosTotal / r.total_dia) * 100).toFixed(1) : '0.0' }}%
+                  </td>
+                </tr>
+
+                <!-- Fila 2: Inquilinos -->
+                <tr class="hover:bg-blue-50/30 dark:hover:bg-blue-900/10">
+                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                    <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                    2. Ingresos de Inquilinos
+                    <span class="text-xs text-gray-400 font-normal">({{ r.bloqueInquilinos.cantidadTotal }} cobros)</span>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.inquilinosEfectivo) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.inquilinosTransferencia) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.inquilinosTotal) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-gray-500 tabular-nums">
+                    {{ r.total_dia > 0 ? ((r.matrizConsolidada.inquilinosTotal / r.total_dia) * 100).toFixed(1) : '0.0' }}%
+                  </td>
+                </tr>
+
+                <!-- Fila 3: Otros Ingresos -->
+                <tr class="hover:bg-amber-50/30 dark:hover:bg-amber-900/10">
+                  <td class="px-4 py-3 font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                    <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                    3. Otros Ingresos (Caja Rápida)
+                    <span class="text-xs text-gray-400 font-normal">({{ r.bloqueOtros.cantidadTotal }} cobros)</span>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.otrosEfectivo) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.otrosTransferencia) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.otrosTotal) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-gray-500 tabular-nums">
+                    {{ r.total_dia > 0 ? ((r.matrizConsolidada.otrosTotal / r.total_dia) * 100).toFixed(1) : '0.0' }}%
+                  </td>
+                </tr>
+
+                <!-- Fila Control si existen pendientes -->
+                @if (r.bloquePendientes && r.bloquePendientes.cantidadTotal > 0) {
+                  <tr class="hover:bg-red-50/30 dark:hover:bg-red-900/10">
+                    <td class="px-4 py-3 font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+                      <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                      4. Pendientes de Clasificación
+                      <span class="text-xs text-red-400 font-normal">({{ r.bloquePendientes.cantidadTotal }} cobros)</span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-medium text-red-600 dark:text-red-400 tabular-nums">
+                      {{ fmtSoles(r.bloquePendientes.totalEfectivo) }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-medium text-red-600 dark:text-red-400 tabular-nums">
+                      {{ fmtSoles(r.bloquePendientes.totalTransferencia) }}
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold text-red-600 dark:text-red-400 tabular-nums">
+                      {{ fmtSoles(r.bloquePendientes.totalGeneral) }}
+                    </td>
+                    <td class="px-4 py-3 text-right text-xs text-red-500 tabular-nums">
+                      {{ r.total_dia > 0 ? ((r.bloquePendientes.totalGeneral / r.total_dia) * 100).toFixed(1) : '0.0' }}%
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot class="border-t-2 border-gray-300 bg-gray-50 font-bold dark:border-gray-600 dark:bg-gray-800/80">
+                <tr>
+                  <td class="px-4 py-3 text-sm text-gray-900 dark:text-white uppercase">
+                    Total General de Ingresos
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-green-700 dark:text-green-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.totalEfectivo) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-sm text-blue-700 dark:text-blue-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.totalTransferencia) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-base text-brand-600 dark:text-brand-400 tabular-nums">
+                    {{ fmtSoles(r.matrizConsolidada.totalGeneral) }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-xs text-gray-600 dark:text-gray-300 tabular-nums">
+                    100.0%
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
         <!-- ── FILA 2: Por concepto + Método de pago ─────────────────────── -->
         <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-5">
 
@@ -470,169 +608,612 @@ function fmtFechaCorta(yyyymmdd: string): string {
           </div>
         </div>
 
-        <!-- ── FILA 3: Lista detallada de recibos ──────────────────────── -->
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-dark">
-          <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-            <div>
-              <h3 class="text-sm font-semibold text-gray-800 dark:text-white">Recibos emitidos</h3>
-              <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
-                {{ r.cantidad_recibos }} válido{{ r.cantidad_recibos !== 1 ? 's' : '' }}
-                @if (r.cantidad_ingresos_internos > 0) {
-                  · <span class="text-violet-500 dark:text-violet-400 font-medium">{{ r.cantidad_ingresos_internos }} sin recibo</span>
-                }
-                @if (r.cantidad_recaudacion_tarjeta > 0) {
-                  · <span class="text-emerald-500 dark:text-emerald-400 font-medium">{{ r.cantidad_recaudacion_tarjeta }} tarjeta prepago</span>
-                }
-                @if (anuladosCount() > 0) {
-                  · <span class="text-red-500 dark:text-red-400 font-medium">{{ anuladosCount() }} anulado{{ anuladosCount() !== 1 ? 's' : '' }}</span>
-                }
-                · ordenados por hora
-              </p>
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- DETALLE DE INGRESOS EN 3 BLOQUES POR ORIGEN Y MÉTODO DE PAGO    -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <div class="mb-6 space-y-6">
+
+          <!-- ── BLOQUE 1: INGRESOS DE SOCIOS (Acento verde suave) ───────── -->
+          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-dark overflow-hidden">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-100 bg-emerald-50/70 px-5 py-4 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-semibold text-emerald-900 dark:text-emerald-200">1. Ingresos de Socios</h3>
+                    <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      {{ r.bloqueSocios.cantidadTotal }} cobro{{ r.bloqueSocios.cantidadTotal !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-emerald-700/80 dark:text-emerald-400">Cuotas sociales, aportes, luz/agua y abonos de tarjeta de socios titulares</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Total Socios</span>
+                <span class="text-lg font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{{ fmtSoles(r.bloqueSocios.totalGeneral) }}</span>
+              </div>
             </div>
-            @if (cargando()) {
-              <svg class="h-4 w-4 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-              </svg>
+
+            @if (r.bloqueSocios.cantidadTotal === 0) {
+              <p class="p-6 text-center text-sm text-gray-400 dark:text-gray-500">Sin ingresos de socios registrados para esta fecha.</p>
+            } @else {
+              <!-- Subgrupo Efectivo Socios -->
+              @if (r.bloqueSocios.subgrupoEfectivo.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-emerald-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:bg-emerald-900/10 dark:text-emerald-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                      Cobros en Efectivo ({{ r.bloqueSocios.subgrupoEfectivo.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueSocios.subgrupoEfectivo.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Socio</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Conceptos</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueSocios.subgrupoEfectivo.recibos; track (p.es_recaudacion_tarjeta ? 'rec' : 'pago') + p.id) {
+                          <tr class="hover:bg-emerald-50/20 dark:hover:bg-emerald-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold" [ngClass]="p.es_recaudacion_tarjeta ? 'text-emerald-600 dark:text-emerald-400' : 'text-brand-600 dark:text-brand-400'">{{ p.codigo_transaccion }}</span>
+                              @if (p.es_recaudacion_tarjeta) {
+                                <span class="ml-1 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">Tarjeta</span>
+                              }
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">{{ p.codigo_puesto }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Efectivo Socios ({{ r.bloqueSocios.subgrupoEfectivo.cantidad }} recibos):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-green-700 dark:text-green-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueSocios.subgrupoEfectivo.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Subgrupo Transferencia / QR Socios -->
+              @if (r.bloqueSocios.subgrupoTransferencia.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-blue-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-blue-800 dark:bg-blue-900/10 dark:text-blue-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                      Cobros por Transferencia / QR ({{ r.bloqueSocios.subgrupoTransferencia.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueSocios.subgrupoTransferencia.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Socio</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Conceptos</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueSocios.subgrupoTransferencia.recibos; track 'pago' + p.id) {
+                          <tr class="hover:bg-blue-50/20 dark:hover:bg-blue-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold text-brand-600 dark:text-brand-400">{{ p.codigo_transaccion }}</span>
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">{{ p.codigo_puesto }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Transferencias Socios ({{ r.bloqueSocios.subgrupoTransferencia.cantidad }} recibos):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-blue-700 dark:text-blue-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueSocios.subgrupoTransferencia.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Footer de Bloque Socios -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-5 py-3.5 bg-gray-50/60 dark:bg-gray-800/40 text-xs">
+                <div class="flex items-center gap-4 text-gray-500 dark:text-gray-400">
+                  <span>Recibos: <strong class="text-gray-700 dark:text-gray-200">{{ r.bloqueSocios.cantidadTotal }}</strong></span>
+                  <span>Efectivo: <strong class="text-green-600 dark:text-green-400">{{ fmtSoles(r.bloqueSocios.totalEfectivo) }}</strong></span>
+                  <span>Transferencia: <strong class="text-blue-600 dark:text-blue-400">{{ fmtSoles(r.bloqueSocios.totalTransferencia) }}</strong></span>
+                </div>
+                <div class="mt-1 sm:mt-0 text-sm font-bold text-gray-900 dark:text-white">
+                  Total Socios: <span class="text-base text-emerald-600 dark:text-emerald-400 tabular-nums">{{ fmtSoles(r.bloqueSocios.totalGeneral) }}</span>
+                </div>
+              </div>
             }
           </div>
 
-          @if (r.recibos.length === 0) {
-            <div class="flex flex-col items-center justify-center gap-2 py-16 text-gray-400 dark:text-gray-500">
-              <svg class="h-10 w-10 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-              <p class="text-sm">Sin recibos registrados para esta fecha.</p>
+          <!-- ── BLOQUE 2: INGRESOS DE INQUILINOS (Acento azul suave) ─────── -->
+          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-dark overflow-hidden">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-blue-100 bg-blue-50/70 px-5 py-4 dark:border-blue-900/30 dark:bg-blue-900/10">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-semibold text-blue-900 dark:text-blue-200">2. Ingresos de Inquilinos</h3>
+                    <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
+                      {{ r.bloqueInquilinos.cantidadTotal }} cobro{{ r.bloqueInquilinos.cantidadTotal !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-blue-700/80 dark:text-blue-400">Arriendos de puestos, almacenes, depósitos y servicios de inquilinos</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-medium text-blue-700 dark:text-blue-400 uppercase tracking-wider block">Total Inquilinos</span>
+                <span class="text-lg font-bold text-blue-700 dark:text-blue-300 tabular-nums">{{ fmtSoles(r.bloqueInquilinos.totalGeneral) }}</span>
+              </div>
             </div>
-          } @else {
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="bg-gray-50 dark:bg-gray-700/40">
-                  <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Hora</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Código</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Pagador</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Puesto</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Conceptos</th>
-                    <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Método</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Monto</th>
-                    @if (auth.esAdmin()) {
-                      <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Cajero</th>
-                    }
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                  @for (p of r.recibos; track (p.es_recaudacion_tarjeta ? 'rec' : p.es_ingreso_interno ? 'ii' : 'pago') + p.id) {
-                    <tr [ngClass]="p.anulado
-                        ? 'bg-red-50/60 dark:bg-red-900/10 opacity-70'
-                        : p.es_recaudacion_tarjeta
-                          ? 'bg-emerald-50/40 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
-                          : p.es_ingreso_interno
-                            ? 'bg-violet-50/40 dark:bg-violet-900/10 hover:bg-violet-50 dark:hover:bg-violet-900/20'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/30'"
-                      class="transition">
-                      <td class="px-4 py-3 text-xs font-mono whitespace-nowrap"
-                        [ngClass]="p.anulado ? 'text-red-400 dark:text-red-500' : 'text-gray-500 dark:text-gray-400'">
-                        {{ formatHora(p.fecha_pago) }}
-                      </td>
-                      <td class="px-4 py-3">
-                        <span class="font-mono text-xs whitespace-nowrap"
-                          [ngClass]="p.anulado
-                            ? 'line-through text-red-400 dark:text-red-500'
-                            : p.es_recaudacion_tarjeta
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : p.es_ingreso_interno
-                                ? 'text-violet-600 dark:text-violet-400'
-                                : 'text-brand-600 dark:text-brand-400'">
-                          {{ p.codigo_transaccion }}
-                        </span>
-                        @if (p.anulado) {
-                          <span class="mt-0.5 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">Anulado</span>
-                        }
-                        @if (p.es_recaudacion_tarjeta) {
-                          <span class="mt-0.5 inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Tarjeta</span>
-                        }
-                        @if (p.es_ingreso_interno) {
-                          <span class="mt-0.5 inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">Sin Recibo</span>
-                        }
-                      </td>
-                      <td class="px-4 py-3">
-                        <p class="font-medium leading-tight"
-                          [ngClass]="p.anulado ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-800 dark:text-white'">
-                          {{ p.pagador }}
-                        </p>
-                        @if (p.anulado && p.motivo_anulacion) {
-                          <p class="text-[10px] text-red-500 dark:text-red-400 mt-0.5">{{ p.motivo_anulacion }}</p>
-                        }
-                      </td>
-                      <td class="px-4 py-3">
-                        <span class="rounded-md px-2 py-0.5 text-xs font-semibold"
-                          [ngClass]="p.anulado
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                            : 'bg-brand-50 text-brand-600 dark:bg-brand-900/20 dark:text-brand-400'">
-                          {{ p.codigo_puesto }}
-                        </span>
-                      </td>
-                      <td class="px-4 py-3">
-                        <div class="flex flex-wrap gap-1">
-                          @for (c of p.conceptos; track c) {
-                            <span class="rounded-full border px-2 py-0.5 text-xs"
-                              [ngClass]="p.anulado
-                                ? 'border-red-200 bg-red-50 text-red-400 dark:border-red-800 dark:bg-red-900/20 dark:text-red-500 line-through'
-                                : p.es_recaudacion_tarjeta
-                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium'
-                                  : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'">
-                              {{ c }}
-                            </span>
+
+            @if (r.bloqueInquilinos.cantidadTotal === 0) {
+              <p class="p-6 text-center text-sm text-gray-400 dark:text-gray-500">Sin ingresos de inquilinos registrados para esta fecha.</p>
+            } @else {
+              <!-- Subgrupo Efectivo Inquilinos -->
+              @if (r.bloqueInquilinos.subgrupoEfectivo.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-emerald-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:bg-emerald-900/10 dark:text-emerald-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                      Cobros en Efectivo ({{ r.bloqueInquilinos.subgrupoEfectivo.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueInquilinos.subgrupoEfectivo.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Inquilino</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Conceptos</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
                           }
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-center">
-                        @if (p.anulado) {
-                          <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
-                        } @else if (p.es_recaudacion_tarjeta) {
-                          <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Prepago</span>
-                        } @else if (p.metodo_pago === 'Efectivo') {
-                          <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">Efectivo</span>
-                        } @else {
-                          <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Transfer.</span>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueInquilinos.subgrupoEfectivo.recibos; track 'pago' + p.id) {
+                          <tr class="hover:bg-blue-50/20 dark:hover:bg-blue-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold text-brand-600 dark:text-brand-400">{{ p.codigo_transaccion }}</span>
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">{{ p.codigo_puesto }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
                         }
-                      </td>
-                      <td class="px-4 py-3 text-right font-bold tabular-nums whitespace-nowrap"
-                        [ngClass]="p.anulado ? 'line-through text-red-400 dark:text-red-500' : 'text-gray-900 dark:text-white'">
-                        {{ fmtSoles(p.monto_total) }}
-                      </td>
-                      @if (auth.esAdmin()) {
-                        <td class="px-4 py-3 text-xs"
-                          [ngClass]="p.anulado ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'">
-                          {{ p.cajero_nombre }}
-                        </td>
-                      }
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Efectivo Inquilinos ({{ r.bloqueInquilinos.subgrupoEfectivo.cantidad }} recibos):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-green-700 dark:text-green-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueInquilinos.subgrupoEfectivo.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Subgrupo Transferencia / QR Inquilinos -->
+              @if (r.bloqueInquilinos.subgrupoTransferencia.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-blue-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-blue-800 dark:bg-blue-900/10 dark:text-blue-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                      Cobros por Transferencia / QR ({{ r.bloqueInquilinos.subgrupoTransferencia.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueInquilinos.subgrupoTransferencia.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Inquilino</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Conceptos</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueInquilinos.subgrupoTransferencia.recibos; track 'pago' + p.id) {
+                          <tr class="hover:bg-blue-50/20 dark:hover:bg-blue-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold text-brand-600 dark:text-brand-400">{{ p.codigo_transaccion }}</span>
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:text-gray-300">{{ p.codigo_puesto }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Transferencias Inquilinos ({{ r.bloqueInquilinos.subgrupoTransferencia.cantidad }} recibos):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-blue-700 dark:text-blue-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueInquilinos.subgrupoTransferencia.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Footer de Bloque Inquilinos -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-5 py-3.5 bg-gray-50/60 dark:bg-gray-800/40 text-xs">
+                <div class="flex items-center gap-4 text-gray-500 dark:text-gray-400">
+                  <span>Recibos: <strong class="text-gray-700 dark:text-gray-200">{{ r.bloqueInquilinos.cantidadTotal }}</strong></span>
+                  <span>Efectivo: <strong class="text-green-600 dark:text-green-400">{{ fmtSoles(r.bloqueInquilinos.totalEfectivo) }}</strong></span>
+                  <span>Transferencia: <strong class="text-blue-600 dark:text-blue-400">{{ fmtSoles(r.bloqueInquilinos.totalTransferencia) }}</strong></span>
+                </div>
+                <div class="mt-1 sm:mt-0 text-sm font-bold text-gray-900 dark:text-white">
+                  Total Inquilinos: <span class="text-base text-blue-600 dark:text-blue-400 tabular-nums">{{ fmtSoles(r.bloqueInquilinos.totalGeneral) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ── BLOQUE 3: OTROS INGRESOS (Acento ámbar suave) ────────────── -->
+          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-dark overflow-hidden">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-amber-100 bg-amber-50/70 px-5 py-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-semibold text-amber-900 dark:text-amber-200">3. Otros Ingresos (Caja Rápida / Sin Recibo)</h3>
+                    <span class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                      {{ r.bloqueOtros.cantidadTotal }} cobro{{ r.bloqueOtros.cantidadTotal !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-amber-700/80 dark:text-amber-400">SS.HH. 1er y 2do piso, Parqueo vehicular, Alquiler de espacios temporales, tickets y varios</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wider block">Total Otros</span>
+                <span class="text-lg font-bold text-amber-700 dark:text-amber-300 tabular-nums">{{ fmtSoles(r.bloqueOtros.totalGeneral) }}</span>
+              </div>
             </div>
-            <div class="flex items-center justify-between border-t border-gray-200 px-5 py-3 dark:border-gray-700">
-              <p class="text-xs text-gray-400 dark:text-gray-500">
-                Recibos: {{ r.cantidad_recibos }}
-                @if (r.cantidad_ingresos_internos > 0) {
-                  · <span class="text-violet-400">Sin recibo: {{ r.cantidad_ingresos_internos }}</span>
-                }
-                @if (r.cantidad_recaudacion_tarjeta > 0) {
-                  · <span class="text-emerald-500">Tarjeta: {{ r.cantidad_recaudacion_tarjeta }}</span>
-                }
-                @if (anuladosCount() > 0) {
-                  · <span class="text-red-400">Anulados: {{ anuladosCount() }}</span>
-                }
-                · Efectivo: {{ fmtSoles(r.total_efectivo) }}
-                · Transferencia: {{ fmtSoles(r.total_transferencia) }}
-              </p>
-              <p class="text-sm font-bold text-gray-900 dark:text-white">
-                Total: {{ fmtSoles(r.total_dia) }}
-              </p>
+
+            @if (r.bloqueOtros.cantidadTotal === 0) {
+              <p class="p-6 text-center text-sm text-gray-400 dark:text-gray-500">Sin cobros espontáneos de caja rápida en esta fecha.</p>
+            } @else {
+              <!-- Subgrupo Efectivo Otros -->
+              @if (r.bloqueOtros.subgrupoEfectivo.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-emerald-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:bg-emerald-900/10 dark:text-emerald-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                      Cobros en Efectivo ({{ r.bloqueOtros.subgrupoEfectivo.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueOtros.subgrupoEfectivo.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Concepto / Detalle</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Rubro</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueOtros.subgrupoEfectivo.recibos; track 'ii' + p.id) {
+                          <tr class="hover:bg-amber-50/20 dark:hover:bg-amber-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold text-violet-600 dark:text-violet-400">{{ p.codigo_transaccion }}</span>
+                              <span class="ml-1 inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.2 text-[10px] font-semibold text-violet-700 dark:text-violet-400">Sin Recibo</span>
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Efectivo Otros ({{ r.bloqueOtros.subgrupoEfectivo.cantidad }} cobros):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-green-700 dark:text-green-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueOtros.subgrupoEfectivo.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Subgrupo Transferencia / QR Otros -->
+              @if (r.bloqueOtros.subgrupoTransferencia.cantidad > 0) {
+                <div class="border-b border-gray-100 dark:border-gray-700/60">
+                  <div class="flex items-center justify-between bg-blue-50/30 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-blue-800 dark:bg-blue-900/10 dark:text-blue-300">
+                    <span class="flex items-center gap-1.5">
+                      <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                      Cobros por Transferencia / QR ({{ r.bloqueOtros.subgrupoTransferencia.cantidad }})
+                    </span>
+                    <span class="tabular-nums font-bold">Subtotal: {{ fmtSoles(r.bloqueOtros.subgrupoTransferencia.subtotal) }}</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                        <tr>
+                          <th class="px-4 py-2.5 text-left">Hora</th>
+                          <th class="px-4 py-2.5 text-left">Código</th>
+                          <th class="px-4 py-2.5 text-left">Concepto / Detalle</th>
+                          <th class="px-4 py-2.5 text-left">Puesto</th>
+                          <th class="px-4 py-2.5 text-left">Rubro</th>
+                          <th class="px-4 py-2.5 text-right">Monto</th>
+                          @if (auth.esAdmin()) {
+                            <th class="px-4 py-2.5 text-left">Cajero</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        @for (p of r.bloqueOtros.subgrupoTransferencia.recibos; track 'ii' + p.id) {
+                          <tr class="hover:bg-blue-50/20 dark:hover:bg-blue-900/10 transition">
+                            <td class="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ formatHora(p.fecha_pago) }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="font-mono text-xs font-semibold text-violet-600 dark:text-violet-400">{{ p.codigo_transaccion }}</span>
+                              <span class="ml-1 inline-flex items-center rounded-full bg-violet-100 dark:bg-violet-900/30 px-1.5 py-0.2 text-[10px] font-semibold text-violet-700 dark:text-violet-400">Sin Recibo</span>
+                            </td>
+                            <td class="px-4 py-2.5 font-medium text-gray-800 dark:text-white leading-tight">{{ p.pagador }}</td>
+                            <td class="px-4 py-2.5 whitespace-nowrap">
+                              <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                              <div class="flex flex-wrap gap-1">
+                                @for (c of p.conceptos; track c) {
+                                  <span class="rounded-full border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-300">{{ c }}</span>
+                                }
+                              </div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right font-bold tabular-nums text-gray-900 dark:text-white whitespace-nowrap">{{ fmtSoles(p.monto_total) }}</td>
+                            @if (auth.esAdmin()) {
+                              <td class="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ p.cajero_nombre }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                      <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200 dark:border-gray-700">
+                        <tr>
+                          <td colspan="5" class="px-4 py-2 text-right uppercase text-gray-500 dark:text-gray-400">
+                            Subtotal Transferencias Otros ({{ r.bloqueOtros.subgrupoTransferencia.cantidad }} cobros):
+                          </td>
+                          <td class="px-4 py-2 text-right font-bold text-blue-700 dark:text-blue-400 tabular-nums text-sm">
+                            {{ fmtSoles(r.bloqueOtros.subgrupoTransferencia.subtotal) }}
+                          </td>
+                          @if (auth.esAdmin()) { <td></td> }
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              }
+
+              <!-- Footer de Bloque Otros -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-5 py-3.5 bg-gray-50/60 dark:bg-gray-800/40 text-xs">
+                <div class="flex items-center gap-4 text-gray-500 dark:text-gray-400">
+                  <span>Cobros: <strong class="text-gray-700 dark:text-gray-200">{{ r.bloqueOtros.cantidadTotal }}</strong></span>
+                  <span>Efectivo: <strong class="text-green-600 dark:text-green-400">{{ fmtSoles(r.bloqueOtros.totalEfectivo) }}</strong></span>
+                  <span>Transferencia: <strong class="text-blue-600 dark:text-blue-400">{{ fmtSoles(r.bloqueOtros.totalTransferencia) }}</strong></span>
+                </div>
+                <div class="mt-1 sm:mt-0 text-sm font-bold text-gray-900 dark:text-white">
+                  Total Otros Ingresos: <span class="text-base text-amber-600 dark:text-amber-400 tabular-nums">{{ fmtSoles(r.bloqueOtros.totalGeneral) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- ── BLOQUE CONTROL: PENDIENTES DE CLASIFICACIÓN (Solo si existen) ── -->
+          @if (r.bloquePendientes && r.bloquePendientes.cantidadTotal > 0) {
+            <div class="rounded-2xl border border-red-200 bg-white shadow-sm dark:border-red-800 dark:bg-gray-dark overflow-hidden">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-red-100 bg-red-50/70 px-5 py-4 dark:border-red-900/30 dark:bg-red-900/10">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-base font-semibold text-red-900 dark:text-red-200">4. Pendientes de Clasificación (Control)</h3>
+                      <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                        {{ r.bloquePendientes.cantidadTotal }} cobro{{ r.bloquePendientes.cantidadTotal !== 1 ? 's' : '' }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-red-700/80 dark:text-red-400">Movimientos válidos sin clave foránea directa a socio ni inquilino</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-medium text-red-700 dark:text-red-400 uppercase tracking-wider block">Total Pendientes</span>
+                  <span class="text-lg font-bold text-red-700 dark:text-red-300 tabular-nums">{{ fmtSoles(r.bloquePendientes.totalGeneral) }}</span>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-50/50 dark:bg-gray-800/60 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                    <tr>
+                      <th class="px-4 py-2.5 text-left">Hora</th>
+                      <th class="px-4 py-2.5 text-left">Código</th>
+                      <th class="px-4 py-2.5 text-left">Pagador</th>
+                      <th class="px-4 py-2.5 text-left">Puesto</th>
+                      <th class="px-4 py-2.5 text-left">Conceptos</th>
+                      <th class="px-4 py-2.5 text-center">Método</th>
+                      <th class="px-4 py-2.5 text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    @for (p of r.bloquePendientes.subgrupoEfectivo.recibos; track p.id) {
+                      <tr>
+                        <td class="px-4 py-2.5 text-xs font-mono text-gray-500">{{ formatHora(p.fecha_pago) }}</td>
+                        <td class="px-4 py-2.5 font-mono text-xs font-semibold text-red-600">{{ p.codigo_transaccion }}</td>
+                        <td class="px-4 py-2.5 font-medium text-gray-800">{{ p.pagador }}</td>
+                        <td class="px-4 py-2.5">{{ p.codigo_puesto }}</td>
+                        <td class="px-4 py-2.5">{{ p.conceptos.join(', ') }}</td>
+                        <td class="px-4 py-2.5 text-center">{{ p.metodo_pago }}</td>
+                        <td class="px-4 py-2.5 text-right font-bold">{{ fmtSoles(p.monto_total) }}</td>
+                      </tr>
+                    }
+                    @for (p of r.bloquePendientes.subgrupoTransferencia.recibos; track p.id) {
+                      <tr>
+                        <td class="px-4 py-2.5 text-xs font-mono text-gray-500">{{ formatHora(p.fecha_pago) }}</td>
+                        <td class="px-4 py-2.5 font-mono text-xs font-semibold text-red-600">{{ p.codigo_transaccion }}</td>
+                        <td class="px-4 py-2.5 font-medium text-gray-800">{{ p.pagador }}</td>
+                        <td class="px-4 py-2.5">{{ p.codigo_puesto }}</td>
+                        <td class="px-4 py-2.5">{{ p.conceptos.join(', ') }}</td>
+                        <td class="px-4 py-2.5 text-center">{{ p.metodo_pago }}</td>
+                        <td class="px-4 py-2.5 text-right font-bold">{{ fmtSoles(p.monto_total) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                  <tfoot class="bg-gray-50 dark:bg-gray-800/80 font-semibold text-xs border-t border-gray-200">
+                    <tr>
+                      <td colspan="6" class="px-4 py-2 text-right uppercase text-gray-500">Subtotal Pendientes:</td>
+                      <td class="px-4 py-2 text-right font-bold text-red-600 tabular-nums">{{ fmtSoles(r.bloquePendientes.totalGeneral) }}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
           }
+
         </div>
 
         <!-- ── FILA 4: Salidas de Caja (Egresos) ───────────────────────── -->
@@ -902,7 +1483,7 @@ export class ArqueoCajaComponent implements OnInit {
   readonly generandoPdf = signal(false);
 
   readonly anuladosCount = computed(() =>
-    this.resumen()?.recibos.filter(r => r.anulado).length ?? 0,
+    this.resumen()?.cantidad_anulados ?? 0,
   );
 
   readonly efectivoPct = computed(() => {
