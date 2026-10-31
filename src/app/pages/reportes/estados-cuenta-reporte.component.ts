@@ -10,6 +10,7 @@ import {
   TipoPersona,
 } from '../../core/services/estados-cuenta.service';
 import { ExcelExportService, HojaExcel } from '../../core/services/excel-export.service';
+import { resumirPagoConSaldo } from '../pagos/pago.model';
 import {
   EstadoCuentaFilaCompletoPdf,
   EstadoCuentaFilaPagoPdf,
@@ -752,10 +753,14 @@ export interface MovimientoLedger {
                           </td>
                           <td class="px-5 py-3 text-center">
                             <span class="rounded-full px-2 py-0.5 text-2xs font-medium"
-                                  [class]="pg.metodo_pago === 'Efectivo'
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'">
-                              {{ pg.metodo_pago }}
+                                  [class]="resumenPago(pg).esSoloSaldoFavor
+                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                                    : resumenPago(pg).esMixto
+                                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                      : pg.metodo_pago === 'Efectivo'
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'">
+                              {{ resumenPago(pg).etiquetaMetodo }}
                             </span>
                           </td>
                           <td class="px-5 py-3 text-xs text-gray-600 dark:text-gray-300">
@@ -771,7 +776,7 @@ export interface MovimientoLedger {
                             {{ pg.comprobante || '—' }}
                           </td>
                           <td class="px-5 py-3 text-right font-bold" [class]="pg.anulado ? 'line-through text-gray-400' : 'text-emerald-600 dark:text-emerald-400'">
-                            {{ fmtSoles(pg.monto_total) }}
+                            {{ fmtSoles(resumenPago(pg).importeRecibo) }}
                           </td>
                         </tr>
                       } @empty {
@@ -905,6 +910,7 @@ export class EstadosCuentaReporteComponent implements OnInit {
   private readonly excelSvc = inject(ExcelExportService);
 
   readonly fmtSoles = fmtSoles;
+  readonly resumenPago = resumirPagoConSaldo;
   readonly fmtFecha = fmtFecha;
   readonly fmtPeriodo = fmtPeriodo;
   readonly hoyStr = hoyIso;
@@ -1070,7 +1076,7 @@ export class EstadosCuentaReporteComponent implements OnInit {
   readonly totalPagosPeriodo = computed<number>(() =>
     this.pagosFiltrados()
       .filter((p: EstadoCuentaPagoItem) => !p.anulado)
-      .reduce((sum: number, p: EstadoCuentaPagoItem) => sum + p.monto_total, 0)
+      .reduce((sum: number, p: EstadoCuentaPagoItem) => sum + this.resumenPago(p).importeRecibo, 0)
   );
 
   readonly movimientosLedgerFiltrados = computed<MovimientoLedger[]>(() => {
@@ -1104,15 +1110,16 @@ export class EstadosCuentaReporteComponent implements OnInit {
       const fecha = p.fecha_pago ? p.fecha_pago.slice(0, 10) : '';
       if (desde && hasta && (fecha < desde || fecha > hasta)) continue;
 
+      const res = this.resumenPago(p);
       const conceptosStr = p.detalle.map((dt: { concepto: string; monto_aplicado: number }) => dt.concepto).join(', ') || 'Pago recibido';
       ledger.push({
         fecha,
         tipo: 'Pago',
         periodo: '—',
-        concepto: `${conceptosStr} (${p.metodo_pago})`,
+        concepto: `${conceptosStr} (${res.etiquetaMetodo})`,
         comprobante: p.codigo_transaccion + (p.comprobante ? ` / ${p.comprobante}` : ''),
         cargo: 0,
-        pago: p.monto_total,
+        pago: res.importeRecibo,
       });
     }
 
@@ -1346,10 +1353,10 @@ export class EstadosCuentaReporteComponent implements OnInit {
         datos.filas_pagos = this.pagosFiltrados().map((pg: EstadoCuentaPagoItem) => ({
           fecha: fmtFecha(pg.fecha_pago),
           codigo_transaccion: pg.codigo_transaccion + (pg.anulado ? ' (ANULADO)' : ''),
-          metodo_pago: pg.metodo_pago,
+          metodo_pago: this.resumenPago(pg).etiquetaMetodo,
           conceptos: pg.detalle.map((dt: { concepto: string; monto_aplicado: number }) => dt.concepto).join(', '),
           comprobante: pg.comprobante || '',
-          monto: pg.anulado ? 0 : pg.monto_total,
+          monto: pg.anulado ? 0 : this.resumenPago(pg).importeRecibo,
         }));
       } else {
         datos.filas_completo = this.movimientosLedgerFiltrados().map((m: MovimientoLedger) => ({
@@ -1396,11 +1403,11 @@ export class EstadosCuentaReporteComponent implements OnInit {
         filas = this.pagosFiltrados().map((pg: EstadoCuentaPagoItem) => ({
           'Fecha de Pago': fmtFecha(pg.fecha_pago),
           'Transacción': pg.codigo_transaccion,
-          'Método': pg.metodo_pago,
+          'Método': this.resumenPago(pg).etiquetaMetodo,
           'Conceptos': pg.detalle.map((dt: { concepto: string; monto_aplicado: number }) => `${dt.concepto} (S/ ${dt.monto_aplicado.toFixed(2)})`).join(', '),
           'Comprobante': pg.comprobante || '',
-          'Estado': pg.anulado ? 'ANULADO' : 'Efectivo',
-          'Monto Total (S/)': pg.anulado ? 0 : Math.round(pg.monto_total * 100) / 100,
+          'Estado': pg.anulado ? 'ANULADO' : 'Vigente',
+          'Monto Total (S/)': pg.anulado ? 0 : Math.round(this.resumenPago(pg).importeRecibo * 100) / 100,
         }));
       } else {
         nombreHoja = 'Movimientos cuenta';

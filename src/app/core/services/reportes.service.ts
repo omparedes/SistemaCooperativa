@@ -446,7 +446,12 @@ export class ReportesService {
     const conceptoMap = new Map<string, { monto: number; cantidad: number }>();
 
     // ── Pagos tradicionales (Socios e Inquilinos con recibo) ─────────────────
-    const recibos: ArqueoPago[] = rows.map(row => {
+    // Los recibos con monto_total === 0 (aplicación 100 % de saldo a favor) no
+    // representan ingreso de dinero nuevo en caja (el dinero ya ingresó cuando
+    // se registró el abono de tarjeta o excedente previo), por lo que se excluyen
+    // del arqueo de caja diario para no mostrar filas de S/ 0.00 ni duplicar conceptos.
+    const rowsConIngresoCaja = rows.filter(row => Number(row.monto_total) > 0);
+    const recibos: ArqueoPago[] = rowsConIngresoCaja.map(row => {
       const monto     = Number(row.monto_total);
       const esAnulado = row.deleted_at !== null;
 
@@ -463,11 +468,14 @@ export class ReportesService {
       ];
 
       if (!esAnulado) {
+        const sumaDetalle = detalleVisible.reduce((s, d) => s + Number(d.monto_aplicado), 0);
+        // En pagos mixtos (monto_total < sumaDetalle), prorratear al ingreso real en caja del día
+        const factorCaja = sumaDetalle > monto && sumaDetalle > 0 ? monto / sumaDetalle : 1;
         for (const d of detalleVisible) {
           const nombre = d.monto_cobrar!.concepto!.nombre;
           const prev = conceptoMap.get(nombre) ?? { monto: 0, cantidad: 0 };
           conceptoMap.set(nombre, {
-            monto:    prev.monto + Number(d.monto_aplicado),
+            monto:    prev.monto + Number(d.monto_aplicado) * factorCaja,
             cantidad: prev.cantidad + 1,
           });
         }

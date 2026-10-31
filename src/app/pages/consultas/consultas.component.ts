@@ -2,7 +2,7 @@ import { afterNextRender, Component, computed, ElementRef, inject, signal, viewC
 import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
-import type { BusquedaResultado, DeudaItem, PagoHistorial, TipoPagador } from '../pagos/pago.model';
+import { type BusquedaResultado, type DeudaItem, type PagoHistorial, resumirPagoConSaldo, type TipoPagador } from '../pagos/pago.model';
 
 type TabActiva = 'pendientes' | 'realizados';
 
@@ -277,12 +277,12 @@ const MESES: ReadonlyArray<string> = [
                           <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                               [class.opacity-60]="p.anulado">
                             <td class="px-5 py-3 text-slate-600" [class.line-through]="p.anulado">{{ fecha(p.fecha_pago) }}</td>
-                            <td class="px-5 py-3 text-slate-600">{{ p.metodo_pago }}</td>
+                            <td class="px-5 py-3 text-slate-600">{{ resumenPago(p).etiquetaMetodo }}</td>
                             <td class="px-5 py-3 text-right font-semibold"
                                 [class.text-slate-400]="p.anulado"
                                 [class.line-through]="p.anulado"
                                 [class.text-slate-800]="!p.anulado">
-                              {{ moneda(p.monto_total) }}
+                              {{ moneda(resumenPago(p).importeRecibo) }}
                             </td>
                             <td class="px-5 py-3 text-center">
                               @if (!p.anulado) {
@@ -319,7 +319,7 @@ const MESES: ReadonlyArray<string> = [
                       @for (p of historial(); track p.id) {
                         <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex justify-between items-center" [class.opacity-60]="p.anulado">
                           <div>
-                            <p class="font-bold text-slate-800 text-base" [class.line-through]="p.anulado">{{ p.metodo_pago }}</p>
+                            <p class="font-bold text-slate-800 text-base" [class.line-through]="p.anulado">{{ resumenPago(p).etiquetaMetodo }}</p>
                             <p class="text-sm text-slate-500">{{ fecha(p.fecha_pago) }}</p>
                             @if (p.anulado) {
                               <span class="mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Anulado</span>
@@ -336,7 +336,7 @@ const MESES: ReadonlyArray<string> = [
                             }
                           </div>
                           <div class="text-right">
-                            <p class="text-xl font-bold" [class]="p.anulado ? 'text-slate-400 line-through' : 'text-slate-800'">{{ moneda(p.monto_total) }}</p>
+                            <p class="text-xl font-bold" [class]="p.anulado ? 'text-slate-400 line-through' : 'text-slate-800'">{{ moneda(resumenPago(p).importeRecibo) }}</p>
                           </div>
                         </div>
                       }
@@ -497,12 +497,17 @@ export class ConsultasComponent {
     return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto);
   }
 
+  resumenPago(pago: PagoHistorial) {
+    return resumirPagoConSaldo(pago);
+  }
+
   async abrirReciboPdf(pago: PagoHistorial): Promise<void> {
     const sel = this.seleccionado();
     if (!sel) return;
 
     this.generandoPdfId.set(pago.id);
     try {
+      const res = resumirPagoConSaldo(pago);
       const datos: ReciboDatos = {
         codigo_transaccion: pago.codigo_transaccion,
         fecha_pago:         new Date(pago.fecha_pago),
@@ -523,8 +528,10 @@ export class ConsultasComponent {
           aplicado:           det.monto_aplicado,
           cubierto_completo:  det.monto_aplicado >= det.monto_original * 0.99,
         })),
-        total_pagado:  pago.monto_total,
-        saldo_a_favor: 0,
+        total_pagado:    res.importeRecibo,
+        saldo_a_favor:   0,
+        monto_recibido:  res.montoCaja,
+        saldo_utilizado: res.saldoUtilizado,
       };
       await this.pdfSvc.generarYAbrir(datos);
     } catch (e: unknown) {

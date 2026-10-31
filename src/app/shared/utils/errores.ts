@@ -21,7 +21,10 @@ const PATRONES: Array<{ re: RegExp; msg: string }> = [
 
 /** Heurística: los mensajes de los RPCs propios vienen en español legible. */
 function pareceMensajePropio(msg: string): boolean {
-  return /[áéíóúñ¿¡]| el | la | de | no | ya /i.test(msg) && !/constraint|violates|jsonb|syntax/i.test(msg);
+  return (
+    (/[áéíóúñ¿¡]/i.test(msg) || /\b(el|la|los|las|de|del|no|ya|debe|puede|saldo|monto|deuda|puesto|acceso)\b/i.test(msg)) &&
+    !/constraint|violates|jsonb|syntax/i.test(msg)
+  );
 }
 
 export function mensajeAmigable(e: unknown, fallback: string): string {

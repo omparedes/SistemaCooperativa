@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CuentaCorrienteService } from './cuenta-corriente.service';
+import { resumirPagoConSaldo } from '../pagos/pago.model';
 import {
   DeudaItem,
   EditarPagoForm,
@@ -278,14 +279,18 @@ type Tab = 'deudas' | 'pagos';
                       </td>
                       <td class="px-5 py-3.5">
                         <span class="rounded-full px-2 py-0.5 text-xs"
-                              [class]="pg.metodo_pago === 'Efectivo'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'">
-                          {{ pg.metodo_pago }}
+                              [class]="resumenPago(pg).esSoloSaldoFavor
+                                ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                                : resumenPago(pg).esMixto
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                  : pg.metodo_pago === 'Efectivo'
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'">
+                          {{ resumenPago(pg).etiquetaMetodo }}
                         </span>
                       </td>
                       <td class="px-5 py-3.5 text-right font-bold text-gray-800 dark:text-white">
-                        {{ formatSoles(pg.monto_total) }}
+                        {{ formatSoles(resumenPago(pg).importeRecibo) }}
                       </td>
                       <td class="px-5 py-3.5">
                         <div class="flex flex-wrap gap-1">
@@ -545,7 +550,7 @@ type Tab = 'deudas' | 'pagos';
           <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800/40 dark:bg-red-900/20">
             <p class="text-sm text-red-700 dark:text-red-300">
               ¿Estás seguro de anular el abono por
-              <strong>{{ formatSoles(modalAnularPago()!.monto_total) }}</strong>
+              <strong>{{ formatSoles(resumenPago(modalAnularPago()!).importeRecibo) }}</strong>
               @if (modalAnularPago()!.comprobante) {
                 con recibo <strong>{{ modalAnularPago()!.comprobante }}</strong>
               }
@@ -670,6 +675,7 @@ export class CuentaCorrienteDetailComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly formatSoles  = formatSoles;
+  readonly resumenPago  = resumirPagoConSaldo;
   readonly formatPeriodo = formatPeriodo;
   readonly formatFecha  = formatFecha;
   readonly mesesOpts    = MESES_NOMBRES.slice(1).map((l, i) => ({ label: l, v: i + 1 }));

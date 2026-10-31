@@ -7,7 +7,7 @@ import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DeudaPendiente, SocioDetalle } from './socio.model';
-import { PagoHistorial } from '../pagos/pago.model';
+import { PagoHistorial, resumirPagoConSaldo } from '../pagos/pago.model';
 import { BeneficiosService, BeneficioSocio } from '../../core/services/beneficios.service';
 import { FormsModule } from '@angular/forms';
 
@@ -314,13 +314,21 @@ const MOTIVOS_ANULACION = [
                               [ngClass]="p.anulado
                                 ? 'line-through text-gray-400 dark:text-gray-500'
                                 : 'text-gray-900 dark:text-white'">
-                              S/ {{ p.monto_total.toFixed(2) }}
+                              S/ {{ resumenPago(p).importeRecibo.toFixed(2) }}
                             </td>
 
                             <!-- Método -->
                             <td class="px-3 py-2.5 text-center">
                               @if (!p.anulado) {
-                                @if (p.metodo_pago === 'Efectivo') {
+                                @if (resumenPago(p).esSoloSaldoFavor) {
+                                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                    Saldo a favor
+                                  </span>
+                                } @else if (resumenPago(p).esMixto) {
+                                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                                    {{ resumenPago(p).etiquetaMetodo }}
+                                  </span>
+                                } @else if (p.metodo_pago === 'Efectivo') {
                                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300">
                                     Efectivo
                                   </span>
@@ -728,7 +736,7 @@ const MOTIVOS_ANULACION = [
             <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
               <strong class="block mb-0.5">Acción irreversible</strong>
               El recibo quedará marcado como anulado y las deudas asociadas
-              (S/ {{ pagoAAnular()?.monto_total?.toFixed(2) }}) volverán a estado
+              (S/ {{ pagoAAnular() ? resumenPago(pagoAAnular()!).importeRecibo.toFixed(2) : '0.00' }}) volverán a estado
               <strong>Pendiente</strong> para recobrarse correctamente.
             </div>
 
@@ -1024,12 +1032,17 @@ export class SocioDetailComponent implements OnDestroy {
 
   // ─── PDF ───────────────────────────────────────────────────────────────────
 
+  resumenPago(pago: PagoHistorial) {
+    return resumirPagoConSaldo(pago);
+  }
+
   async abrirReciboPdf(pago: PagoHistorial): Promise<void> {
     const d = this.detalle();
     if (!d) return;
 
     this.generandoPdfId.set(pago.id);
     try {
+      const res = resumirPagoConSaldo(pago);
       const datos: ReciboDatos = {
         codigo_transaccion: pago.codigo_transaccion,
         fecha_pago:         new Date(pago.fecha_pago),
@@ -1049,8 +1062,10 @@ export class SocioDetailComponent implements OnDestroy {
           aplicado:           det.monto_aplicado,
           cubierto_completo:  det.monto_aplicado >= det.monto_original * 0.99,
         })),
-        total_pagado:  pago.monto_total,
-        saldo_a_favor: 0,
+        total_pagado:    res.importeRecibo,
+        saldo_a_favor:   0,
+        monto_recibido:  res.montoCaja,
+        saldo_utilizado: res.saldoUtilizado,
       };
       await this.pdfSvc.generarYAbrir(datos);
     } catch (e: unknown) {

@@ -1,9 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { SUPABASE_CLIENT } from './supabase.client';
-import type {
+import {
   BusquedaResultado,
   DeudaItem,
   PagoHistorial,
+  resumirPagoConSaldo,
   TipoPagador,
 } from '../../pages/pagos/pago.model';
 
@@ -53,6 +54,25 @@ export class ConsultasPublicasService {
     });
 
     if (error) throw new Error(error.message);
-    return (data as unknown as PagoHistorial[]) ?? [];
+    const items = (data as unknown as PagoHistorial[]) ?? [];
+    return items.map(p => {
+      const detalle = (p.detalle ?? []).map(d => ({
+        ...d,
+        monto_aplicado: Number(d.monto_aplicado),
+        monto_original: Number(d.monto_original ?? d.monto_aplicado),
+      }));
+      const resumen = resumirPagoConSaldo({
+        monto_total: Number(p.monto_total),
+        metodo_pago: p.metodo_pago,
+        detalle,
+      });
+      return {
+        ...p,
+        monto_total: resumen.montoCaja,
+        total_aplicado: resumen.totalAplicado,
+        saldo_utilizado: resumen.saldoUtilizado,
+        detalle,
+      };
+    });
   }
 }

@@ -481,7 +481,7 @@ function formatSoles(n: number): string {
             <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
               <span class="font-medium">{{ seleccionado()!.nombre_completo }}</span> ·
               Puesto {{ seleccionado()!.codigo_puesto }} ·
-              {{ formatSoles(totalAplicado()) }} · {{ metodoPago() }}
+              {{ formatSoles(totalAplicado()) }} · {{ etiquetaMetodoResumen() }}
             </p>
             <div class="mt-6 flex justify-center gap-3">
               <button
@@ -531,10 +531,12 @@ function formatSoles(n: number): string {
               </div>
               <div class="rounded-xl bg-gray-50 p-3 dark:bg-gray-700/50">
                 <p class="text-xs text-gray-400 dark:text-gray-500">Método</p>
-                <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">{{ metodoPago() }}</p>
+                <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">{{ etiquetaMetodoResumen() }}</p>
               </div>
               <div class="rounded-xl bg-brand-50 p-3 dark:bg-brand-900/20">
-                <p class="text-xs text-brand-400 dark:text-brand-500">Total cobrado</p>
+                <p class="text-xs text-brand-400 dark:text-brand-500">
+                  {{ montoRecibido() === 0 && saldoUtilizado() > 0 ? 'Total aplicado' : 'Total cobrado' }}
+                </p>
                 <p class="mt-1 text-lg font-bold text-brand-600 dark:text-brand-400">{{ formatSoles(totalAplicado()) }}</p>
               </div>
             </div>
@@ -926,7 +928,16 @@ export class PagoWizardComponent implements OnInit {
     this.paso.set(3);
   }
 
+  readonly etiquetaMetodoResumen = computed(() => {
+    const recibido = this.montoRecibido();
+    const saldoUso = this.saldoUtilizado();
+    if (recibido === 0 && saldoUso > 0) return 'Aplicación de saldo a favor';
+    if (recibido > 0 && saldoUso > 0) return `${this.metodoPago()} + Saldo a favor`;
+    return this.metodoPago();
+  });
+
   async confirmarPago(): Promise<void> {
+    if (this.guardando() || this.codigoTransaccion()) return;
     const sel = this.seleccionado();
     if (!sel || this.totalAplicado() <= 0) return;
 
@@ -979,6 +990,8 @@ export class PagoWizardComponent implements OnInit {
         })),
       total_pagado: this.totalAplicado(),
       saldo_a_favor: this.saldoRestante(),
+      monto_recibido: this.montoRecibido(),
+      saldo_utilizado: this.saldoUtilizado(),
     };
 
     this.generandoPdf.set(true);

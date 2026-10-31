@@ -6,6 +6,7 @@ import {
   LineaFifo,
   MetodoPago,
   PagoHistorial,
+  resumirPagoConSaldo,
   TipoPagador,
 } from '../../pages/pagos/pago.model';
 
@@ -330,7 +331,6 @@ export class PagosService {
         )
       `)
       .eq(campo, id)
-      // Sin filtro deleted_at: incluimos anulados para mostrarlos con estilo distinto
       .order('fecha_pago', { ascending: false })
       .limit(100);
 
@@ -338,29 +338,37 @@ export class PagosService {
 
     return ((data ?? []) as unknown as PagoHistorialRow[]).map(r => {
       const pagoAnulado = r.deleted_at !== null;
+      const detalle = (r.detalle ?? [])
+        .filter(d => pagoAnulado || d.deleted_at === null)
+        .map(d => ({
+          monto_aplicado: Number(d.monto_aplicado),
+          concepto:      d.monto_cobrar?.concepto?.nombre ?? 'Concepto eliminado',
+          codigo_puesto: d.monto_cobrar?.puesto?.codigo_puesto ?? null,
+          periodo_anio:  d.monto_cobrar?.periodo_anio ?? 0,
+          periodo_mes:   d.monto_cobrar?.periodo_mes ?? 0,
+          monto_original: Number(d.monto_cobrar?.monto ?? d.monto_aplicado),
+        }));
+
+      const resumen = resumirPagoConSaldo({
+        monto_total: Number(r.monto_total),
+        metodo_pago: r.metodo_pago,
+        detalle,
+      });
+
       return {
         id: r.id,
         codigo_transaccion: r.codigo_transaccion,
         fecha_pago: r.fecha_pago,
-        monto_total: Number(r.monto_total),
+        monto_total: resumen.montoCaja,
+        total_aplicado: resumen.totalAplicado,
+        saldo_utilizado: resumen.saldoUtilizado,
         metodo_pago: r.metodo_pago as MetodoPago,
         comprobante: r.comprobante,
         codigo_puesto: r.puesto?.codigo_puesto ?? '—',
         anulado: pagoAnulado,
         motivo_anulacion: r.motivo_anulacion,
         deleted_at: r.deleted_at,
-        detalle: (r.detalle ?? [])
-          // Para pagos anulados: mostramos todos los detalles (incluso los soft-deleted)
-          // para ver los conceptos que contenía. Para pagos vigentes: solo activos.
-          .filter(d => pagoAnulado || d.deleted_at === null)
-          .map(d => ({
-            monto_aplicado: Number(d.monto_aplicado),
-            concepto:      d.monto_cobrar?.concepto?.nombre ?? 'Concepto eliminado',
-            codigo_puesto: d.monto_cobrar?.puesto?.codigo_puesto ?? null,
-            periodo_anio:  d.monto_cobrar?.periodo_anio ?? 0,
-            periodo_mes:   d.monto_cobrar?.periodo_mes ?? 0,
-            monto_original: Number(d.monto_cobrar?.monto ?? d.monto_aplicado),
-          })),
+        detalle,
       };
     });
   }

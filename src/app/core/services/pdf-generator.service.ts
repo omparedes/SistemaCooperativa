@@ -155,6 +155,10 @@ export interface ReciboDatos {
   detalle: LinhaRecibo[];
   total_pagado: number;
   saldo_a_favor: number;
+  /** Dinero nuevo ingresado en caja/banco en esta operación (0 si fue 100 % con saldo a favor). */
+  monto_recibido?: number;
+  /** Saldo a favor acumulado aplicado en esta operación. */
+  saldo_utilizado?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -1774,6 +1778,23 @@ export class PdfGeneratorService {
       { text: cfg.subtitulo, fontSize: 9, color: R.grisTxt, alignment: 'center', margin: [0, 2, 0, 0] } as unknown as DocDefinition,
     );
 
+    // ── Cálculo de modalidad de pago (Efectivo / Mixto / Saldo a favor) ───────
+    const sumaAplicada = Math.round(d.detalle.reduce((s, l) => s + Number(l.aplicado ?? 0), 0) * 100) / 100;
+    const montoRecibido = d.monto_recibido !== undefined ? Number(d.monto_recibido) : Number(d.total_pagado);
+    const saldoUtilizado = d.saldo_utilizado !== undefined
+      ? Number(d.saldo_utilizado)
+      : Math.max(0, Math.round((sumaAplicada - montoRecibido) * 100) / 100);
+    const esSoloSaldoFavor = montoRecibido === 0 && saldoUtilizado > 0;
+    const esMixto = montoRecibido > 0 && saldoUtilizado > 0;
+    const totalMostrar = sumaAplicada > 0 && (esSoloSaldoFavor || esMixto) ? sumaAplicada : d.total_pagado;
+
+    let metodoPagoBase: string = d.metodo_pago;
+    if (esSoloSaldoFavor) {
+      metodoPagoBase = 'Aplicación de saldo a favor';
+    } else if (esMixto) {
+      metodoPagoBase = `${d.metodo_pago} (S/ ${montoRecibido.toFixed(2)}) + Saldo a favor (S/ ${saldoUtilizado.toFixed(2)})`;
+    }
+
     // ── Tabla de datos del pagador ────────────────────────────────────────────
     const filasPagador = [
       [etqR('Nombre completo', R), valR(d.nombre_pagador, R)],
@@ -1781,7 +1802,7 @@ export class PdfGeneratorService {
       [etqR('Condición',       R), valR(d.tipo_pagador, R)],
       [etqR('Puesto / Módulo', R), valR(d.codigo_puesto, R)],
       [etqR('Método de pago',  R), valR(
-        d.comprobante ? `${d.metodo_pago}  —  Ref: ${d.comprobante}` : d.metodo_pago, R,
+        d.comprobante ? `${metodoPagoBase}  —  Ref: ${d.comprobante}` : metodoPagoBase, R,
       )],
       ...(d.observacion ? [[etqR('Observaciones', R), valR(d.observacion, R)]] : []),
     ];
@@ -1800,14 +1821,23 @@ export class PdfGeneratorService {
     ]);
 
     const filaTotalDetalle = [
-      { text: 'TOTAL COBRADO', fontSize: 10, bold: true, color: R.primario, colSpan: 3, alignment: 'right' as const },
+      { text: esSoloSaldoFavor ? 'TOTAL APLICADO' : 'TOTAL COBRADO', fontSize: 10, bold: true, color: R.primario, colSpan: 3, alignment: 'right' as const },
       {}, {},
-      { text: d.total_pagado.toFixed(2), fontSize: 13, bold: true, color: R.acento, alignment: 'right' as const },
+      { text: totalMostrar.toFixed(2), fontSize: 13, bold: true, color: R.acento, alignment: 'right' as const },
       {},
     ];
 
-    const bloquesSaldoFavor = d.saldo_a_favor > 0
-      ? [{ text: `Saldo a favor del pagador: S/ ${d.saldo_a_favor.toFixed(2)} (excedente no aplicado en esta operación)`, fontSize: 8.5, italics: true, color: R.primario, margin: [0, 0, 0, 24] as [number, number, number, number] }]
+    const notasPie: string[] = [];
+    if (esSoloSaldoFavor) {
+      notasPie.push(`Cancelado íntegramente mediante aplicación de saldo a favor acumulado (S/ ${saldoUtilizado.toFixed(2)}). Nuevo ingreso en caja: S/ 0.00.`);
+    } else if (esMixto) {
+      notasPie.push(`Desglose del pago: ${d.metodo_pago} recibido S/ ${montoRecibido.toFixed(2)} + Saldo a favor aplicado S/ ${saldoUtilizado.toFixed(2)}.`);
+    }
+    if (d.saldo_a_favor > 0) {
+      notasPie.push(`Saldo a favor restante del pagador: S/ ${d.saldo_a_favor.toFixed(2)}.`);
+    }
+    const bloquesSaldoFavor = notasPie.length > 0
+      ? [{ text: notasPie.join('  ·  '), fontSize: 8.5, italics: true, color: R.primario, margin: [0, 0, 0, 24] as [number, number, number, number] }]
       : [];
 
     // ── Helpers de celda con color dinámico ───────────────────────────────────
@@ -1890,7 +1920,7 @@ export class PdfGeneratorService {
             ],
           },
           layout: layoutDetalle,
-          margin: [0, 0, 0, d.saldo_a_favor > 0 ? 8 : 24],
+          margin: [0, 0, 0, notasPie.length > 0 ? 8 : 24],
         },
 
         ...bloquesSaldoFavor,
