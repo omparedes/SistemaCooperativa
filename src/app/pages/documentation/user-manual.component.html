@@ -7,10 +7,10 @@
       <p class="text-lg text-gray-600 dark:text-gray-400">Guía de Operación General del ERP — Cooperativa Primero de Mayo</p>
       <div class="mt-4 flex flex-wrap gap-6 text-sm text-gray-500 dark:text-gray-400">
         <div class="flex items-center gap-2">
-          <span class="font-semibold">Versión:</span> 2.0 (Producción)
+          <span class="font-semibold">Versión:</span> {{ versionData.versionActual }} ({{ versionData.ambiente }})
         </div>
         <div class="flex items-center gap-2">
-          <span class="font-semibold">Actualización:</span> Mayo 2026
+          <span class="font-semibold">Actualización:</span> {{ versionData.fechaActualizacion }}
         </div>
       </div>
     </header>

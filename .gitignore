@@ -51,14 +51,21 @@ Thumbs.db
 /supabase/.branches
 /supabase/.temp
 /supabase/.env
+/supabase/doc/
 
 /migracion_coop
 
 # Documentación interna de mejora continua (no publicar)
 /plan_mejora
 
-# Archivos sensibles — nunca deben entrar al repo
+# Archivos sensibles y volcados de datos — NUNCA deben entrar al repo
+/data_exports/
+/consolidados/
+/consolidados_inquilinos/
+/docs/reports/
+*.csv
 backup_*.sql
 *.dump
 informe_*.md
 scratch/
+env

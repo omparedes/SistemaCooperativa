@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { APP_VERSION_DATA } from '../../core/config/version.config';
 
 @Component({
     selector: 'app-documentation',
@@ -7,4 +8,6 @@ import { CommonModule } from '@angular/common';
     imports: [CommonModule],
     templateUrl: './documentation.component.html',
 })
-export class DocumentationComponent { }
+export class DocumentationComponent {
+    readonly versionData = APP_VERSION_DATA;
+}

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { AppSidebarComponent } from '../app-sidebar/app-sidebar.component';
 import { BackdropComponent } from '../backdrop/backdrop.component';
 import { RouterModule } from '@angular/router';
 import { AppHeaderComponent } from '../app-header/app-header.component';
+import { APP_VERSION_DATA } from '../../../core/config/version.config';
 
 @Component({
   selector: 'app-layout',
@@ -17,16 +18,36 @@ import { AppHeaderComponent } from '../app-header/app-header.component';
   ],
   templateUrl: './app-layout.component.html',
 })
-
-export class AppLayoutComponent {
+export class AppLayoutComponent implements OnInit {
   readonly isExpanded$;
   readonly isHovered$;
   readonly isMobileOpen$;
+
+  readonly versionActual = APP_VERSION_DATA.versionActual;
+  readonly mostrarAvisoVersion = signal(false);
 
   constructor(public sidebarService: SidebarService) {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isHovered$ = this.sidebarService.isHovered$;
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
+  }
+
+  ngOnInit(): void {
+    try {
+      const ack = localStorage.getItem('erp_last_ack_version');
+      if (ack !== this.versionActual) {
+        this.mostrarAvisoVersion.set(true);
+      }
+    } catch {
+      // Ignorar si localStorage no está disponible
+    }
+  }
+
+  descartarAvisoVersion(): void {
+    this.mostrarAvisoVersion.set(false);
+    try {
+      localStorage.setItem('erp_last_ack_version', this.versionActual);
+    } catch {}
   }
 
   get containerClasses() {
@@ -39,5 +60,4 @@ export class AppLayoutComponent {
       this.isMobileOpen$ ? 'ml-0' : ''
     ];
   }
-
 }

@@ -260,6 +260,13 @@ export const routes: Routes = [
             path: 'tecnica',
             component: DocumentationComponent,
             title: 'Documentación Técnica | Cooperativa Primero de Mayo'
+          },
+          {
+            path: 'novedades',
+            loadComponent: () =>
+              import('./pages/documentation/novedades.component')
+                .then(m => m.NovedadesComponent),
+            title: 'Novedades y Registro de Versiones | Cooperativa Primero de Mayo'
           }
         ]
       },
