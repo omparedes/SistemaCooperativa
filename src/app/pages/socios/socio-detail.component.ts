@@ -521,11 +521,19 @@ const MOTIVOS_ANULACION = [
                     <p class="text-xs text-gray-500">Dietas otorgadas a este socio.</p>
                   </div>
                   @if (authSvc.esAdmin()) {
-                    <button (click)="abrirModalBeneficio('dieta')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
+                    <button (click)="abrirModalBeneficio('dieta')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition">
                       + Nueva Dieta
                     </button>
                   }
                 </div>
+
+                @if (beneficioExito()) {
+                  <div class="mb-4 flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+                    <span>{{ beneficioExito() }}</span>
+                    <button type="button" (click)="beneficioExito.set(null)" class="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400">✕</button>
+                  </div>
+                }
+
                 @if (dietasLoading()) {
                   <div class="py-12 flex items-center justify-center gap-3 text-gray-400">
                     <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
@@ -547,6 +555,9 @@ const MOTIVOS_ANULACION = [
                           <th class="px-4 py-3">Fecha</th>
                           <th class="px-4 py-3">Concepto</th>
                           <th class="px-4 py-3 text-right">Monto</th>
+                          @if (authSvc.esAdmin()) {
+                            <th class="px-4 py-3 text-center w-28">Acciones</th>
+                          }
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -555,11 +566,35 @@ const MOTIVOS_ANULACION = [
                             <td class="px-4 py-3 whitespace-nowrap">{{ d.fecha | date:'dd/MM/yyyy' }}</td>
                             <td class="px-4 py-3">
                               <span class="block font-medium text-gray-900 dark:text-white">{{ d.motivo || '—' }}</span>
-                              @if (d.observacion) { <span class="block text-xs text-gray-500">{{ d.observacion }}</span> }
+                              @if (d.observacion) { <span class="block text-xs text-gray-500 dark:text-gray-400">{{ d.observacion }}</span> }
                             </td>
-                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
                               S/ {{ d.monto | number:'1.2-2' }}
                             </td>
+                            @if (authSvc.esAdmin()) {
+                              <td class="px-4 py-3 text-center whitespace-nowrap">
+                                <div class="inline-flex items-center justify-center gap-1">
+                                  <button type="button"
+                                    (click)="abrirModalEditarBeneficio(d)"
+                                    title="Editar dieta"
+                                    class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-900/20 transition">
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Editar
+                                  </button>
+                                  <button type="button"
+                                    (click)="abrirModalEliminarBeneficio(d)"
+                                    title="Eliminar dieta"
+                                    class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition">
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Eliminar
+                                  </button>
+                                </div>
+                              </td>
+                            }
                           </tr>
                         }
                       </tbody>
@@ -576,11 +611,19 @@ const MOTIVOS_ANULACION = [
                     <p class="text-xs text-gray-500">Apoyos económicos entregados.</p>
                   </div>
                   @if (authSvc.esAdmin()) {
-                    <button (click)="abrirModalBeneficio('provision_social')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg">
+                    <button (click)="abrirModalBeneficio('provision_social')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium rounded-lg transition">
                       + Nueva Provisión
                     </button>
                   }
                 </div>
+
+                @if (beneficioExito()) {
+                  <div class="mb-4 flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+                    <span>{{ beneficioExito() }}</span>
+                    <button type="button" (click)="beneficioExito.set(null)" class="text-emerald-600 hover:text-emerald-800 dark:text-emerald-400">✕</button>
+                  </div>
+                }
+
                 @if (provisionSocialLoading()) {
                   <div class="py-12 flex items-center justify-center gap-3 text-gray-400">
                     <span class="inline-block h-4 w-4 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></span>
@@ -602,6 +645,9 @@ const MOTIVOS_ANULACION = [
                           <th class="px-4 py-3">Fecha</th>
                           <th class="px-4 py-3">Motivo</th>
                           <th class="px-4 py-3 text-right">Monto</th>
+                          @if (authSvc.esAdmin()) {
+                            <th class="px-4 py-3 text-center w-28">Acciones</th>
+                          }
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -610,11 +656,35 @@ const MOTIVOS_ANULACION = [
                             <td class="px-4 py-3 whitespace-nowrap">{{ p.fecha | date:'dd/MM/yyyy' }}</td>
                             <td class="px-4 py-3">
                               <span class="block font-medium text-gray-900 dark:text-white">{{ p.motivo || '—' }}</span>
-                              @if (p.observacion) { <span class="block text-xs text-gray-500">{{ p.observacion }}</span> }
+                              @if (p.observacion) { <span class="block text-xs text-gray-500 dark:text-gray-400">{{ p.observacion }}</span> }
                             </td>
-                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                            <td class="px-4 py-3 text-right font-medium text-gray-900 dark:text-white whitespace-nowrap">
                               S/ {{ p.monto | number:'1.2-2' }}
                             </td>
+                            @if (authSvc.esAdmin()) {
+                              <td class="px-4 py-3 text-center whitespace-nowrap">
+                                <div class="inline-flex items-center justify-center gap-1">
+                                  <button type="button"
+                                    (click)="abrirModalEditarBeneficio(p)"
+                                    title="Editar provisión social"
+                                    class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-900/20 transition">
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Editar
+                                  </button>
+                                  <button type="button"
+                                    (click)="abrirModalEliminarBeneficio(p)"
+                                    title="Eliminar provisión social"
+                                    class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition">
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Eliminar
+                                  </button>
+                                </div>
+                              </td>
+                            }
                           </tr>
                         }
                       </tbody>
@@ -631,7 +701,7 @@ const MOTIVOS_ANULACION = [
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════ -->
-    <!-- MODAL BENEFICIOS (DIETAS / PROVISION SOCIAL)                            -->
+    <!-- MODAL BENEFICIOS (CREAR / EDITAR DIETA O PROVISIÓN SOCIAL)              -->
     <!-- ═══════════════════════════════════════════════════════════════════════ -->
     @if (modalBeneficioAbierto()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
@@ -642,10 +712,14 @@ const MOTIVOS_ANULACION = [
           <div class="flex items-start justify-between p-5 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                {{ modalBeneficioTipo() === 'dieta' ? 'Nueva Dieta' : 'Nueva Provisión Social' }}
+                @if (beneficioEditandoId() !== null) {
+                  {{ modalBeneficioTipo() === 'dieta' ? 'Editar Dieta' : 'Editar Provisión Social' }}
+                } @else {
+                  {{ modalBeneficioTipo() === 'dieta' ? 'Nueva Dieta' : 'Nueva Provisión Social' }}
+                }
               </h3>
             </div>
-            <button (click)="cerrarModalBeneficio()" class="text-gray-400 hover:text-gray-600 transition">
+            <button type="button" (click)="cerrarModalBeneficio()" class="text-gray-400 hover:text-gray-600 transition">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -660,34 +734,39 @@ const MOTIVOS_ANULACION = [
             }
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha <span class="text-red-500">*</span></label>
               <input type="date" required [(ngModel)]="beneficioForm.fecha" name="fecha"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-brand-500 focus:border-brand-500">
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto (S/)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto (S/) <span class="text-red-500">*</span></label>
               <input type="number" required min="0.01" step="0.01" [(ngModel)]="beneficioForm.monto" name="monto"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-brand-500 focus:border-brand-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {{ modalBeneficioTipo() === 'dieta' ? 'Concepto' : 'Motivo' }}
+                {{ modalBeneficioTipo() === 'dieta' ? 'Concepto o descripción' : 'Motivo' }} <span class="text-red-500">*</span>
               </label>
-              <input type="text" required [(ngModel)]="beneficioForm.motivo" name="motivo" placeholder="Ej. Asistencia a asamblea"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+              <input type="text" required [(ngModel)]="beneficioForm.motivo" name="motivo"
+                [placeholder]="modalBeneficioTipo() === 'dieta' ? 'Ej. Dieta mes de enero al cargo de...' : 'Ej. Previsión social por salud...'"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-brand-500 focus:border-brand-500">
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones (Opcional)</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {{ modalBeneficioTipo() === 'dieta' ? 'Referencia de recibo (RC) / Observaciones' : 'Observaciones / Referencia de recibo (Opcional)' }}
+              </label>
               <textarea [(ngModel)]="beneficioForm.observacion" name="observacion" rows="2"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500"></textarea>
+                placeholder="Ej. RC 8532"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-brand-500 focus:border-brand-500"></textarea>
             </div>
 
             <div class="pt-4 flex gap-3">
               <button type="button" (click)="cerrarModalBeneficio()"
-                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                [disabled]="beneficioGuardando()"
+                class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition disabled:opacity-50">
                 Cancelar
               </button>
               <button type="submit" [disabled]="beneficioGuardando()"
@@ -696,11 +775,91 @@ const MOTIVOS_ANULACION = [
                   <span class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   Guardando...
                 } @else {
-                  Guardar
+                  {{ beneficioEditandoId() !== null ? 'Guardar cambios' : 'Guardar' }}
                 }
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL CONFIRMAR ELIMINACIÓN DE BENEFICIO (DIETA / PROVISIÓN SOCIAL)     -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (modalEliminarBeneficioAbierto() && beneficioAEliminar(); as ben) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        (click)="cerrarModalEliminarBeneficio()">
+        <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden"
+          (click)="$event.stopPropagation()">
+
+          <div class="flex items-start justify-between p-5 border-b border-gray-200 dark:border-gray-700">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ ben.tipo === 'dieta' ? 'Eliminar Dieta' : 'Eliminar Provisión Social' }}
+              </h3>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                Confirma los datos del registro antes de continuar
+              </p>
+            </div>
+            <button type="button" (click)="cerrarModalEliminarBeneficio()"
+              [disabled]="beneficioEliminando()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <div class="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3.5 text-xs text-red-800 dark:text-red-300 leading-relaxed">
+              ¿Estás seguro de que deseas eliminar este registro? El movimiento dejará de mostrarse en el historial del socio y en los reportes de {{ ben.tipo === 'dieta' ? 'Dietas' : 'Provisión Social' }}.
+            </div>
+
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 space-y-2.5 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Fecha:</span>
+                <span class="font-medium text-gray-900 dark:text-white">{{ ben.fecha | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div>
+                <span class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+                  {{ ben.tipo === 'dieta' ? 'Concepto:' : 'Motivo:' }}
+                </span>
+                <span class="block font-medium text-gray-900 dark:text-white break-words">{{ ben.motivo || '—' }}</span>
+                @if (ben.observacion) {
+                  <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ ben.observacion }}</span>
+                }
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Monto:</span>
+                <span class="text-base font-bold text-gray-900 dark:text-white">S/ {{ ben.monto | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            @if (beneficioEliminarError()) {
+              <div class="p-3 rounded-lg bg-red-50 text-red-700 text-xs border border-red-200">
+                {{ beneficioEliminarError() }}
+              </div>
+            }
+          </div>
+
+          <div class="flex gap-3 px-5 pb-5">
+            <button type="button" (click)="cerrarModalEliminarBeneficio()"
+              [disabled]="beneficioEliminando()"
+              class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-50">
+              Cancelar
+            </button>
+            <button type="button" (click)="confirmarEliminarBeneficio()"
+              [disabled]="beneficioEliminando()"
+              class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-red-300 dark:disabled:bg-red-900 text-white text-sm font-semibold transition disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              @if (beneficioEliminando()) {
+                <span class="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Eliminando...
+              } @else {
+                Confirmar eliminación
+              }
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -852,12 +1011,19 @@ export class SocioDetailComponent implements OnDestroy {
   readonly provisionSocialLoading = signal(false);
   readonly provisionSocialError   = signal<string | null>(null);
 
-  // Modal Beneficios
-  readonly modalBeneficioAbierto  = signal(false);
-  readonly modalBeneficioTipo     = signal<'dieta' | 'provision_social'>('dieta');
-  readonly beneficioGuardando     = signal(false);
-  readonly beneficioError         = signal<string | null>(null);
+  // Modal Beneficios (Crear / Editar / Eliminar)
+  readonly modalBeneficioAbierto         = signal(false);
+  readonly modalBeneficioTipo            = signal<'dieta' | 'provision_social'>('dieta');
+  readonly beneficioEditandoId           = signal<number | null>(null);
+  readonly beneficioGuardando            = signal(false);
+  readonly beneficioError                = signal<string | null>(null);
+  readonly beneficioExito                = signal<string | null>(null);
   beneficioForm = { fecha: '', monto: 0, motivo: '', observacion: '' };
+
+  readonly modalEliminarBeneficioAbierto = signal(false);
+  readonly beneficioAEliminar            = signal<BeneficioSocio | null>(null);
+  readonly beneficioEliminando           = signal(false);
+  readonly beneficioEliminarError        = signal<string | null>(null);
 
   readonly modalAnularAbierto  = signal(false);
   readonly pagoAAnular         = signal<PagoHistorial | null>(null);
@@ -1111,51 +1277,165 @@ export class SocioDetailComponent implements OnDestroy {
     }
   }
 
+  private mostrarExitoBeneficio(mensaje: string): void {
+    this.beneficioExito.set(mensaje);
+    setTimeout(() => {
+      if (this.beneficioExito() === mensaje) {
+        this.beneficioExito.set(null);
+      }
+    }, 4500);
+  }
+
   abrirModalBeneficio(tipo: 'dieta' | 'provision_social'): void {
+    if (!this.authSvc.esAdmin()) return;
     const d = new Date();
     this.beneficioForm = {
       fecha: d.toISOString().split('T')[0],
       monto: 0,
       motivo: '',
-      observacion: ''
+      observacion: '',
     };
+    this.beneficioEditandoId.set(null);
     this.modalBeneficioTipo.set(tipo);
     this.beneficioError.set(null);
     this.modalBeneficioAbierto.set(true);
   }
 
+  abrirModalEditarBeneficio(registro: BeneficioSocio): void {
+    if (!this.authSvc.esAdmin()) return;
+    this.beneficioForm = {
+      fecha: (registro.fecha ?? '').slice(0, 10),
+      monto: Number(registro.monto),
+      motivo: (registro.motivo ?? '').trim(),
+      observacion: (registro.observacion ?? '').trim(),
+    };
+    this.beneficioEditandoId.set(registro.id);
+    this.modalBeneficioTipo.set(registro.tipo);
+    this.beneficioError.set(null);
+    this.modalBeneficioAbierto.set(true);
+  }
+
   cerrarModalBeneficio(): void {
+    if (this.beneficioGuardando()) return;
     this.modalBeneficioAbierto.set(false);
+    this.beneficioEditandoId.set(null);
   }
 
   async guardarBeneficio(): Promise<void> {
+    if (this.beneficioGuardando()) return;
     const id = this.socioId();
     if (!id) return;
+
+    const fecha = (this.beneficioForm.fecha ?? '').trim();
+    const monto = Number(this.beneficioForm.monto);
+    const motivo = (this.beneficioForm.motivo ?? '').trim();
+    const observacion = (this.beneficioForm.observacion ?? '').trim();
+    const tipo = this.modalBeneficioTipo();
+
+    if (!fecha) {
+      this.beneficioError.set('La fecha es obligatoria.');
+      return;
+    }
+    if (!Number.isFinite(monto) || monto <= 0) {
+      this.beneficioError.set('El monto debe ser mayor a cero (S/ 0.00).');
+      return;
+    }
+    if (!motivo) {
+      this.beneficioError.set(
+        tipo === 'dieta'
+          ? 'El concepto o descripción es obligatorio.'
+          : 'El motivo es obligatorio.',
+      );
+      return;
+    }
 
     this.beneficioGuardando.set(true);
     this.beneficioError.set(null);
     try {
-      await this.beneficiosSvc.crear({
-        socio_id: id,
-        tipo: this.modalBeneficioTipo(),
-        fecha: this.beneficioForm.fecha,
-        monto: this.beneficioForm.monto,
-        motivo: this.beneficioForm.motivo || undefined,
-        observacion: this.beneficioForm.observacion || undefined
-      });
-      
-      this.cerrarModalBeneficio();
-      
-      // Recargar la tabla activa
-      if (this.modalBeneficioTipo() === 'dieta') {
+      const editId = this.beneficioEditandoId();
+      if (editId !== null) {
+        await this.beneficiosSvc.editar(editId, {
+          socio_id: id,
+          fecha,
+          monto,
+          motivo,
+          observacion: observacion || undefined,
+        });
+      } else {
+        await this.beneficiosSvc.crear({
+          socio_id: id,
+          tipo,
+          fecha,
+          monto,
+          motivo,
+          observacion: observacion || undefined,
+        });
+      }
+
+      this.modalBeneficioAbierto.set(false);
+      this.beneficioEditandoId.set(null);
+
+      // Recargar la tabla activa inmediatamente
+      if (tipo === 'dieta') {
         await this.cargarDietasTab();
+        this.mostrarExitoBeneficio(
+          editId !== null ? 'Dieta actualizada correctamente.' : 'Dieta registrada correctamente.',
+        );
       } else {
         await this.cargarProvisionSocialTab();
+        this.mostrarExitoBeneficio(
+          editId !== null
+            ? 'Provisión social actualizada correctamente.'
+            : 'Provisión social registrada correctamente.',
+        );
       }
     } catch (e: any) {
-      this.beneficioError.set(e.message || 'Error al guardar beneficio');
+      this.beneficioError.set(e.message || 'Error al guardar el registro.');
     } finally {
       this.beneficioGuardando.set(false);
+    }
+  }
+
+  abrirModalEliminarBeneficio(registro: BeneficioSocio): void {
+    if (!this.authSvc.esAdmin()) return;
+    this.beneficioAEliminar.set(registro);
+    this.beneficioEliminarError.set(null);
+    this.modalEliminarBeneficioAbierto.set(true);
+  }
+
+  cerrarModalEliminarBeneficio(): void {
+    if (this.beneficioEliminando()) return;
+    this.modalEliminarBeneficioAbierto.set(false);
+    this.beneficioAEliminar.set(null);
+    this.beneficioEliminarError.set(null);
+  }
+
+  async confirmarEliminarBeneficio(): Promise<void> {
+    if (this.beneficioEliminando()) return;
+    const reg = this.beneficioAEliminar();
+    const socioId = this.socioId();
+    if (!reg || !socioId) return;
+
+    this.beneficioEliminando.set(true);
+    this.beneficioEliminarError.set(null);
+    try {
+      await this.beneficiosSvc.eliminar(reg.id, socioId);
+
+      const tipo = reg.tipo;
+      this.modalEliminarBeneficioAbierto.set(false);
+      this.beneficioAEliminar.set(null);
+
+      if (tipo === 'dieta') {
+        await this.cargarDietasTab();
+        this.mostrarExitoBeneficio('Dieta eliminada correctamente.');
+      } else {
+        await this.cargarProvisionSocialTab();
+        this.mostrarExitoBeneficio('Provisión social eliminada correctamente.');
+      }
+    } catch (e: any) {
+      this.beneficioEliminarError.set(e.message || 'Error al eliminar el registro.');
+    } finally {
+      this.beneficioEliminando.set(false);
     }
   }
 }

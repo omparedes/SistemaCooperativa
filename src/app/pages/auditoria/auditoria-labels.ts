@@ -15,6 +15,7 @@ export const TABLA_LABELS: Record<string, string> = {
   distribuciones_mensuales: 'Distribución Mensual',
   asistencias_asamblea:     'Asistencia a Asamblea',
   movimientos_bancarios:    'Movimiento Bancario',
+  beneficios_socios:        'Dieta / Provisión Social',
 };
 
 export const COLUMN_LABELS: Record<string, string> = {
@@ -46,7 +47,7 @@ export const COLUMN_LABELS: Record<string, string> = {
   metodo_pago:       'Método de pago',
   comprobante:       'Comprobante',
   fecha_pago:        'Fecha de pago',
-  observacion:       'Observación',
+  observacion:       'Observación / Recibo (RC)',
   codigo_transaccion:'Código de recibo',
   saldo_a_favor:     'Saldo a favor',
   // Ocupaciones de almacén
@@ -70,6 +71,8 @@ export const COLUMN_LABELS: Record<string, string> = {
   cuenta_id:         'Cuenta bancaria',
   motivo_detalle:    'Motivo / Detalle',
   nro_operacion:     'N° de operación',
+  // Dietas y Provisión Social
+  motivo:            'Concepto / Motivo',
   // Soft delete
   deleted_at:        'Estado del registro',
   anulado_por:       'Anulado por',
@@ -85,7 +88,7 @@ export const ACCION_LABELS: Record<string, string> = {
 };
 
 /** Campos cuyo delta no aporta a un lector de negocio (se ocultan de la lista). */
-const CAMPOS_OCULTOS = new Set(['anulado_por']);
+const CAMPOS_OCULTOS = new Set(['anulado_por', 'updated_by', 'deleted_by']);
 
 export function etiquetaTabla(tabla: string): string {
   return TABLA_LABELS[tabla] ?? tabla;
