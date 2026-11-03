@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { AuthService } from './auth.service';
 import { SUPABASE_CLIENT } from './supabase.client';
 
 // ---------------------------------------------------------------------------
@@ -306,7 +307,8 @@ function round2(n: number): number {
 // ---------------------------------------------------------------------------
 @Injectable({ providedIn: 'root' })
 export class ReportesService {
-  private readonly db = inject(SUPABASE_CLIENT);
+  private readonly db   = inject(SUPABASE_CLIENT);
+  private readonly auth = inject(AuthService);
 
   /**
    * Carga pagos, ingresos internos y gastos del día indicado.
@@ -322,8 +324,7 @@ export class ReportesService {
 
     let userId: string | null = null;
     if (soloMiCajero) {
-      const { data: authData } = await this.db.auth.getUser();
-      userId = authData.user?.id ?? null;
+      userId = this.auth.usuario()?.id ?? (await this.db.auth.getUser()).data.user?.id ?? null;
     }
 
     // ── Construir queries en paralelo ────────────────────────────────────────
