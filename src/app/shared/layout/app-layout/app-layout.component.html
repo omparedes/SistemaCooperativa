@@ -15,6 +15,34 @@
     <app-header/>
     <!-- app header end -->
     <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+      @if (sidebarService.chunkErrorUrl()) {
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 shadow-xs dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
+          <div class="flex items-center gap-2.5">
+            <svg class="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+            </svg>
+            <span>
+              <strong>Hay una actualización disponible del sistema.</strong>
+              Si tiene un formulario o cobro en curso, guárdelo primero y luego pulse actualizar para abrir el módulo solicitado.
+            </span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              (click)="recargarHaciaModuloActualizado()"
+              class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition">
+              Actualizar y abrir módulo
+            </button>
+            <button
+              type="button"
+              (click)="descartarAvisoChunk()"
+              class="px-2 py-1 text-amber-600 hover:text-amber-800 dark:text-amber-300 font-bold"
+              title="Cerrar aviso">
+              ✕
+            </button>
+          </div>
+        </div>
+      }
       @if (mostrarAvisoVersion()) {
         <div class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50/90 px-4 py-2.5 text-xs text-brand-900 shadow-xs dark:border-brand-900/50 dark:bg-brand-950/40 dark:text-brand-200">
           <div class="flex items-center gap-2">

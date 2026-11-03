@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, computed, signal, OnInit, OnDestroy } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { SafeHtmlPipe } from '../../pipe/safe-html.pipe';
 import { SidebarWidgetComponent } from './app-sidebar-widget.component';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, filter, Subscription } from 'rxjs';
 
 type NavItem = {
   name: string;
@@ -24,12 +25,12 @@ type NavItem = {
   ],
   templateUrl: './app-sidebar.component.html',
 })
-export class AppSidebarComponent {
+export class AppSidebarComponent implements OnInit, OnDestroy {
 
   // Main nav items
   navItems: NavItem[] = [
     {
-      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z" fill="currentColor"></path></svg>`,
+      icon: `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 19.7426 12.75 18.5 12.75H15ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z" fill="currentColor"></path></svg>`,
       name: "Dashboard",
       subItems: [
         { name: "Metricas", path: "/" },
@@ -143,11 +144,23 @@ export class AppSidebarComponent {
   readonly isMobileOpen$;
   readonly isHovered$;
 
+  readonly isExpanded;
+  readonly isMobileOpen;
+  readonly isHovered;
+  readonly isDesktopOpen;
+  readonly isSidebarOpen;
+  readonly currentPath = signal<string>('/');
+
   // dynamic counts shown as badges
   lowStockCount: number = 0;
   auditCount: number = 0;
 
   private subscription: Subscription = new Subscription();
+  private readonly onStorageEvent = (ev: StorageEvent) => {
+    if (!ev.key || ev.key === 'productos_almacen' || ev.key === 'AuditoriaDeCambios') {
+      this.loadCounts();
+    }
+  };
 
   constructor(
     public sidebarService: SidebarService,
@@ -157,54 +170,61 @@ export class AppSidebarComponent {
     this.isExpanded$ = this.sidebarService.isExpanded$;
     this.isMobileOpen$ = this.sidebarService.isMobileOpen$;
     this.isHovered$ = this.sidebarService.isHovered$;
+
+    this.isExpanded = toSignal(this.isExpanded$, { initialValue: true });
+    this.isMobileOpen = toSignal(this.isMobileOpen$, { initialValue: false });
+    this.isHovered = toSignal(this.isHovered$, { initialValue: false });
+
+    this.isDesktopOpen = computed(() => this.isExpanded() || this.isHovered());
+    this.isSidebarOpen = computed(() => this.isExpanded() || this.isHovered() || this.isMobileOpen());
   }
 
   ngOnInit() {
-    // Subscribe to router events
+    // Suscripción única filtrada exclusivamente por NavigationEnd
     this.subscription.add(
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationEnd) {
-          this.setActiveMenuFromRoute(this.router.url);
-        }
-      })
+      this.router.events
+        .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+        .subscribe(event => {
+          const clean = this.cleanPath(event.urlAfterRedirects || event.url);
+          this.currentPath.set(clean);
+          this.setActiveMenuFromRoute(clean);
+          this.loadCounts();
+        })
     );
 
-    // Subscribe to combined observables to close submenus when all are false
+    // Recalcular altura del submenú activo cuando el sidebar se expande o recibe hover
     this.subscription.add(
       combineLatest([this.isExpanded$, this.isMobileOpen$, this.isHovered$]).subscribe(
         ([isExpanded, isMobileOpen, isHovered]) => {
           if (!isExpanded && !isMobileOpen && !isHovered) {
-            // this.openSubmenu = null;
-            // this.savedSubMenuHeights = { ...this.subMenuHeights };
-            // this.subMenuHeights = {};
             this.cdr.detectChanges();
-          } else {
-            // Restore saved heights when reopening
-            // this.subMenuHeights = { ...this.savedSubMenuHeights };
-            // this.cdr.detectChanges();
+          } else if (this.openSubmenu) {
+            this.measureSubmenuHeight(String(this.openSubmenu));
           }
         }
       )
     );
 
-    // Initial load
-    this.setActiveMenuFromRoute(this.router.url);
+    // Carga inicial
+    const initialPath = this.cleanPath(this.router.url);
+    this.currentPath.set(initialPath);
+    this.setActiveMenuFromRoute(initialPath);
     this.loadCounts();
 
-    // refresh counts when storage changes or after navigation
-    window.addEventListener('storage', () => this.loadCounts());
-    this.subscription.add(
-      this.router.events.subscribe(() => this.loadCounts())
-    );
+    window.addEventListener('storage', this.onStorageEvent);
   }
 
   ngOnDestroy() {
-    // Clean up subscriptions
+    window.removeEventListener('storage', this.onStorageEvent);
     this.subscription.unsubscribe();
   }
 
+  private cleanPath(url: string): string {
+    return (url || '/').split('?')[0].split('#')[0] || '/';
+  }
+
   isActive(path: string): boolean {
-    return this.router.url === path;
+    return this.currentPath() === path;
   }
 
   toggleSubmenu(section: string, index: number) {
@@ -215,23 +235,24 @@ export class AppSidebarComponent {
       this.subMenuHeights[key] = 0;
     } else {
       this.openSubmenu = key;
-
-      setTimeout(() => {
-        const el = document.getElementById(key);
-        if (el) {
-          this.subMenuHeights[key] = el.scrollHeight;
-          this.cdr.detectChanges(); // Ensure UI updates
-        }
-      });
+      this.measureSubmenuHeight(key);
     }
   }
 
-  onSidebarMouseEnter() {
-    this.isExpanded$.subscribe(expanded => {
-      if (!expanded) {
-        this.sidebarService.setHovered(true);
+  private measureSubmenuHeight(key: string) {
+    setTimeout(() => {
+      const el = document.getElementById(key);
+      if (el && el.scrollHeight > 0) {
+        this.subMenuHeights[key] = el.scrollHeight;
+        this.cdr.detectChanges();
       }
-    }).unsubscribe();
+    });
+  }
+
+  onSidebarMouseEnter() {
+    if (!this.sidebarService.isExpandedValue) {
+      this.sidebarService.setHovered(true);
+    }
   }
 
   private setActiveMenuFromRoute(currentUrl: string) {
@@ -247,14 +268,7 @@ export class AppSidebarComponent {
             if (currentUrl === subItem.path) {
               const key = `${group.prefix}-${i}`;
               this.openSubmenu = key;
-
-              setTimeout(() => {
-                const el = document.getElementById(key);
-                if (el) {
-                  this.subMenuHeights[key] = el.scrollHeight;
-                  this.cdr.detectChanges(); // Ensure UI updates
-                }
-              });
+              this.measureSubmenuHeight(key);
             }
           });
         }
@@ -263,11 +277,9 @@ export class AppSidebarComponent {
   }
 
   onSubmenuClick() {
-    this.isMobileOpen$.subscribe(isMobile => {
-      if (isMobile) {
-        this.sidebarService.setMobileOpen(false);
-      }
-    }).unsubscribe();
+    if (this.sidebarService.isMobileOpenValue) {
+      this.sidebarService.setMobileOpen(false);
+    }
   }
 
   loadCounts() {
@@ -288,6 +300,4 @@ export class AppSidebarComponent {
     }
     this.cdr.detectChanges();
   }
-
-
 }

@@ -50,14 +50,24 @@ export class AppLayoutComponent implements OnInit {
     } catch {}
   }
 
+  recargarHaciaModuloActualizado(): void {
+    const targetUrl = this.sidebarService.chunkErrorUrl() || '/';
+    this.sidebarService.chunkErrorUrl.set(null);
+    window.location.assign(targetUrl);
+  }
+
+  descartarAvisoChunk(): void {
+    this.sidebarService.chunkErrorUrl.set(null);
+  }
+
   get containerClasses() {
     return [
       'flex-1',
       'transition-all',
       'duration-300',
       'ease-in-out',
-      (this.isExpanded$ || this.isHovered$) ? 'xl:ml-[290px]' : 'xl:ml-[90px]',
-      this.isMobileOpen$ ? 'ml-0' : ''
+      (this.sidebarService.isExpandedValue || this.sidebarService.isHoveredValue) ? 'xl:ml-[290px]' : 'xl:ml-[90px]',
+      this.sidebarService.isMobileOpenValue ? 'ml-0' : ''
     ];
   }
 }
