@@ -2038,21 +2038,22 @@ export class PdfGeneratorService {
     } as unknown as DocDefinition;
   }
 
-  // ── PLANTILLA 2: TICKET TÉRMICO 80 MM (EPSON TM-T20 / CONTINUO) ───────────
+  // ── PLANTILLA 2: TICKET TÉRMICO 80 MM (EPSON TM-T20IV / CONTINUO) ───────────
   private construirDocumentoTicket(
     d: ReciboDatos,
     cfg: ConfiguracionRecibos,
     logoB64: string | null,
   ): DocDefinition {
-    // 80 mm ancho físico = 226.77 pt. Área imprimible 72 mm = 204.09 pt.
-    // Márgenes: [11, 10, 11, 12] -> ancho efectivo = 204.77 pt.
-    const printableWidth = 204.77;
+    // 80 mm ancho físico = 226.77 pt. Cabezal térmico Epson TM-T20IV = 72 mm (204.09 pt).
+    // Para garantizar impresión sin cortes en "Tamaño real (100 %)", aplicamos margen lateral
+    // seguro de 5.0 mm = 14.17 pt, resultando en un ancho útil de 70.0 mm = 198.43 pt.
+    const printableWidth = 198.43;
 
     // Funciones fábrica para evitar mutaciones de objetos compartidos en pdfmake
     function lineaGuionesTicket(): DocDefinition {
       return {
         canvas: [{ type: 'line', x1: 0, y1: 0, x2: printableWidth, y2: 0, lineWidth: 0.8, lineColor: '#000000', dash: { length: 3, space: 2 } }],
-        margin: [0, 4, 0, 4] as [number, number, number, number],
+        margin: [0, 3, 0, 3] as [number, number, number, number],
       } as unknown as DocDefinition;
     }
 
@@ -2084,12 +2085,12 @@ export class PdfGeneratorService {
     const stackEncabezado: DocDefinition[] = [];
     if (logoB64) {
       stackEncabezado.push(
-        { image: logoB64, width: 46, alignment: 'center', margin: [0, 0, 0, 3] } as unknown as DocDefinition,
+        { image: logoB64, width: 44, alignment: 'center', margin: [0, 0, 0, 2] } as unknown as DocDefinition,
       );
     }
     stackEncabezado.push(
-      { text: cfg.nombre_institucion, fontSize: 9.5, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
-      { text: cfg.subtitulo, fontSize: 7.5, color: '#444444', alignment: 'center', margin: [0, 1.5, 0, 3] } as unknown as DocDefinition,
+      { text: cfg.nombre_institucion, fontSize: 9, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
+      { text: cfg.subtitulo, fontSize: 7, color: '#444444', alignment: 'center', margin: [0, 1, 0, 2] } as unknown as DocDefinition,
     );
 
     // Listado de conceptos en formato vertical adaptable sin desbordes
@@ -2097,20 +2098,20 @@ export class PdfGeneratorService {
     d.detalle.forEach((it, idx) => {
       itemsStack.push({
         text: it.concepto,
-        fontSize: 8.5,
+        fontSize: 8,
         bold: true,
         color: '#000000',
       } as unknown as DocDefinition);
       itemsStack.push({
         columns: [
-          { text: `${it.periodo}  ·  ${it.cubierto_completo ? '[CANCELADO]' : '[PARCIAL]'}`, fontSize: 7.5, color: '#333333' },
-          { text: `S/ ${it.aplicado.toFixed(2)}`, fontSize: 8.5, bold: true, alignment: 'right' as const, color: '#000000' },
+          { text: `${it.periodo}  ·  ${it.cubierto_completo ? '[CANCELADO]' : '[PARCIAL]'}`, width: '*', fontSize: 7, color: '#333333' },
+          { text: `S/ ${it.aplicado.toFixed(2)}`, width: 'auto', fontSize: 8, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
       } as unknown as DocDefinition);
       if (it.saldo_original !== it.aplicado) {
         itemsStack.push({
           text: `Deuda original: S/ ${it.saldo_original.toFixed(2)}  ·  Abono: S/ ${it.aplicado.toFixed(2)}`,
-          fontSize: 7,
+          fontSize: 6.8,
           italics: true,
           color: '#555555',
         } as unknown as DocDefinition);
@@ -2118,7 +2119,7 @@ export class PdfGeneratorService {
       if (idx < d.detalle.length - 1) {
         itemsStack.push({
           canvas: [{ type: 'line', x1: 0, y1: 0, x2: printableWidth, y2: 0, lineWidth: 0.5, lineColor: '#CCCCCC', dash: { length: 2, space: 2 } }],
-          margin: [0, 2.5, 0, 2.5] as [number, number, number, number],
+          margin: [0, 2, 0, 2] as [number, number, number, number],
         } as unknown as DocDefinition);
       }
     });
@@ -2126,17 +2127,17 @@ export class PdfGeneratorService {
     // Desglose financiero
     const desgloses: DocDefinition[] = [];
     if (esSoloSaldoFavor) {
-      desgloses.push({ text: '· Modalidad: Aplicación de saldo a favor', fontSize: 7.5, italics: true, color: '#000000' } as unknown as DocDefinition);
-      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
-      desgloses.push({ text: '· Nuevo ingreso en caja: S/ 0.00', fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: '· Modalidad: Aplicación de saldo a favor', fontSize: 7.2, italics: true, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.2, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: '· Nuevo ingreso en caja: S/ 0.00', fontSize: 7.2, color: '#000000' } as unknown as DocDefinition);
     } else if (esMixto) {
-      desgloses.push({ text: `· Dinero recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
-      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Dinero recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.2, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.2, color: '#000000' } as unknown as DocDefinition);
     } else {
-      desgloses.push({ text: `· Importe recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Importe recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.2, color: '#000000' } as unknown as DocDefinition);
     }
     if (d.saldo_a_favor > 0) {
-      desgloses.push({ text: `· Saldo a favor restante: S/ ${d.saldo_a_favor.toFixed(2)}`, fontSize: 7.5, bold: true, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Saldo a favor restante: S/ ${d.saldo_a_favor.toFixed(2)}`, fontSize: 7.2, bold: true, color: '#000000' } as unknown as DocDefinition);
     }
 
     const contentTicket: DocDefinition[] = [
@@ -2145,87 +2146,96 @@ export class PdfGeneratorService {
       lineaGuionesTicket(),
 
       // Título y código
-      { text: 'RECIBO DE PAGO', fontSize: 10.5, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
-      { text: d.codigo_transaccion, fontSize: 9.5, bold: true, alignment: 'center', margin: [0, 1, 0, 3], color: '#000000' } as unknown as DocDefinition,
+      { text: 'RECIBO DE PAGO', fontSize: 10, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
+      { text: d.codigo_transaccion, fontSize: 9, bold: true, alignment: 'center', margin: [0, 1, 0, 2], color: '#000000' } as unknown as DocDefinition,
       lineaSolidaTicket(0.8),
 
-      // Datos de la operación
+      // Datos de la operación (ancho de etiqueta ajustado a 50 pt para dar 148.43 pt al valor)
       {
         columns: [
-          { text: 'Fecha / Hora:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'Fecha / Hora:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: formatFechaTicket(d.fecha_pago), width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       {
         columns: [
-          { text: 'Pagador:', width: 55, fontSize: 7.5, color: '#444444' },
-          { text: d.nombre_pagador, width: '*', fontSize: 8, bold: true, alignment: 'right' as const, color: '#000000' },
+          { text: 'Pagador:', width: 50, fontSize: 7.5, color: '#444444' },
+          { text: d.nombre_pagador, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       {
         columns: [
-          { text: 'DNI:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'DNI:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: d.dni_pagador, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       ...(d.numero_socio ? [{
         columns: [
-          { text: 'N° de Socio:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'N° de Socio:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: String(d.numero_socio), width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition] : []),
       {
         columns: [
-          { text: 'Puesto / Espacio:', width: 55, fontSize: 7.5, color: '#444444' },
-          { text: d.codigo_puesto, width: '*', fontSize: 8, bold: true, alignment: 'right' as const, color: '#000000' },
+          { text: 'Puesto / Espacio:', width: 50, fontSize: 7.5, color: '#444444' },
+          { text: d.codigo_puesto, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       {
         columns: [
-          { text: 'Condición:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'Condición:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: d.tipo_pagador, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       {
         columns: [
-          { text: 'Método de pago:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'Método de pago:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: metodoPagoBase, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition,
       ...(d.comprobante ? [{
         columns: [
-          { text: 'N° Operación:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'N° Operación:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: d.comprobante, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition] : []),
       ...(d.observacion ? [{
         columns: [
-          { text: 'Observación:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: 'Observación:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: d.observacion, width: '*', fontSize: 7.5, italics: true, alignment: 'right' as const, color: '#444444' },
         ],
+        margin: [0, 0.5, 0, 0.5] as [number, number, number, number],
       } as unknown as DocDefinition] : []),
       lineaGuionesTicket(),
 
       // Conceptos
-      { text: 'DETALLE DE COBROS', fontSize: 8, bold: true, margin: [0, 1, 0, 3], color: '#000000' } as unknown as DocDefinition,
+      { text: 'DETALLE DE COBROS', fontSize: 7.5, bold: true, margin: [0, 1, 0, 2], color: '#000000' } as unknown as DocDefinition,
       { stack: itemsStack } as unknown as DocDefinition,
-      lineaSolidaTicket(1.2),
+      lineaSolidaTicket(1.0),
 
       // Totales
       {
         columns: [
-          { text: esSoloSaldoFavor ? 'TOTAL APLICADO:' : 'TOTAL COBRADO:', fontSize: 9.5, bold: true, color: '#000000' },
-          { text: `S/ ${totalMostrar.toFixed(2)}`, fontSize: 11.5, bold: true, alignment: 'right' as const, color: '#000000' },
+          { text: esSoloSaldoFavor ? 'TOTAL APLICADO:' : 'TOTAL COBRADO:', width: '*', fontSize: 9, bold: true, color: '#000000' },
+          { text: `S/ ${totalMostrar.toFixed(2)}`, width: 'auto', fontSize: 11, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
         margin: [0, 2, 0, 2] as [number, number, number, number],
       } as unknown as DocDefinition,
-      { stack: desgloses, margin: [0, 1, 0, 3] as [number, number, number, number] } as unknown as DocDefinition,
+      { stack: desgloses, margin: [0, 1, 0, 2] as [number, number, number, number] } as unknown as DocDefinition,
       lineaGuionesTicket(),
 
-      // Cajero responsable (sin sello obligatorio)
+      // Cajero responsable
       {
         columns: [
-          { text: 'Cajero:', width: 45, fontSize: 7.5, color: '#444444' },
+          { text: 'Cajero:', width: 50, fontSize: 7.5, color: '#444444' },
           { text: d.cajero, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
         ],
         margin: [0, 1, 0, 2] as [number, number, number, number],
@@ -2238,7 +2248,7 @@ export class PdfGeneratorService {
         lineaGuionesTicket(),
         {
           text: cfg.mensaje_pie.trim(),
-          fontSize: 7.5,
+          fontSize: 7,
           italics: true,
           alignment: 'center' as const,
           color: '#333333',
@@ -2249,8 +2259,8 @@ export class PdfGeneratorService {
 
     return {
       pageSize: { width: 226.77, height: 'auto' },
-      pageMargins: [11, 10, 11, 12],
-      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
+      pageMargins: [14.17, 8, 14.17, 10],
+      defaultStyle: { font: 'Roboto', fontSize: 7.5, lineHeight: 1.2 },
       content: contentTicket,
       // IMPORTANTE: NO incluir propiedad `footer` para evitar error Infinity en páginas con height 'auto'
     } as unknown as DocDefinition;
