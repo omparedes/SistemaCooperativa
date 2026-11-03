@@ -14,8 +14,8 @@ export interface ConfiguracionRecibos {
 
 const DEFAULTS: ConfiguracionRecibos = {
   id: 1,
-  nombre_institucion: 'COOPERATIVA DE COMERCIANTES PRIMERO DE MAYO',
-  subtitulo: 'Mercado Municipal — Sistema de Recaudación',
+  nombre_institucion: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO',
+  subtitulo: 'Mercado Municipal — Control Interno',
   mensaje_pie: 'Gracias por su puntualidad.',
   color_principal: '#166534',
   formato_impresion: 'A4',

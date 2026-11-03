@@ -2,7 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import {
   ConfiguracionRecibos,
   ConfiguracionRecibosService,
+  FormatoImpresion,
 } from './configuracion-recibos.service';
+
+export type { FormatoImpresion };
 import type {
   ArqueoConcepto,
   ArqueoPago,
@@ -149,6 +152,7 @@ export interface ReciboDatos {
   tipo_pagador: 'Socio titular' | 'Inquilino';
   dni_pagador: string;
   codigo_puesto: string;
+  numero_socio?: string | number;
   metodo_pago: 'Efectivo' | 'Transferencia';
   comprobante: string | null;
   observacion?: string | null;
@@ -173,6 +177,15 @@ function formatFechaLarga(d: Date): string {
   const hh = d.getHours().toString().padStart(2, '0');
   const mm = d.getMinutes().toString().padStart(2, '0');
   return `${d.getDate()} de ${MESES_ES[d.getMonth()]} de ${d.getFullYear()} — ${hh}:${mm} hrs`;
+}
+
+function formatFechaTicket(d: Date): string {
+  const dd = d.getDate().toString().padStart(2, '0');
+  const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = d.getHours().toString().padStart(2, '0');
+  const min = d.getMinutes().toString().padStart(2, '0');
+  return `${dd}/${mm}/${yyyy}  ${hh}:${min} hrs`;
 }
 
 const FUENTES: FontDictionary = {
@@ -248,30 +261,51 @@ export class PdfGeneratorService {
   private fontsRegistered = false;
 
   /** Genera el recibo y lo abre en nueva pestaña del navegador. */
-  async generarYAbrir(datos: ReciboDatos): Promise<void> {
-    const [pm, cfg, logoB64] = await Promise.all([
+  async generarYAbrir(datos: ReciboDatos, formato?: FormatoImpresion, cfgOverride?: ConfiguracionRecibos): Promise<void> {
+    const cfg = cfgOverride ?? await this.configSvc.cargar();
+    const formatoEfectivo = formato ?? cfg.formato_impresion ?? 'A4';
+    const logoUrl = formatoEfectivo === 'TICKET_80MM' ? '/images/logo/logo2_mono.png' : '/images/logo/logo2.png';
+    const [pm, logoB64] = await Promise.all([
       this.cargarModulo(),
-      this.configSvc.cargar(),
-      this.fetchImageAsBase64('/images/logo/logo2.png'),
+      this.fetchImageAsBase64(logoUrl),
     ]);
-    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64)).open();
+    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64, formatoEfectivo)).open();
   }
 
   /** Genera el recibo y lo descarga automáticamente. */
-  async descargar(datos: ReciboDatos): Promise<void> {
-    const [pm, cfg, logoB64] = await Promise.all([
+  async descargar(datos: ReciboDatos, formato?: FormatoImpresion, cfgOverride?: ConfiguracionRecibos): Promise<void> {
+    const cfg = cfgOverride ?? await this.configSvc.cargar();
+    const formatoEfectivo = formato ?? cfg.formato_impresion ?? 'A4';
+    const logoUrl = formatoEfectivo === 'TICKET_80MM' ? '/images/logo/logo2_mono.png' : '/images/logo/logo2.png';
+    const [pm, logoB64] = await Promise.all([
       this.cargarModulo(),
-      this.configSvc.cargar(),
-      this.fetchImageAsBase64('/images/logo/logo2.png'),
+      this.fetchImageAsBase64(logoUrl),
     ]);
-    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64))
-      .download(`recibo-${datos.codigo_transaccion}.pdf`);
+    const sufijo = formatoEfectivo === 'TICKET_80MM' ? '-ticket' : '';
+    await pm.createPdf(this.construirDocumento(datos, cfg, logoB64, formatoEfectivo))
+      .download(`recibo-${datos.codigo_transaccion}${sufijo}.pdf`);
+  }
+
+  /** Genera el blob del PDF (para visualización directa en iframe/embed de vista previa). */
+  async obtenerBlob(datos: ReciboDatos, formato?: FormatoImpresion, cfgOverride?: ConfiguracionRecibos): Promise<Blob> {
+    const cfg = cfgOverride ?? await this.configSvc.cargar();
+    const formatoEfectivo = formato ?? cfg.formato_impresion ?? 'A4';
+    const logoUrl = formatoEfectivo === 'TICKET_80MM' ? '/images/logo/logo2_mono.png' : '/images/logo/logo2.png';
+    const [pm, logoB64] = await Promise.all([
+      this.cargarModulo(),
+      this.fetchImageAsBase64(logoUrl),
+    ]);
+    const docDef = this.construirDocumento(datos, cfg, logoB64, formatoEfectivo);
+    return await pm.createPdf(docDef).getBlob();
   }
 
   /** Convierte una imagen local en base64 para pdfmake. Devuelve null si falla. */
   private async fetchImageAsBase64(url: string): Promise<string | null> {
     try {
-      const res = await fetch(url);
+      let res = await fetch(url);
+      if (!res.ok && url !== '/images/logo/logo2.png') {
+        res = await fetch('/images/logo/logo2.png');
+      }
       if (!res.ok) return null;
       const blob = await res.blob();
       return await new Promise<string>((resolve, reject) => {
@@ -995,7 +1029,7 @@ export class PdfGeneratorService {
             { text: `Hábiles: ${d.habiles.length}  ·  Inhabilitados: ${d.inhabilitados.length}`, fontSize: 9, color: C.grisOsc, alignment: 'center' as const },
             { text: `Generado: ${new Date(d.generado_en).toLocaleString('es-PE')}`, fontSize: 8, color: C.grisTxt, alignment: 'right' as const },
           ],
-          margin: [0, 0, 0, 16],
+          margin: [0, 0, 0, 12],
         },
 
         { text: `SOCIOS HÁBILES (AL DÍA) — ${d.habiles.length}`, fontSize: 9, bold: true, decoration: 'underline', color: C.verde, margin: [0, 0, 0, 5] },
@@ -1725,30 +1759,40 @@ export class PdfGeneratorService {
   }
 
   // -------------------------------------------------------------------------
-  // Construcción del documento PDF (diseño verde/dorado corporativo)
+  // Construcción del documento PDF (A4 o Ticket 80 mm)
   // -------------------------------------------------------------------------
-  private construirDocumento(
-    d:      ReciboDatos,
-    cfg:    ConfiguracionRecibos,
+  construirDocumento(
+    d: ReciboDatos,
+    cfg: ConfiguracionRecibos,
+    logoB64: string | null,
+    formatoSeleccionado?: FormatoImpresion,
+  ): DocDefinition {
+    const formatoEfectivo = formatoSeleccionado ?? cfg.formato_impresion ?? 'A4';
+    if (formatoEfectivo === 'TICKET_80MM') {
+      return this.construirDocumentoTicket(d, cfg, logoB64);
+    }
+    return this.construirDocumentoA4(d, cfg, logoB64);
+  }
+
+  // ── PLANTILLA 1: HOJA A4 INSTITUCIONAL PULIDA ─────────────────────────────
+  private construirDocumentoA4(
+    d: ReciboDatos,
+    cfg: ConfiguracionRecibos,
     logoB64: string | null,
   ): DocDefinition {
     const R = coloresRecibo(cfg.color_principal);
-    const pageSize = cfg.formato_impresion === 'TICKET_80MM'
-      ? ({ width: 226.77, height: 'auto' } as const)   // 80 mm en puntos (1 mm = 2.8346 pt)
-      : ('A4' as const);
-    const margins: [number, number, number, number] =
-      cfg.formato_impresion === 'TICKET_80MM' ? [10, 12, 10, 36] : [48, 48, 48, 72];
-    const lineaAncho = cfg.formato_impresion === 'TICKET_80MM' ? 206 : 499;
+    const margins: [number, number, number, number] = [48, 40, 48, 55];
+    const lineaAncho = 499.28; // 595.28 - 48 - 48
 
-    // ── Layouts ────────────────────────────────────────────────────────────────
+    // Layouts
     const layoutSimple: CustomTableLayout = {
       hLineWidth: (i) => (i === 0 ? 1 : 0.5),
       vLineWidth: () => 0.5,
       hLineColor: () => R.grisBorde,
       vLineColor: () => R.grisBorde,
       fillColor: (row) => (row % 2 === 0 ? R.fondoVerde : null),
-      paddingTop:    () => 5,
-      paddingBottom: () => 5,
+      paddingTop:    () => 4,
+      paddingBottom: () => 4,
       paddingLeft:   () => 8,
       paddingRight:  () => 8,
     };
@@ -1760,25 +1804,25 @@ export class PdfGeneratorService {
       hLineColor: (i) => (i === 0 || i === totalFilas ? R.primario : R.grisBorde),
       vLineColor: () => R.grisBorde,
       fillColor: (row) => (row === 0 ? null : row % 2 === 0 ? R.fondoVerde : null),
-      paddingTop:    () => 5,
-      paddingBottom: () => 5,
+      paddingTop:    () => 4.5,
+      paddingBottom: () => 4.5,
       paddingLeft:   () => 8,
       paddingRight:  () => 8,
     };
 
-    // ── Encabezado del documento (logo + textos dinámicos) ────────────────────
+    // Encabezado
     const stackEncabezado: DocDefinition[] = [];
     if (logoB64) {
       stackEncabezado.push(
-        { image: logoB64, width: 72, alignment: 'center', margin: [0, 0, 0, 6] } as unknown as DocDefinition,
+        { image: logoB64, width: 58, alignment: 'center', margin: [0, 0, 0, 4] } as unknown as DocDefinition,
       );
     }
     stackEncabezado.push(
       { text: cfg.nombre_institucion, fontSize: 13, bold: true, color: R.primario, alignment: 'center' } as unknown as DocDefinition,
-      { text: cfg.subtitulo, fontSize: 9, color: R.grisTxt, alignment: 'center', margin: [0, 2, 0, 0] } as unknown as DocDefinition,
+      { text: cfg.subtitulo, fontSize: 8.5, color: R.grisTxt, alignment: 'center', margin: [0, 2, 0, 0] } as unknown as DocDefinition,
     );
 
-    // ── Cálculo de modalidad de pago (Efectivo / Mixto / Saldo a favor) ───────
+    // Cálculos de montos y modalidades
     const sumaAplicada = Math.round(d.detalle.reduce((s, l) => s + Number(l.aplicado ?? 0), 0) * 100) / 100;
     const montoRecibido = d.monto_recibido !== undefined ? Number(d.monto_recibido) : Number(d.total_pagado);
     const saldoUtilizado = d.saldo_utilizado !== undefined
@@ -1790,46 +1834,47 @@ export class PdfGeneratorService {
 
     let metodoPagoBase: string = d.metodo_pago;
     if (esSoloSaldoFavor) {
-      metodoPagoBase = 'Aplicación de saldo a favor';
+      metodoPagoBase = 'Aplicación de saldo a favor (S/ 0.00 en efectivo)';
     } else if (esMixto) {
       metodoPagoBase = `${d.metodo_pago} (S/ ${montoRecibido.toFixed(2)}) + Saldo a favor (S/ ${saldoUtilizado.toFixed(2)})`;
     }
 
-    // ── Tabla de datos del pagador ────────────────────────────────────────────
+    // Filas del pagador
     const filasPagador = [
       [etqR('Nombre completo', R), valR(d.nombre_pagador, R)],
-      [etqR('DNI',             R), valR(d.dni_pagador, R)],
-      [etqR('Condición',       R), valR(d.tipo_pagador, R)],
-      [etqR('Puesto / Módulo', R), valR(d.codigo_puesto, R)],
-      [etqR('Método de pago',  R), valR(
+      [etqR('DNI', R), valR(d.dni_pagador, R)],
+      [etqR('Condición', R), valR(d.tipo_pagador, R)],
+      ...(d.numero_socio ? [[etqR('N° de Socio', R), valR(String(d.numero_socio), R)]] : []),
+      [etqR('Puesto / Espacio', R), valR(d.codigo_puesto, R)],
+      [etqR('Método de pago', R), valR(
         d.comprobante ? `${metodoPagoBase}  —  Ref: ${d.comprobante}` : metodoPagoBase, R,
       )],
       ...(d.observacion ? [[etqR('Observaciones', R), valR(d.observacion, R)]] : []),
     ];
 
-    // ── Tabla detalle FIFO ────────────────────────────────────────────────────
+    // Detalle FIFO
     const filasDetalle = d.detalle.map(linea => [
-      { text: linea.concepto,                     fontSize: 9,  color: R.grisOsc },
-      { text: linea.periodo,                       fontSize: 9,  color: R.grisOsc,  alignment: 'center' as const },
-      { text: linea.saldo_original.toFixed(2),    fontSize: 9,  color: R.grisOsc,  alignment: 'right'  as const },
-      { text: linea.aplicado.toFixed(2),           fontSize: 9,  bold: true, color: R.negro, alignment: 'right' as const },
+      { text: linea.concepto,                  fontSize: 8.5, color: R.grisOsc },
+      { text: linea.periodo,                   fontSize: 8.5, color: R.grisOsc, alignment: 'center' as const },
+      { text: linea.saldo_original.toFixed(2), fontSize: 8.5, color: R.grisOsc, alignment: 'right'  as const },
+      { text: linea.aplicado.toFixed(2),       fontSize: 8.5, bold: true, color: R.negro, alignment: 'right' as const },
       {
-        text: linea.cubierto_completo ? '✓ Cancelado' : '~ Parcial',
-        fontSize: 8, alignment: 'center' as const,
+        text: linea.cubierto_completo ? 'CANCELADO' : 'PARCIAL',
+        fontSize: 7.5, bold: true, alignment: 'center' as const,
         color: linea.cubierto_completo ? R.primario : R.dorado,
       },
     ]);
 
     const filaTotalDetalle = [
-      { text: esSoloSaldoFavor ? 'TOTAL APLICADO' : 'TOTAL COBRADO', fontSize: 10, bold: true, color: R.primario, colSpan: 3, alignment: 'right' as const },
+      { text: esSoloSaldoFavor ? 'TOTAL APLICADO' : 'TOTAL COBRADO', fontSize: 9.5, bold: true, color: R.primario, colSpan: 3, alignment: 'right' as const },
       {}, {},
-      { text: totalMostrar.toFixed(2), fontSize: 13, bold: true, color: R.acento, alignment: 'right' as const },
+      { text: totalMostrar.toFixed(2), fontSize: 12, bold: true, color: R.acento, alignment: 'right' as const },
       {},
     ];
 
     const notasPie: string[] = [];
     if (esSoloSaldoFavor) {
-      notasPie.push(`Cancelado íntegramente mediante aplicación de saldo a favor acumulado (S/ ${saldoUtilizado.toFixed(2)}). Nuevo ingreso en caja: S/ 0.00.`);
+      notasPie.push(`Importe de este recibo cubierto al 100% con saldo a favor acumulado (S/ ${saldoUtilizado.toFixed(2)}). Nuevo ingreso en caja: S/ 0.00.`);
     } else if (esMixto) {
       notasPie.push(`Desglose del pago: ${d.metodo_pago} recibido S/ ${montoRecibido.toFixed(2)} + Saldo a favor aplicado S/ ${saldoUtilizado.toFixed(2)}.`);
     }
@@ -1837,104 +1882,101 @@ export class PdfGeneratorService {
       notasPie.push(`Saldo a favor restante del pagador: S/ ${d.saldo_a_favor.toFixed(2)}.`);
     }
     const bloquesSaldoFavor = notasPie.length > 0
-      ? [{ text: notasPie.join('  ·  '), fontSize: 8.5, italics: true, color: R.primario, margin: [0, 0, 0, 24] as [number, number, number, number] }]
+      ? [{ text: notasPie.join('  ·  '), fontSize: 8, italics: true, color: R.primario, margin: [0, 0, 0, 16] as [number, number, number, number] }]
       : [];
 
-    // ── Helpers de celda con color dinámico ───────────────────────────────────
-    function encTH_R(text: string, al: 'left' | 'center' | 'right' = 'left'): TableCell {
+    function encTH_A4(text: string, al: 'left' | 'center' | 'right' = 'left'): TableCell {
       return { text, fontSize: 8, bold: true, color: 'white', fillColor: R.acento, alignment: al };
     }
 
-    // ── Documento ─────────────────────────────────────────────────────────────
     return {
-      pageSize,
+      pageSize: 'A4',
       pageMargins: margins,
-      defaultStyle: { font: 'Roboto', fontSize: 10, lineHeight: 1.35 },
+      defaultStyle: { font: 'Roboto', fontSize: 9.5, lineHeight: 1.3 },
 
       content: [
-
-        // ════ ENCABEZADO (logo + nombre institución + subtítulo) ══════════════
+        // Encabezado
         { alignment: 'center', stack: stackEncabezado },
 
-        // Doble línea decorativa: verde primario + dorada
+        // Doble línea corporativa
         {
           canvas: [
-            { type: 'line', x1: 0, y1: 3,   x2: lineaAncho, y2: 3,   lineWidth: 3,   lineColor: R.primario },
-            { type: 'line', x1: 0, y1: 8.5, x2: lineaAncho, y2: 8.5, lineWidth: 1.5, lineColor: R.bordeOro },
+            { type: 'line', x1: 0, y1: 3,   x2: lineaAncho, y2: 3,   lineWidth: 2.5, lineColor: R.primario },
+            { type: 'line', x1: 0, y1: 8.5, x2: lineaAncho, y2: 8.5, lineWidth: 1.2, lineColor: R.bordeOro },
           ],
-          margin: [0, 10, 0, 12],
+          margin: [0, 8, 0, 10],
         },
 
-        // ════ BANNER DE TÍTULO ════════════════════════════════════════════════
+        // Banner de título
         {
           table: {
             widths: ['*'],
             body: [[{
               text: 'R E C I B O   D E   P A G O',
-              fontSize: 15, bold: true, alignment: 'center',
+              fontSize: 14, bold: true, alignment: 'center',
               color: 'white', fillColor: R.primario,
-              margin: [0, 9, 0, 9],
+              margin: [0, 7, 0, 7],
             }]],
           },
           layout: {
             hLineWidth: () => 2, vLineWidth: () => 2,
             hLineColor: () => R.bordeOro, vLineColor: () => R.bordeOro,
           },
-          margin: [50, 0, 50, 14],
+          margin: [70, 0, 70, 10],
         },
 
-        // ════ CÓDIGO DE TRANSACCIÓN ═══════════════════════════════════════════
+        // Código de transacción
         {
           alignment: 'center',
           stack: [
-            { text: d.codigo_transaccion, fontSize: 15, bold: true, color: R.primario },
-            { text: formatFechaLarga(d.fecha_pago), fontSize: 9, color: R.grisTxt, margin: [0, 3, 0, 0] },
+            { text: d.codigo_transaccion, fontSize: 14, bold: true, color: R.primario },
+            { text: formatFechaLarga(d.fecha_pago), fontSize: 8.5, color: R.grisTxt, margin: [0, 2, 0, 0] },
           ],
-          margin: [0, 0, 0, 20],
+          margin: [0, 0, 0, 12],
         },
 
-        // ════ DATOS DEL PAGADOR ═══════════════════════════════════════════════
-        { text: 'DATOS DEL PAGADOR', fontSize: 10, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 6] },
+        // Datos del pagador
+        { text: 'DATOS DEL PAGADOR', fontSize: 9.5, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 5] },
         {
-          table: { widths: ['33%', '67%'], body: filasPagador },
+          table: { widths: ['32%', '68%'], body: filasPagador },
           layout: layoutSimple,
-          margin: [0, 0, 0, 20],
+          margin: [0, 0, 0, 16],
         },
 
-        // ════ DETALLE DE COBROS ═══════════════════════════════════════════════
-        { text: 'DETALLE DE COBROS APLICADOS', fontSize: 10, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 6] },
+        // Detalle de cobros
+        { text: 'DETALLE DE COBROS APLICADOS', fontSize: 9.5, bold: true, decoration: 'underline', color: R.primario, margin: [0, 0, 0, 5] },
         {
           table: {
             headerRows: 1,
-            widths: ['*', '12%', '15%', '15%', '13%'],
+            widths: ['*', '14%', '15%', '15%', '14%'],
             body: [
               [
-                encTH_R('Concepto'),
-                encTH_R('Período',    'center'),
-                encTH_R('Deuda S/',   'right'),
-                encTH_R('Abonado S/', 'right'),
-                encTH_R('Estado',     'center'),
+                encTH_A4('Concepto', 'left'),
+                encTH_A4('Período', 'center'),
+                encTH_A4('Deuda S/', 'right'),
+                encTH_A4('Abonado S/', 'right'),
+                encTH_A4('Estado', 'center'),
               ],
               ...filasDetalle,
               filaTotalDetalle,
             ],
           },
           layout: layoutDetalle,
-          margin: [0, 0, 0, notasPie.length > 0 ? 8 : 24],
+          margin: [0, 0, 0, notasPie.length > 0 ? 8 : 18],
         },
 
         ...bloquesSaldoFavor,
 
-        // ════ FIRMA Y SELLO "PAGADO" ══════════════════════════════════════════
+        // Firma y Sello PAGADO (vectorial nítido sin glifos faltantes)
         {
           columns: [
             {
               width: '55%',
               stack: [
-                { text: '\n\n' },
-                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 195, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 4 } }] },
+                { text: ' ', margin: [0, 8, 0, 0] },
+                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 190, y2: 0, lineWidth: 0.75, lineColor: '#9CA3AF', dash: { length: 4 } }] },
                 { text: 'Firma / Sello del cajero responsable', fontSize: 7.5, color: '#9CA3AF', margin: [0, 3, 0, 0] },
-                { text: d.cajero, fontSize: 9, bold: true, color: R.grisOsc, margin: [0, 2, 0, 0] },
+                { text: d.cajero, fontSize: 8.5, bold: true, color: R.grisOsc, margin: [0, 2, 0, 0] },
               ],
             },
             {
@@ -1945,28 +1987,40 @@ export class PdfGeneratorService {
                   widths: ['*'],
                   body: [[{
                     stack: [
-                      { text: '✓', fontSize: 26, bold: true, color: R.primario, alignment: 'center' },
+                      {
+                        canvas: [
+                          {
+                            type: 'polyline',
+                            points: [{ x: 5, y: 13 }, { x: 12, y: 20 }, { x: 25, y: 4 }],
+                            lineWidth: 3,
+                            lineColor: R.primario,
+                          }
+                        ],
+                        alignment: 'center',
+                        width: 30,
+                        margin: [0, 0, 0, 2],
+                      },
                       { text: 'P  A  G  A  D  O', fontSize: 13, bold: true, color: R.primario, alignment: 'center' },
+                      { text: 'MERCADO COOPERATIVO 1° DE MAYO', fontSize: 6.5, color: R.grisTxt, alignment: 'center', margin: [0, 2, 0, 0] },
                     ],
-                    margin: [12, 10, 12, 10],
+                    margin: [10, 6, 10, 6],
                   }]],
                 },
                 layout: {
                   hLineWidth: () => 2.5, vLineWidth: () => 2.5,
-                  // Borde del sello en dorado (identidad corporativa)
                   hLineColor: () => R.bordeOro, vLineColor: () => R.bordeOro,
                 },
-                margin: [20, 0, 0, 0],
+                margin: [15, 0, 0, 0],
               }],
             },
           ],
         },
       ],
 
-      // ── Footer dinámico ────────────────────────────────────────────────────
-      footer: (currentPage: number, pageCount: number, _pageSize: unknown) => ({
+      // Footer dinámico con ancho alineado a la página A4
+      footer: (currentPage: number, pageCount: number) => ({
         stack: [
-          { canvas: [{ type: 'line', x1: margins[0], y1: 0, x2: 595 - margins[2], y2: 0, lineWidth: 0.5, lineColor: R.grisBorde }] },
+          { canvas: [{ type: 'line', x1: margins[0], y1: 0, x2: 595.28 - margins[2], y2: 0, lineWidth: 0.5, lineColor: R.grisBorde }] },
           {
             text: cfg.mensaje_pie,
             fontSize: 7.5, color: '#9CA3AF', alignment: 'center',
@@ -1981,6 +2035,224 @@ export class PdfGeneratorService {
         ],
       }),
 
+    } as unknown as DocDefinition;
+  }
+
+  // ── PLANTILLA 2: TICKET TÉRMICO 80 MM (EPSON TM-T20 / CONTINUO) ───────────
+  private construirDocumentoTicket(
+    d: ReciboDatos,
+    cfg: ConfiguracionRecibos,
+    logoB64: string | null,
+  ): DocDefinition {
+    // 80 mm ancho físico = 226.77 pt. Área imprimible 72 mm = 204.09 pt.
+    // Márgenes: [11, 10, 11, 12] -> ancho efectivo = 204.77 pt.
+    const printableWidth = 204.77;
+
+    // Funciones fábrica para evitar mutaciones de objetos compartidos en pdfmake
+    function lineaGuionesTicket(): DocDefinition {
+      return {
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: printableWidth, y2: 0, lineWidth: 0.8, lineColor: '#000000', dash: { length: 3, space: 2 } }],
+        margin: [0, 4, 0, 4] as [number, number, number, number],
+      } as unknown as DocDefinition;
+    }
+
+    function lineaSolidaTicket(grosor = 1): DocDefinition {
+      return {
+        canvas: [{ type: 'line', x1: 0, y1: 0, x2: printableWidth, y2: 0, lineWidth: grosor, lineColor: '#000000' }],
+        margin: [0, 3, 0, 3] as [number, number, number, number],
+      } as unknown as DocDefinition;
+    }
+
+    // Cálculos financieros idénticos a A4
+    const sumaAplicada = Math.round(d.detalle.reduce((s, l) => s + Number(l.aplicado ?? 0), 0) * 100) / 100;
+    const montoRecibido = d.monto_recibido !== undefined ? Number(d.monto_recibido) : Number(d.total_pagado);
+    const saldoUtilizado = d.saldo_utilizado !== undefined
+      ? Number(d.saldo_utilizado)
+      : Math.max(0, Math.round((sumaAplicada - montoRecibido) * 100) / 100);
+    const esSoloSaldoFavor = montoRecibido === 0 && saldoUtilizado > 0;
+    const esMixto = montoRecibido > 0 && saldoUtilizado > 0;
+    const totalMostrar = sumaAplicada > 0 && (esSoloSaldoFavor || esMixto) ? sumaAplicada : d.total_pagado;
+
+    let metodoPagoBase: string = d.metodo_pago;
+    if (esSoloSaldoFavor) {
+      metodoPagoBase = 'Aplicación 100% Saldo a favor';
+    } else if (esMixto) {
+      metodoPagoBase = `Mixto (${d.metodo_pago} + Saldo a favor)`;
+    }
+
+    // Encabezado térmico con logo oficial
+    const stackEncabezado: DocDefinition[] = [];
+    if (logoB64) {
+      stackEncabezado.push(
+        { image: logoB64, width: 46, alignment: 'center', margin: [0, 0, 0, 3] } as unknown as DocDefinition,
+      );
+    }
+    stackEncabezado.push(
+      { text: cfg.nombre_institucion, fontSize: 9.5, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
+      { text: cfg.subtitulo, fontSize: 7.5, color: '#444444', alignment: 'center', margin: [0, 1.5, 0, 3] } as unknown as DocDefinition,
+    );
+
+    // Listado de conceptos en formato vertical adaptable sin desbordes
+    const itemsStack: DocDefinition[] = [];
+    d.detalle.forEach((it, idx) => {
+      itemsStack.push({
+        text: it.concepto,
+        fontSize: 8.5,
+        bold: true,
+        color: '#000000',
+      } as unknown as DocDefinition);
+      itemsStack.push({
+        columns: [
+          { text: `${it.periodo}  ·  ${it.cubierto_completo ? '[CANCELADO]' : '[PARCIAL]'}`, fontSize: 7.5, color: '#333333' },
+          { text: `S/ ${it.aplicado.toFixed(2)}`, fontSize: 8.5, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition);
+      if (it.saldo_original !== it.aplicado) {
+        itemsStack.push({
+          text: `Deuda original: S/ ${it.saldo_original.toFixed(2)}  ·  Abono: S/ ${it.aplicado.toFixed(2)}`,
+          fontSize: 7,
+          italics: true,
+          color: '#555555',
+        } as unknown as DocDefinition);
+      }
+      if (idx < d.detalle.length - 1) {
+        itemsStack.push({
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: printableWidth, y2: 0, lineWidth: 0.5, lineColor: '#CCCCCC', dash: { length: 2, space: 2 } }],
+          margin: [0, 2.5, 0, 2.5] as [number, number, number, number],
+        } as unknown as DocDefinition);
+      }
+    });
+
+    // Desglose financiero
+    const desgloses: DocDefinition[] = [];
+    if (esSoloSaldoFavor) {
+      desgloses.push({ text: '· Modalidad: Aplicación de saldo a favor', fontSize: 7.5, italics: true, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: '· Nuevo ingreso en caja: S/ 0.00', fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+    } else if (esMixto) {
+      desgloses.push({ text: `· Dinero recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+      desgloses.push({ text: `· Saldo a favor utilizado: S/ ${saldoUtilizado.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+    } else {
+      desgloses.push({ text: `· Importe recibido (${d.metodo_pago}): S/ ${montoRecibido.toFixed(2)}`, fontSize: 7.5, color: '#000000' } as unknown as DocDefinition);
+    }
+    if (d.saldo_a_favor > 0) {
+      desgloses.push({ text: `· Saldo a favor restante: S/ ${d.saldo_a_favor.toFixed(2)}`, fontSize: 7.5, bold: true, color: '#000000' } as unknown as DocDefinition);
+    }
+
+    const contentTicket: DocDefinition[] = [
+      // Encabezado institucional con logo
+      ...stackEncabezado,
+      lineaGuionesTicket(),
+
+      // Título y código
+      { text: 'RECIBO DE PAGO', fontSize: 10.5, bold: true, alignment: 'center', color: '#000000' } as unknown as DocDefinition,
+      { text: d.codigo_transaccion, fontSize: 9.5, bold: true, alignment: 'center', margin: [0, 1, 0, 3], color: '#000000' } as unknown as DocDefinition,
+      lineaSolidaTicket(0.8),
+
+      // Datos de la operación
+      {
+        columns: [
+          { text: 'Fecha / Hora:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: formatFechaTicket(d.fecha_pago), width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      {
+        columns: [
+          { text: 'Pagador:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.nombre_pagador, width: '*', fontSize: 8, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      {
+        columns: [
+          { text: 'DNI:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.dni_pagador, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      ...(d.numero_socio ? [{
+        columns: [
+          { text: 'N° de Socio:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: String(d.numero_socio), width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition] : []),
+      {
+        columns: [
+          { text: 'Puesto / Espacio:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.codigo_puesto, width: '*', fontSize: 8, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      {
+        columns: [
+          { text: 'Condición:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.tipo_pagador, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      {
+        columns: [
+          { text: 'Método de pago:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: metodoPagoBase, width: '*', fontSize: 7.5, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition,
+      ...(d.comprobante ? [{
+        columns: [
+          { text: 'N° Operación:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.comprobante, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+      } as unknown as DocDefinition] : []),
+      ...(d.observacion ? [{
+        columns: [
+          { text: 'Observación:', width: 55, fontSize: 7.5, color: '#444444' },
+          { text: d.observacion, width: '*', fontSize: 7.5, italics: true, alignment: 'right' as const, color: '#444444' },
+        ],
+      } as unknown as DocDefinition] : []),
+      lineaGuionesTicket(),
+
+      // Conceptos
+      { text: 'DETALLE DE COBROS', fontSize: 8, bold: true, margin: [0, 1, 0, 3], color: '#000000' } as unknown as DocDefinition,
+      { stack: itemsStack } as unknown as DocDefinition,
+      lineaSolidaTicket(1.2),
+
+      // Totales
+      {
+        columns: [
+          { text: esSoloSaldoFavor ? 'TOTAL APLICADO:' : 'TOTAL COBRADO:', fontSize: 9.5, bold: true, color: '#000000' },
+          { text: `S/ ${totalMostrar.toFixed(2)}`, fontSize: 11.5, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+        margin: [0, 2, 0, 2] as [number, number, number, number],
+      } as unknown as DocDefinition,
+      { stack: desgloses, margin: [0, 1, 0, 3] as [number, number, number, number] } as unknown as DocDefinition,
+      lineaGuionesTicket(),
+
+      // Cajero responsable (sin sello obligatorio)
+      {
+        columns: [
+          { text: 'Cajero:', width: 45, fontSize: 7.5, color: '#444444' },
+          { text: d.cajero, width: '*', fontSize: 7.5, bold: true, alignment: 'right' as const, color: '#000000' },
+        ],
+        margin: [0, 1, 0, 2] as [number, number, number, number],
+      } as unknown as DocDefinition,
+    ];
+
+    // Mensaje institucional si está configurado (sin línea horizontal que lo atraviese)
+    if (cfg.mensaje_pie && cfg.mensaje_pie.trim()) {
+      contentTicket.push(
+        lineaGuionesTicket(),
+        {
+          text: cfg.mensaje_pie.trim(),
+          fontSize: 7.5,
+          italics: true,
+          alignment: 'center' as const,
+          color: '#333333',
+          margin: [0, 1, 0, 2] as [number, number, number, number],
+        } as unknown as DocDefinition
+      );
+    }
+
+    return {
+      pageSize: { width: 226.77, height: 'auto' },
+      pageMargins: [11, 10, 11, 12],
+      defaultStyle: { font: 'Roboto', fontSize: 8.5, lineHeight: 1.25 },
+      content: contentTicket,
+      // IMPORTANTE: NO incluir propiedad `footer` para evitar error Infinity en páginas con height 'auto'
     } as unknown as DocDefinition;
   }
 }

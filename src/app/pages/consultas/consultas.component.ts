@@ -1,6 +1,6 @@
 import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
-import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
+import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
 import { type BusquedaResultado, type DeudaItem, type PagoHistorial, resumirPagoConSaldo, type TipoPagador } from '../pagos/pago.model';
 
@@ -286,23 +286,34 @@ const MESES: ReadonlyArray<string> = [
                             </td>
                             <td class="px-5 py-3 text-center">
                               @if (!p.anulado) {
-                                <button
-                                  (click)="abrirReciboPdf(p)"
-                                  [disabled]="generandoPdfId() === p.id"
-                                  title="Descargar Recibo"
-                                  class="text-brand-600 hover:text-brand-800 disabled:opacity-50 transition p-1 rounded hover:bg-brand-50 inline-flex items-center justify-center"
-                                >
-                                  @if (generandoPdfId() === p.id) {
-                                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                    </svg>
-                                  } @else {
-                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                  }
-                                </button>
+                                <div class="inline-flex items-center rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                                  <button
+                                    type="button"
+                                    (click)="abrirReciboPdf(p, 'A4')"
+                                    [disabled]="generandoPdfId() === p.id"
+                                    title="Descargar recibo en formato A4 (Predeterminado)"
+                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition disabled:opacity-40 border-r border-slate-200">
+                                    @if (generandoPdfId() === p.id && formatoGenerandoId() === 'A4') {
+                                      <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    } @else {
+                                      <svg class="w-3.5 h-3.5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    }
+                                    <span>A4</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    (click)="abrirReciboPdf(p, 'TICKET_80MM')"
+                                    [disabled]="generandoPdfId() === p.id"
+                                    title="Descargar ticket para impresora térmica 80 mm"
+                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 transition disabled:opacity-40">
+                                    @if (generandoPdfId() === p.id && formatoGenerandoId() === 'TICKET_80MM') {
+                                      <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                    } @else {
+                                      <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                    }
+                                    <span>Ticket</span>
+                                  </button>
+                                </div>
                               } @else {
                                 <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
                                   Anulado
@@ -324,15 +335,24 @@ const MESES: ReadonlyArray<string> = [
                             @if (p.anulado) {
                               <span class="mt-2 inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Anulado</span>
                             } @else {
-                              <button (click)="abrirReciboPdf(p)" [disabled]="generandoPdfId() === p.id" class="mt-2 text-brand-600 hover:text-brand-800 disabled:opacity-50 transition inline-flex items-center text-sm font-medium">
-                                @if (generandoPdfId() === p.id) {
-                                  <svg class="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                  Descargando...
-                                } @else {
-                                  <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                  Ver Recibo
-                                }
-                              </button>
+                              <div class="mt-2 flex items-center gap-2">
+                                <button type="button" (click)="abrirReciboPdf(p, 'A4')" [disabled]="generandoPdfId() === p.id" class="text-brand-600 hover:text-brand-800 disabled:opacity-50 transition inline-flex items-center text-xs font-medium border border-slate-200 rounded-lg px-2.5 py-1">
+                                  @if (generandoPdfId() === p.id && formatoGenerandoId() === 'A4') {
+                                    <svg class="animate-spin h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                  } @else {
+                                    <svg class="w-3.5 h-3.5 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                  }
+                                  Recibo A4
+                                </button>
+                                <button type="button" (click)="abrirReciboPdf(p, 'TICKET_80MM')" [disabled]="generandoPdfId() === p.id" class="text-slate-600 hover:text-slate-900 disabled:opacity-50 transition inline-flex items-center text-xs font-medium border border-slate-200 rounded-lg px-2.5 py-1">
+                                  @if (generandoPdfId() === p.id && formatoGenerandoId() === 'TICKET_80MM') {
+                                    <svg class="animate-spin h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                  } @else {
+                                    <svg class="w-3.5 h-3.5 mr-1 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                  }
+                                  Ticket 80mm
+                                </button>
+                              </div>
                             }
                           </div>
                           <div class="text-right">
@@ -377,7 +397,8 @@ export class ConsultasComponent {
   readonly deudas = signal<DeudaItem[]>([]);
   readonly historial = signal<PagoHistorial[]>([]);
   readonly tab = signal<TabActiva>('pendientes');
-  readonly generandoPdfId = signal<number | null>(null);
+  readonly generandoPdfId     = signal<number | null>(null);
+  readonly formatoGenerandoId = signal<FormatoImpresion | null>(null);
 
   readonly totalDeuda = computed(() =>
     this.deudas().reduce((s, d) => s + d.saldo_pendiente, 0),
@@ -501,10 +522,11 @@ export class ConsultasComponent {
     return resumirPagoConSaldo(pago);
   }
 
-  async abrirReciboPdf(pago: PagoHistorial): Promise<void> {
+  async abrirReciboPdf(pago: PagoHistorial, formato: FormatoImpresion = 'A4'): Promise<void> {
     const sel = this.seleccionado();
     if (!sel) return;
 
+    this.formatoGenerandoId.set(formato);
     this.generandoPdfId.set(pago.id);
     try {
       const res = resumirPagoConSaldo(pago);
@@ -533,12 +555,13 @@ export class ConsultasComponent {
         monto_recibido:  res.montoCaja,
         saldo_utilizado: res.saldoUtilizado,
       };
-      await this.pdfSvc.generarYAbrir(datos);
+      await this.pdfSvc.generarYAbrir(datos, formato);
     } catch (e: unknown) {
       console.error(e);
       this.error.set('No pudimos generar el recibo en PDF. Intente nuevamente en un momento.');
     } finally {
       this.generandoPdfId.set(null);
+      this.formatoGenerandoId.set(null);
     }
   }
 }

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { InquilinosService } from '../../core/services/inquilinos.service';
 import { PagosService } from '../../core/services/pagos.service';
-import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
+import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
 import { AuthService } from '../../core/services/auth.service';
 import { InquilinoDetalle } from './inquilino.model';
 import { DNI_INSTITUCIONAL } from './socio.model';
@@ -317,24 +317,45 @@ const MOTIVOS_ANULACION = [
                             <!-- Acciones -->
                             <td class="px-3 py-2.5 text-right">
                               <div class="flex items-center justify-end gap-1">
-                                <!-- PDF (siempre disponible) -->
-                                <button
-                                  (click)="abrirReciboPdf(p)"
-                                  [disabled]="generandoPdfId() === p.id"
-                                  title="Abrir recibo PDF"
-                                  class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-brand-400 hover:text-brand-600 dark:hover:text-brand-400 transition disabled:opacity-40 text-xs">
-                                  @if (generandoPdfId() === p.id) {
-                                    <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                    </svg>
-                                  } @else {
-                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                                    </svg>
-                                  }
-                                  PDF
-                                </button>
+                                <!-- Recibo (Selección A4 o Ticket 80 mm) -->
+                                <div class="inline-flex items-center rounded-lg border border-gray-200 dark:border-gray-600 shadow-xs overflow-hidden">
+                                  <button
+                                    type="button"
+                                    (click)="abrirReciboPdf(p, 'A4')"
+                                    [disabled]="generandoPdfId() === p.id"
+                                    title="Abrir recibo PDF A4 (Predeterminado)"
+                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/60 transition disabled:opacity-40 border-r border-gray-200 dark:border-gray-600">
+                                    @if (generandoPdfId() === p.id && formatoGenerandoId() === 'A4') {
+                                      <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                      </svg>
+                                    } @else {
+                                      <svg class="h-3.5 w-3.5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                      </svg>
+                                    }
+                                    <span>A4</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    (click)="abrirReciboPdf(p, 'TICKET_80MM')"
+                                    [disabled]="generandoPdfId() === p.id"
+                                    title="Abrir ticket térmico (80 mm)"
+                                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700/60 transition disabled:opacity-40">
+                                    @if (generandoPdfId() === p.id && formatoGenerandoId() === 'TICKET_80MM') {
+                                      <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                      </svg>
+                                    } @else {
+                                      <svg class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                      </svg>
+                                    }
+                                    <span>Ticket</span>
+                                  </button>
+                                </div>
 
                                 <!-- Anular (solo Admin, solo pagos vigentes) -->
                                 @if (authSvc.esAdmin() && !p.anulado) {
@@ -560,7 +581,8 @@ export class InquilinoDetailComponent implements OnDestroy {
   readonly historial        = signal<PagoHistorial[]>([]);
   readonly historialLoading = signal(false);
   readonly historialError   = signal<string | null>(null);
-  readonly generandoPdfId   = signal<number | null>(null);
+  readonly generandoPdfId     = signal<number | null>(null);
+  readonly formatoGenerandoId = signal<FormatoImpresion | null>(null);
 
   // Deudas pendientes
   readonly deudas        = signal<DeudaItem[]>([]);
@@ -743,10 +765,11 @@ export class InquilinoDetailComponent implements OnDestroy {
     return resumirPagoConSaldo(pago);
   }
 
-  async abrirReciboPdf(pago: PagoHistorial): Promise<void> {
+  async abrirReciboPdf(pago: PagoHistorial, formato: FormatoImpresion = 'A4'): Promise<void> {
     const d = this.detalle();
     if (!d) return;
 
+    this.formatoGenerandoId.set(formato);
     this.generandoPdfId.set(pago.id);
     try {
       const res = resumirPagoConSaldo(pago);
@@ -774,13 +797,14 @@ export class InquilinoDetailComponent implements OnDestroy {
         monto_recibido:  res.montoCaja,
         saldo_utilizado: res.saldoUtilizado,
       };
-      await this.pdfSvc.generarYAbrir(datos);
+      await this.pdfSvc.generarYAbrir(datos, formato);
     } catch (e: unknown) {
       this.historialError.set(
-        `No se pudo generar el PDF: ${e instanceof Error ? e.message : 'error desconocido'}`,
+        `No se pudo generar el recibo: ${e instanceof Error ? e.message : 'error desconocido'}`,
       );
     } finally {
       this.generandoPdfId.set(null);
+      this.formatoGenerandoId.set(null);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { afterNextRender, Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PagosService } from '../../core/services/pagos.service';
-import { PdfGeneratorService, ReciboDatos } from '../../core/services/pdf-generator.service';
+import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
 import {
   BusquedaResultado,
@@ -483,27 +483,52 @@ function formatSoles(n: number): string {
               Puesto {{ seleccionado()!.codigo_puesto }} ·
               {{ formatSoles(totalAplicado()) }} · {{ etiquetaMetodoResumen() }}
             </p>
-            <div class="mt-6 flex justify-center gap-3">
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <!-- Acción Principal: Ticket 80 mm para impresora térmica -->
               <button
-                (click)="imprimirRecibo()"
+                type="button"
+                (click)="imprimirRecibo('TICKET_80MM')"
                 [disabled]="generandoPdf()"
-                class="flex items-center gap-2 rounded-lg border border-green-300 px-5 py-2.5 text-sm font-medium text-green-700 transition hover:bg-green-100 disabled:opacity-60 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/40">
-                @if (generandoPdf()) {
+                class="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-60 dark:bg-emerald-700 dark:hover:bg-emerald-600">
+                @if (generandoPdf() && formatoGenerando() === 'TICKET_80MM') {
                   <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
-                  Generando PDF…
+                  <span>Generando ticket…</span>
                 } @else {
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                   </svg>
-                  Imprimir Recibo (PDF)
+                  <span>Imprimir ticket (80 mm)</span>
                 }
               </button>
+
+              <!-- Acción Secundaria: Hoja A4 estándar -->
               <button
+                type="button"
+                (click)="imprimirRecibo('A4')"
+                [disabled]="generandoPdf()"
+                class="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-xs transition hover:bg-gray-50 active:scale-[0.98] disabled:opacity-60 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                @if (generandoPdf() && formatoGenerando() === 'A4') {
+                  <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span>Generando A4…</span>
+                } @else {
+                  <svg class="h-4 w-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <span>Ver / descargar PDF A4</span>
+                }
+              </button>
+
+              <!-- Nuevo Pago -->
+              <button
+                type="button"
                 (click)="reiniciar()"
-                class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600">
+                class="rounded-xl border border-transparent bg-gray-100 px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                 Nuevo Pago
               </button>
             </div>
@@ -801,6 +826,7 @@ export class PagoWizardComponent implements OnInit {
   readonly errorGuardado = signal<string | null>(null);
   readonly codigoTransaccion = signal<string | null>(null);
   readonly generandoPdf = signal(false);
+  readonly formatoGenerando = signal<FormatoImpresion | null>(null);
   readonly errorPdf = signal<string | null>(null);
 
   // --- Helpers de distribución manual ---
@@ -961,7 +987,7 @@ export class PagoWizardComponent implements OnInit {
     }
   }
 
-  async imprimirRecibo(): Promise<void> {
+  async imprimirRecibo(formato: FormatoImpresion = 'TICKET_80MM'): Promise<void> {
     const sel = this.seleccionado();
     const codigo = this.codigoTransaccion();
     if (!sel || !codigo) return;
@@ -994,14 +1020,16 @@ export class PagoWizardComponent implements OnInit {
       saldo_utilizado: this.saldoUtilizado(),
     };
 
+    this.formatoGenerando.set(formato);
     this.generandoPdf.set(true);
     this.errorPdf.set(null);
     try {
-      await this.pdfService.generarYAbrir(datos);
+      await this.pdfService.generarYAbrir(datos, formato);
     } catch (e: unknown) {
-      this.errorPdf.set(e instanceof Error ? e.message : 'Error al generar el PDF');
+      this.errorPdf.set(e instanceof Error ? e.message : 'Error al generar el recibo');
     } finally {
       this.generandoPdf.set(false);
+      this.formatoGenerando.set(null);
     }
   }
 
