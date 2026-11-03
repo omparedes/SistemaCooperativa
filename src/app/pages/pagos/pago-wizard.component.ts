@@ -1,5 +1,5 @@
 import { afterNextRender, Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
@@ -23,13 +23,13 @@ function formatSoles(n: number): string {
 @Component({
   selector: 'app-pago-wizard',
   standalone: true,
-  imports: [],
+  imports: [RouterLink],
   template: `
     <div class="mx-auto max-w-3xl p-4 md:p-6">
 
       <!-- Breadcrumb -->
       <nav class="mb-5 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        <a href="/socios" class="hover:text-brand-500">Socios</a>
+        <a routerLink="/socios" class="hover:text-brand-500">Socios</a>
         <span>/</span>
         <span class="text-gray-800 dark:text-white">Registrar Pago</span>
       </nav>
