@@ -587,6 +587,7 @@ export class InquilinoDetailComponent implements OnDestroy {
   // Deudas pendientes
   readonly deudas        = signal<DeudaItem[]>([]);
   readonly deudasLoading = signal(false);
+  readonly deudasCargadas = signal(false);
   readonly deudasError   = signal<string | null>(null);
 
   readonly totalDeuda = computed(() =>
@@ -641,11 +642,10 @@ export class InquilinoDetailComponent implements OnDestroy {
     this.tab.set('pagos');
     this.historial.set([]);
     this.deudas.set([]);
+    this.deudasCargadas.set(false);
+    void this.cargarHistorial(id);
     try {
-      const [det] = await Promise.all([
-        this.svc.cargarDetalle(id),
-        this.cargarHistorial(id),
-      ]);
+      const det = await this.svc.cargarDetalle(id);
       this.detalle.set(det);
 
       // Preload debts so totalDeuda() and the tab count badge are accurate immediately
@@ -682,6 +682,7 @@ export class InquilinoDetailComponent implements OnDestroy {
   protected readonly formatPeriodo = formatPeriodo;
 
   cargarDeudasTab(): void {
+    if (this.deudasCargadas() || this.deudasLoading()) return;
     const d = this.detalle();
     const puestoId = d?.arriendo_vigente?.puesto.id ?? d?.almacenes_vigentes?.[0]?.id ?? null;
     void this.cargarDeudas(puestoId);
@@ -693,6 +694,7 @@ export class InquilinoDetailComponent implements OnDestroy {
     try {
       const lista = await this.pagosSvc.cargarDeudasPuesto(puestoId, this.inquilinoId() ?? undefined, 'inquilino');
       this.deudas.set(lista);
+      this.deudasCargadas.set(true);
     } catch (e: unknown) {
       this.deudasError.set(e instanceof Error ? e.message : 'Error al cargar deudas');
     } finally {
@@ -751,7 +753,9 @@ export class InquilinoDetailComponent implements OnDestroy {
     try {
       await this.pagosSvc.anularPago(pago.id, motivo);
       this.cerrarModalAnular();
-      await this.cargarHistorial(id);
+      const d = this.detalle();
+      const puestoId = d?.arriendo_vigente?.puesto.id ?? d?.almacenes_vigentes?.[0]?.id ?? null;
+      await Promise.all([this.cargarHistorial(id), this.cargarDeudas(puestoId)]);
     } catch (e: unknown) {
       this.errorAnulacion.set(e instanceof Error ? e.message : 'Error al anular el pago');
     } finally {

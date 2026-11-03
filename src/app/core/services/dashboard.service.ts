@@ -104,7 +104,7 @@ export class DashboardService {
   /** Actualiza los filtros de origen y recarga el dashboard */
   setFiltros(filtros: { socios: boolean; inquilinos: boolean; otros: boolean }): void {
     this._filtros.set(filtros);
-    void this.cargar();
+    void this.cargarFiltrado();
   }
 
   // -------------------------------------------------------------------------
@@ -119,6 +119,22 @@ export class DashboardService {
         this.cargarDeuda(),
         this.cargarMorosos(),
         this.cargarEjecutivo(),
+      ]);
+    } catch (e: unknown) {
+      this._error.set(e instanceof Error ? e.message : 'Error al cargar el dashboard');
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  async cargarFiltrado(): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
+    try {
+      await Promise.all([
+        this.cargarRecaudacion(),
+        this.cargarDeuda(),
+        this.cargarMorosos(),
       ]);
     } catch (e: unknown) {
       this._error.set(e instanceof Error ? e.message : 'Error al cargar el dashboard');

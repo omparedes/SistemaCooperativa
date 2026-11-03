@@ -373,7 +373,7 @@ export class MovimientosBancariosReporteComponent implements OnInit {
   // Datos
   readonly cuentas     = signal<BancoCuenta[]>([]);
   readonly movimientos = signal<MovimientoBancario[]>([]);
-  readonly cargando    = signal(false);
+  readonly cargando    = signal(true);
   readonly error       = signal<string | null>(null);
   readonly generandoPdf = signal(false);
 

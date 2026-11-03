@@ -1098,11 +1098,9 @@ export class SocioDetailComponent implements OnDestroy {
     this.tab.set('pagos');
     this.historial.set([]);
     this.deudas.set([]);
+    void this.cargarHistorial(id);
     try {
-      const [det] = await Promise.all([
-        this.svc.cargarDetalle(id),
-        this.cargarHistorial(id),
-      ]);
+      const det = await this.svc.cargarDetalle(id);
       this.detalle.set(det);
 
       this.cleanupRealtime = this.pagosSvc.suscribirCambiosDePagos(
@@ -1137,7 +1135,7 @@ export class SocioDetailComponent implements OnDestroy {
 
   cargarDeudasTab(): void {
     const id = this.socioId();
-    if (!this.detalle() || !id) return;
+    if (!this.detalle() || !id || this.deudasLoading()) return;
     void this.cargarDeudas(id);
   }
 

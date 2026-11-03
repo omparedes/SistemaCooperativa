@@ -536,7 +536,7 @@ export class GestionIngresosComponent implements OnInit {
   exito = signal<string | null>(null);
 
   // Filtros
-  presetActivo = signal<PresetFecha>('TODO');
+  presetActivo = signal<PresetFecha>('MES');
   fechaDesde = signal<string>('');
   fechaHasta = signal<string>('');
   conceptoIdFiltro = signal<number | null>(null);
@@ -576,7 +576,7 @@ export class GestionIngresosComponent implements OnInit {
 
   ngOnInit() {
     void this.cargarConceptos();
-    void this.cargar();
+    this.aplicarPreset('MES');
   }
 
   async cargarConceptos() {

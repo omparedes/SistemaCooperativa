@@ -43,6 +43,8 @@ export class AuthService {
 
   // --- Promesa interna para que el guard pueda esperar la inicialización ---
   private readonly initPromise: Promise<void>;
+  private perfilPromise: Promise<void> | null = null;
+  private perfilCargandoUserId: string | null = null;
 
   constructor() {
     this.initPromise = this.inicializar();
@@ -50,23 +52,29 @@ export class AuthService {
 
   /** El guard la llama antes de decidir si permite o redirige. */
   async esperarInicializacion(): Promise<void> {
-    return this.initPromise;
+    await this.initPromise;
+    if (this.perfilPromise) {
+      await this.perfilPromise;
+    }
   }
 
   // -------------------------------------------------------------------------
   // Login / Logout
   // -------------------------------------------------------------------------
   async login(email: string, password: string): Promise<void> {
-    const { error } = await this.db.auth.signInWithPassword({ email, password });
+    const { data, error } = await this.db.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
-    // onAuthStateChange se dispara automáticamente y actualiza los signals.
+    if (data.user) {
+      this._usuario.set(data.user);
+      await this.cargarPerfil(data.user.id);
+    }
   }
 
   async logout(): Promise<void> {
     await this.db.auth.signOut();
     this._usuario.set(null);
     this._perfil.set(null);
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/signin']);
   }
 
   // -------------------------------------------------------------------------
@@ -85,12 +93,18 @@ export class AuthService {
     }
 
     // 2. Escuchar cambios de sesión (login, logout, token refresh)
-    this.db.auth.onAuthStateChange(async (event, session) => {
+    // IMPORTANTE: El callback NO debe ser async ni hacer await de consultas
+    // PostgREST dentro de onAuthStateChange, ya que GoTrueClient mantiene el
+    // cerrojo exclusivo Navigator LockManager mientras notifica a los suscriptores.
+    this.db.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         this._usuario.set(session.user);
-        // Solo recargamos el perfil si cambió el usuario
-        if (session.user.id !== this._perfil()?.id) {
-          await this.cargarPerfil(session.user.id);
+        const userId = session.user.id;
+        // Solo recargamos el perfil si cambió el usuario y no se está cargando ya
+        if (userId !== this._perfil()?.id && this.perfilCargandoUserId !== userId) {
+          setTimeout(() => {
+            void this.cargarPerfil(userId);
+          }, 0);
         }
       } else {
         this._usuario.set(null);
@@ -100,18 +114,37 @@ export class AuthService {
   }
 
   private async cargarPerfil(userId: string): Promise<void> {
-    const { data, error } = await this.db
-      .from('perfiles')
-      .select('id, email, rol, nombres, activo')
-      .eq('id', userId)
-      .eq('activo', true)        // un usuario desactivado no obtiene perfil → los guards lo redirigen
-      .single();
-
-    if (!error && data) {
-      this._perfil.set(data as Perfil);
-    } else {
-      // Sin perfil activo: limpiamos por si quedó uno previo (p. ej. tras desactivación).
-      this._perfil.set(null);
+    if (this._perfil()?.id === userId) {
+      return;
     }
+    if (this.perfilPromise && this.perfilCargandoUserId === userId) {
+      return this.perfilPromise;
+    }
+
+    this.perfilCargandoUserId = userId;
+    this.perfilPromise = (async () => {
+      try {
+        const { data, error } = await this.db
+          .from('perfiles')
+          .select('id, email, rol, nombres, activo')
+          .eq('id', userId)
+          .eq('activo', true)        // un usuario desactivado no obtiene perfil → los guards lo redirigen
+          .single();
+
+        if (!error && data) {
+          this._perfil.set(data as Perfil);
+        } else {
+          // Sin perfil activo: limpiamos por si quedó uno previo (p. ej. tras desactivación).
+          this._perfil.set(null);
+        }
+      } finally {
+        if (this.perfilCargandoUserId === userId) {
+          this.perfilCargandoUserId = null;
+          this.perfilPromise = null;
+        }
+      }
+    })();
+
+    return this.perfilPromise;
   }
 }

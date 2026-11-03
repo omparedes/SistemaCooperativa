@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -12,6 +12,24 @@ export class SidebarService {
   isExpanded$ = this.isExpandedSubject.asObservable();
   isMobileOpen$ = this.isMobileOpenSubject.asObservable();
   isHovered$ = this.isHoveredSubject.asObservable();
+
+  /**
+   * URL destino cuyo chunk lazy no pudo cargarse tras un nuevo despliegue.
+   * Se muestra como aviso no destructivo (sin recarga automática) para no perder datos en formularios.
+   */
+  readonly chunkErrorUrl = signal<string | null>(null);
+
+  get isExpandedValue(): boolean {
+    return this.isExpandedSubject.value;
+  }
+
+  get isMobileOpenValue(): boolean {
+    return this.isMobileOpenSubject.value;
+  }
+
+  get isHoveredValue(): boolean {
+    return this.isHoveredSubject.value;
+  }
 
   setExpanded(val: boolean) {
     this.isExpandedSubject.next(val);

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SociosService } from '../../core/services/socios.service';
@@ -69,8 +69,8 @@ type Tab = 'socios' | 'inquilinos';
 
       <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4 mb-4">
         <input type="text"
-          [value]="busqueda()"
-          (input)="busqueda.set($any($event.target).value)"
+          [value]="busquedaInput()"
+          (input)="onBusquedaInput($any($event.target).value)"
           placeholder="Buscar por nombre, apellido, DNI o código de puesto..."
           class="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
       </div>
@@ -227,14 +227,16 @@ type Tab = 'socios' | 'inquilinos';
     </div>
   `,
 })
-export class SocioListComponent implements OnInit {
+export class SocioListComponent implements OnInit, OnDestroy {
   private readonly sociosSvc     = inject(SociosService);
   private readonly inquilinosSvc = inject(InquilinosService);
   private readonly router        = inject(Router);
   protected readonly authSvc     = inject(AuthService);
 
   readonly tab = signal<Tab>('socios');
+  readonly busquedaInput = signal<string>('');
   readonly busqueda = signal<string>('');
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly totalSocios = computed(() => this.sociosSvc.socios().length);
   readonly totalInquilinos = computed(() => this.inquilinosSvc.inquilinos().length);
@@ -280,13 +282,31 @@ export class SocioListComponent implements OnInit {
     return null;
   }
 
+  onBusquedaInput(valor: string): void {
+    this.busquedaInput.set(valor);
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => {
+      this.busqueda.set(valor);
+    }, 200);
+  }
+
   ngOnInit(): void {
-    void this.sociosSvc.cargar();
-    void this.inquilinosSvc.cargar();
+    void this.sociosSvc.cargar().then(() => {
+      if (this.inquilinosSvc.inquilinos().length === 0 && !this.inquilinosSvc.loading()) {
+        void this.inquilinosSvc.cargar();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
   }
 
   cambiarTab(t: Tab): void {
     this.tab.set(t);
+    if (t === 'inquilinos' && this.inquilinosSvc.inquilinos().length === 0 && !this.inquilinosSvc.loading()) {
+      void this.inquilinosSvc.cargar();
+    }
   }
 
   nuevoSocio(): void {
