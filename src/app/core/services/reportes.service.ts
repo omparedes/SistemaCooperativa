@@ -192,7 +192,25 @@ interface RecaudacionAbonoArqueoRow {
 // Tipos del Reporte Consolidado (v2 — RPC server-side, 00085)
 // ---------------------------------------------------------------------------
 export type RangoReporte = 'hoy' | 'semana' | 'mes' | 'año';
+export type RangoRapido = 'hoy' | 'ayer' | 'semana' | 'mes' | 'mes_anterior' | 'año' | 'historico';
+export type ModoFiltroPeriodo = 'rapido' | 'mes_anio' | 'personalizado';
 export type TipoPagadorFiltro = 'todos' | 'socios' | 'inquilinos';
+export type OrigenFiltroUI = 'todos' | 'socios' | 'inquilinos' | 'otros';
+
+export interface FiltroPeriodoReporte {
+  modo: ModoFiltroPeriodo;
+  rangoRapido?: RangoRapido;
+  mes?: number; // 1 - 12
+  anio?: number; // ej. 2026
+  fechaDesde?: string; // YYYY-MM-DD
+  fechaHasta?: string; // YYYY-MM-DD
+}
+
+export interface PeriodoResuelto {
+  desde: string;
+  hasta: string;
+  etiqueta: string;
+}
 
 export interface ConceptoResumen {
   concepto: string;
@@ -267,12 +285,98 @@ function fechaLocal(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+export function getFechaHoyLima(): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(new Date()); // YYYY-MM-DD
+}
+
+export function getNombreMes(m: number): string {
+  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  return meses[m - 1] || '';
+}
+
+export function resolverPeriodoReporte(filtro: FiltroPeriodoReporte): PeriodoResuelto {
+  const hoyLima = getFechaHoyLima();
+  const [yStr, mStr, dStr] = hoyLima.split('-');
+  const y = parseInt(yStr, 10);
+  const m = parseInt(mStr, 10);
+  const d = parseInt(dStr, 10);
+
+  if (filtro.modo === 'mes_anio') {
+    const selY = filtro.anio ?? y;
+    const selM = filtro.mes ?? m;
+    const ultimoDia = new Date(selY, selM, 0).getDate();
+    const mm = pad2(selM);
+    return {
+      desde: `${selY}-${mm}-01`,
+      hasta: `${selY}-${mm}-${pad2(ultimoDia)}`,
+      etiqueta: `${getNombreMes(selM)} ${selY}`,
+    };
+  }
+
+  if (filtro.modo === 'personalizado') {
+    const dVal = filtro.fechaDesde || hoyLima;
+    const hVal = filtro.fechaHasta || hoyLima;
+    return {
+      desde: dVal,
+      hasta: hVal,
+      etiqueta: dVal === hVal ? dVal : `${dVal} al ${hVal}`,
+    };
+  }
+
+  // modo === 'rapido'
+  switch (filtro.rangoRapido) {
+    case 'hoy':
+      return { desde: hoyLima, hasta: hoyLima, etiqueta: `Hoy (${hoyLima})` };
+    case 'ayer': {
+      const ayer = new Date(y, m - 1, d - 1);
+      const ayerStr = `${ayer.getFullYear()}-${pad2(ayer.getMonth() + 1)}-${pad2(ayer.getDate())}`;
+      return { desde: ayerStr, hasta: ayerStr, etiqueta: `Ayer (${ayerStr})` };
+    }
+    case 'semana': {
+      const sem = new Date(y, m - 1, d - 6);
+      const semStr = `${sem.getFullYear()}-${pad2(sem.getMonth() + 1)}-${pad2(sem.getDate())}`;
+      return { desde: semStr, hasta: hoyLima, etiqueta: 'Últimos 7 días' };
+    }
+    case 'mes': {
+      const ultimoDiaMes = new Date(y, m, 0).getDate();
+      const mm = pad2(m);
+      return { desde: `${y}-${mm}-01`, hasta: `${y}-${mm}-${pad2(ultimoDiaMes)}`, etiqueta: `Este Mes (${getNombreMes(m)} ${y})` };
+    }
+    case 'mes_anterior': {
+      const ant = new Date(y, m - 2, 1);
+      const antY = ant.getFullYear();
+      const antM = ant.getMonth() + 1;
+      const ultimoDiaAnt = new Date(antY, antM, 0).getDate();
+      const mm = pad2(antM);
+      return {
+        desde: `${antY}-${mm}-01`,
+        hasta: `${antY}-${mm}-${pad2(ultimoDiaAnt)}`,
+        etiqueta: `Mes Anterior (${getNombreMes(antM)} ${antY})`,
+      };
+    }
+    case 'año': {
+      return { desde: `${y}-01-01`, hasta: `${y}-12-31`, etiqueta: `Este Año (${y})` };
+    }
+    case 'historico': {
+      return { desde: '2026-01-01', hasta: hoyLima, etiqueta: 'Histórico Completo' };
+    }
+    default:
+      return { desde: hoyLima, hasta: hoyLima, etiqueta: hoyLima };
+  }
+}
+
 function calcularRango(rango: RangoReporte): {
   desde: string; hasta: string; desdeISO: string; hastaISO: string;
 } {
   const hoy = new Date();
   const [y, m, d] = [hoy.getFullYear(), hoy.getMonth(), hoy.getDate()];
-  let inicio: Date;
+  let inicio = new Date(y, m, d);
   switch (rango) {
     case 'hoy':    inicio = new Date(y, m, d);     break;
     case 'semana': inicio = new Date(y, m, d - 6); break;
@@ -776,15 +880,14 @@ export class ReportesService {
   // ── Reporte Consolidado v2 (RPCs 00085, agregación server-side) ──────────
 
   /**
-   * KPIs de caja/banco + desglose por concepto + egresos por categoría,
-   * agregados en Postgres (una sola llamada, sin límite de 1000 filas).
+   * Carga resumen consolidado para cualquier rango de fechas arbitrario [desde, hasta].
+   * Utiliza la RPC rpc_reporte_resumen agregada en Postgres server-side.
    */
-  async cargarResumenV2(
-    rango: RangoReporte,
-    tipoPagador: TipoPagadorFiltro,
+  async cargarResumenPeriodo(
+    desde: string,
+    hasta: string,
+    tipoPagador: TipoPagadorFiltro = 'todos',
   ): Promise<ReporteResumenV2> {
-    const { desde, hasta } = calcularRango(rango);
-
     const { data, error } = await this.db.rpc('rpc_reporte_resumen', {
       p_desde:        desde,
       p_hasta:        hasta,
@@ -794,7 +897,7 @@ export class ReportesService {
 
     const raw = data as unknown as Omit<ReporteResumenV2, 'rango' | 'fechaDesde' | 'fechaHasta' | 'tipoPagador'>;
     return {
-      rango,
+      rango: 'mes',
       fechaDesde: desde,
       fechaHasta: hasta,
       tipoPagador,
@@ -806,16 +909,15 @@ export class ReportesService {
   }
 
   /**
-   * Drill-down de ingresos: líneas de recibos, ingresos internos y
-   * recaudación tarjeta del rango. `concepto = null` → todas las líneas.
+   * Drill-down de ingresos para fechas [desde, hasta].
+   * concepto = null devuelve todas las líneas del período.
    */
-  async cargarDetalleConcepto(
-    rango: RangoReporte,
-    concepto: string | null,
-    tipoPagador: TipoPagadorFiltro,
+  async cargarDetalleConceptoPeriodo(
+    desde: string,
+    hasta: string,
+    concepto: string | null = null,
+    tipoPagador: TipoPagadorFiltro = 'todos',
   ): Promise<DetalleIngresoLinea[]> {
-    const { desde, hasta } = calcularRango(rango);
-
     const { data, error } = await this.db.rpc('rpc_reporte_detalle_concepto', {
       p_desde:        desde,
       p_hasta:        hasta,
@@ -828,13 +930,15 @@ export class ReportesService {
       .map(l => ({ ...l, monto: Number(l.monto) }));
   }
 
-  /** Drill-down de egresos. `categoria = null` → todos los gastos del rango. */
-  async cargarDetalleEgresos(
-    rango: RangoReporte,
-    categoria: string | null,
+  /**
+   * Drill-down de egresos para fechas [desde, hasta].
+   * categoria = null devuelve todos los gastos del período.
+   */
+  async cargarDetalleEgresosPeriodo(
+    desde: string,
+    hasta: string,
+    categoria: string | null = null,
   ): Promise<DetalleEgresoLinea[]> {
-    const { desde, hasta } = calcularRango(rango);
-
     const { data, error } = await this.db.rpc('rpc_reporte_detalle_egresos', {
       p_desde:     desde,
       p_hasta:     hasta,
@@ -844,5 +948,39 @@ export class ReportesService {
 
     return ((data ?? []) as unknown as DetalleEgresoLinea[])
       .map(l => ({ ...l, monto: Number(l.monto) }));
+  }
+
+  /**
+   * Compatibilidad hacia atrás: KPIs de caja/banco por RangoReporte rápido.
+   */
+  async cargarResumenV2(
+    rango: RangoReporte,
+    tipoPagador: TipoPagadorFiltro,
+  ): Promise<ReporteResumenV2> {
+    const { desde, hasta } = calcularRango(rango);
+    return this.cargarResumenPeriodo(desde, hasta, tipoPagador);
+  }
+
+  /**
+   * Compatibilidad hacia atrás: drill-down de ingresos por RangoReporte rápido.
+   */
+  async cargarDetalleConcepto(
+    rango: RangoReporte,
+    concepto: string | null,
+    tipoPagador: TipoPagadorFiltro,
+  ): Promise<DetalleIngresoLinea[]> {
+    const { desde, hasta } = calcularRango(rango);
+    return this.cargarDetalleConceptoPeriodo(desde, hasta, concepto, tipoPagador);
+  }
+
+  /**
+   * Compatibilidad hacia atrás: drill-down de egresos por RangoReporte rápido.
+   */
+  async cargarDetalleEgresos(
+    rango: RangoReporte,
+    categoria: string | null,
+  ): Promise<DetalleEgresoLinea[]> {
+    const { desde, hasta } = calcularRango(rango);
+    return this.cargarDetalleEgresosPeriodo(desde, hasta, categoria);
   }
 }
