@@ -300,6 +300,60 @@ export function getNombreMes(m: number): string {
   return meses[m - 1] || '';
 }
 
+export interface PeriodoAnteriorResultado {
+  desde: string;
+  hasta: string;
+  etiqueta: string;
+  dias: number;
+}
+
+export function calcularPeriodoAnterior(desde: string, hasta: string): PeriodoAnteriorResultado {
+  const [y1, m1, d1] = desde.split('-').map(Number);
+  const [y2, m2, d2] = hasta.split('-').map(Number);
+  const dt1 = new Date(y1, m1 - 1, d1);
+  const dt2 = new Date(y2, m2 - 1, d2);
+
+  // Si es un mes calendario completo (primer día a último día del mes)
+  const primerDiaMes = new Date(y1, m1 - 1, 1);
+  const ultimoDiaMes = new Date(y1, m1, 0);
+  if (dt1.getDate() === primerDiaMes.getDate() && dt2.getDate() === ultimoDiaMes.getDate() && m1 === m2 && y1 === y2) {
+    const antY = m1 === 1 ? y1 - 1 : y1;
+    const antM = m1 === 1 ? 12 : m1 - 1;
+    const antUltimo = new Date(antY, antM, 0).getDate();
+    const mm = pad2(antM);
+    return {
+      desde: `${antY}-${mm}-01`,
+      hasta: `${antY}-${mm}-${pad2(antUltimo)}`,
+      etiqueta: `${getNombreMes(antM)} ${antY}`,
+      dias: antUltimo,
+    };
+  }
+
+  // Si es un año completo
+  if (m1 === 1 && d1 === 1 && m2 === 12 && d2 === 31 && y1 === y2) {
+    const antY = y1 - 1;
+    return {
+      desde: `${antY}-01-01`,
+      hasta: `${antY}-12-31`,
+      etiqueta: `Año ${antY}`,
+      dias: 365,
+    };
+  }
+
+  // Rango arbitrario de N días: período anterior de igual duración que termina el día antes de desde
+  const diffMs = dt2.getTime() - dt1.getTime();
+  const numDias = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1);
+  const antFin = new Date(dt1.getTime() - 24 * 60 * 60 * 1000);
+  const antIni = new Date(antFin.getTime() - (numDias - 1) * 24 * 60 * 60 * 1000);
+
+  return {
+    desde: `${antIni.getFullYear()}-${pad2(antIni.getMonth() + 1)}-${pad2(antIni.getDate())}`,
+    hasta: `${antFin.getFullYear()}-${pad2(antFin.getMonth() + 1)}-${pad2(antFin.getDate())}`,
+    etiqueta: `Período anterior equivalente (${numDias} días)`,
+    dias: numDias,
+  };
+}
+
 export function resolverPeriodoReporte(filtro: FiltroPeriodoReporte): PeriodoResuelto {
   const hoyLima = getFechaHoyLima();
   const [yStr, mStr, dStr] = hoyLima.split('-');

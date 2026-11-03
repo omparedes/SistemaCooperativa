@@ -2,6 +2,21 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  NgApexchartsModule,
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexXAxis,
+  ApexYAxis,
+  ApexDataLabels,
+  ApexPlotOptions,
+  ApexStroke,
+  ApexGrid,
+  ApexFill,
+  ApexTooltip,
+  ApexLegend,
+} from 'ng-apexcharts';
+import {
+  calcularPeriodoAnterior,
   ConceptoResumen,
   DetalleEgresoLinea,
   DetalleIngresoLinea,
@@ -11,12 +26,12 @@ import {
   getNombreMes,
   ModoFiltroPeriodo,
   OrigenFiltroUI,
+  PeriodoAnteriorResultado,
   PeriodoResuelto,
   RangoRapido,
   ReporteResumenV2,
   ReportesService,
   resolverPeriodoReporte,
-  TipoPagadorFiltro,
 } from '../../core/services/reportes.service';
 import { ExcelExportService } from '../../core/services/excel-export.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -48,10 +63,22 @@ function fmtFechaHora(iso: string): string {
 
 type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
 
+interface SerieDiariaResultado {
+  categories: string[];
+  seriesData: number[];
+  dias: Array<{ fecha: string; label: string; total: number; cantidad: number }>;
+  totalSuma: number;
+  diaMax: { fecha: string; label: string; total: number; cantidad: number } | null;
+  diaMin: { fecha: string; label: string; total: number; cantidad: number } | null;
+  promDiario: number;
+  diasActivos: number;
+  diasTotales: number;
+}
+
 @Component({
   selector: 'app-reportes',
   standalone: true,
-  imports: [NgClass, FormsModule],
+  imports: [NgClass, FormsModule, NgApexchartsModule],
   template: `
     <div class="mx-auto max-w-screen-2xl p-4 md:p-6 lg:p-8 space-y-6">
 
@@ -66,14 +93,27 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
               </svg>
             </span>
-            <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Central de Reportes</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Central de Reportes y Análisis Financiero</h1>
           </div>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Análisis financiero consolidado, trazabilidad de cobros y consulta histórica · Cooperativa Primero de Mayo
+            Análisis financiero consolidado, gráficos de evolución, tendencias y comparaciones históricas · Cooperativa Primero de Mayo
           </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
+          <!-- Botón Comparar con Período Anterior -->
+          <button
+            (click)="toggleComparacion()"
+            [ngClass]="compararConAnterior()
+              ? 'bg-blue-600 text-white font-semibold shadow-sm'
+              : 'border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50'"
+            class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition shadow-sm">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+            </svg>
+            <span>{{ compararConAnterior() ? 'Comparación Activa' : 'Comparar con Anterior' }}</span>
+          </button>
+
           <!-- Botón Exportar a Excel -->
           <button
             (click)="exportarExcel()"
@@ -190,7 +230,7 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
                 </select>
               </div>
 
-              <!-- Atajos de meses más consultados -->
+              <!-- Atajos de meses -->
               <div class="flex items-center gap-1.5 pl-2 border-l border-gray-200 dark:border-gray-700 text-xs">
                 <span class="text-gray-400">Ir rápido a:</span>
                 <button (click)="fijarMesAnio(10, 2026)" class="px-2 py-0.5 rounded bg-gray-100 hover:bg-emerald-100 dark:bg-gray-700 dark:hover:bg-emerald-950 text-gray-700 dark:text-gray-300 hover:text-emerald-700 transition">Octubre 2026</button>
@@ -260,14 +300,92 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
               }
             </div>
           </div>
-          <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 p-6 animate-pulse">
-            <div class="h-6 w-60 rounded bg-gray-200 dark:bg-gray-700 mb-4"></div>
-            <div class="h-48 rounded-xl bg-gray-50 dark:bg-gray-700/30"></div>
-          </div>
         </div>
       }
 
       @if (reporte(); as r) {
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN COMPARATIVA: PERÍODO ACTUAL VS ANTERIOR (ETAPA 2)       -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        @if (compararConAnterior() && reporteAnterior()) {
+          <section class="rounded-2xl border border-blue-200 dark:border-blue-900/50 bg-gradient-to-r from-blue-50/50 via-white to-blue-50/30 dark:from-blue-950/20 dark:via-gray-800 dark:to-blue-950/10 p-5 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-100 dark:border-blue-900/40 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                  </svg>
+                </span>
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                  Análisis Comparativo: {{ periodoActivo().etiqueta }} vs {{ infoPeriodoAnterior()?.etiqueta }}
+                </h3>
+              </div>
+
+              @if (esPeriodoIncompleto()) {
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-1 text-xs text-amber-800 dark:text-amber-300 font-medium">
+                  ⚠️ Período actual en curso. Comparación proporcional a días transcurridos.
+                </span>
+              }
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <!-- Comparación Ingresos -->
+              <div class="rounded-xl border border-gray-100 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-4 shadow-2xs">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ingresos Totales</p>
+                <div class="mt-2 flex items-baseline justify-between">
+                  <span class="text-xl font-bold tabular-nums text-gray-900 dark:text-white">{{ fmtSoles(variacionIngresos().actual) }}</span>
+                  <span class="text-xs text-gray-400">Ant: {{ fmtSoles(variacionIngresos().anterior) }}</span>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5 text-xs font-semibold"
+                  [ngClass]="variacionIngresos().diferencia >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
+                  <span>{{ variacionIngresos().diferencia >= 0 ? '▲ +' : '▼ ' }}{{ fmtSoles(variacionIngresos().diferencia) }}</span>
+                  <span>({{ variacionIngresos().porcentaje >= 0 ? '+' : '' }}{{ variacionIngresos().porcentaje.toFixed(1) }}%)</span>
+                </div>
+              </div>
+
+              <!-- Comparación Egresos -->
+              <div class="rounded-xl border border-gray-100 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-4 shadow-2xs">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Egresos Operativos</p>
+                <div class="mt-2 flex items-baseline justify-between">
+                  <span class="text-xl font-bold tabular-nums text-red-600 dark:text-red-400">{{ fmtSoles(variacionEgresos().actual) }}</span>
+                  <span class="text-xs text-gray-400">Ant: {{ fmtSoles(variacionEgresos().anterior) }}</span>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5 text-xs font-semibold"
+                  [ngClass]="variacionEgresos().diferencia <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                  <span>{{ variacionEgresos().diferencia >= 0 ? '▲ +' : '▼ ' }}{{ fmtSoles(variacionEgresos().diferencia) }}</span>
+                  <span>({{ variacionEgresos().porcentaje >= 0 ? '+' : '' }}{{ variacionEgresos().porcentaje.toFixed(1) }}%)</span>
+                </div>
+              </div>
+
+              <!-- Comparación Saldo Neto -->
+              <div class="rounded-xl border border-gray-100 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-4 shadow-2xs">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Saldo Neto</p>
+                <div class="mt-2 flex items-baseline justify-between">
+                  <span class="text-xl font-bold tabular-nums" [ngClass]="variacionSaldo().actual >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600 dark:text-red-400'">
+                    {{ fmtSoles(variacionSaldo().actual) }}
+                  </span>
+                  <span class="text-xs text-gray-400">Ant: {{ fmtSoles(variacionSaldo().anterior) }}</span>
+                </div>
+                <div class="mt-2 text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  Dif: {{ fmtSoles(variacionSaldo().diferencia) }}
+                </div>
+              </div>
+
+              <!-- Comparación Operaciones -->
+              <div class="rounded-xl border border-gray-100 dark:border-gray-700/80 bg-white dark:bg-gray-800 p-4 shadow-2xs">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recibos Emitidos</p>
+                <div class="mt-2 flex items-baseline justify-between">
+                  <span class="text-xl font-bold tabular-nums text-gray-900 dark:text-white">{{ r.caja.count_recibos }}</span>
+                  <span class="text-xs text-gray-400">Ant: {{ reporteAnterior()?.caja?.count_recibos ?? 0 }}</span>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                  Variación: {{ r.caja.count_recibos - (reporteAnterior()?.caja?.count_recibos ?? 0) }} recibos
+                </div>
+              </div>
+            </div>
+          </section>
+        }
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <!-- SECCIÓN 1: RESUMEN FINANCIERO CONSOLIDADO (KPIs DE CAJA)         -->
@@ -372,7 +490,7 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <span>Análisis de Ingresos por Concepto</span>
+            <span>Análisis de Ingresos y Evolución</span>
             <span class="rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
               {{ r.por_concepto.length }}
             </span>
@@ -387,7 +505,7 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
             </svg>
-            <span>Análisis de Egresos por Categoría</span>
+            <span>Análisis de Egresos y Categorías</span>
             <span class="rounded-full bg-orange-100 dark:bg-orange-950 px-2 py-0.5 text-xs text-orange-800 dark:text-orange-300 font-medium">
               {{ r.egresos_por_categoria.length }}
             </span>
@@ -407,24 +525,39 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 2: ANÁLISIS DE INGRESOS POR CONCEPTO                     -->
+        <!-- SECCIÓN 2: ANÁLISIS DE INGRESOS + GRÁFICO DE EVOLUCIÓN (ETAPA 2)-->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         @if (tabActiva() === 'ingresos' || tabActiva() === 'combinado') {
-          <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+          <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden space-y-5">
             <div class="border-b border-gray-100 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-700/30 p-5 space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 class="text-base font-bold text-gray-900 dark:text-white">Ingresos por Concepto</h3>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Filtra por concepto, origen o método de pago para auditar las operaciones correspondientes.
+                    Filtra por concepto, origen o método de pago para auditar y graficar las operaciones correspondientes.
                   </p>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-gray-500">Total filtrado:</span>
-                  <span class="text-base font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
-                    {{ fmtSoles(totalConceptosFiltrados()) }}
-                  </span>
+                <div class="flex items-center gap-3">
+                  <!-- Botón Ver Evolución Gráfica -->
+                  <button
+                    (click)="mostrarGraficoIngresos.set(!mostrarGraficoIngresos())"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                    [ngClass]="mostrarGraficoIngresos()
+                      ? 'bg-emerald-700 text-white shadow-sm'
+                      : 'border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                    </svg>
+                    <span>{{ mostrarGraficoIngresos() ? 'Ocultar Gráfica' : 'Ver Evolución Gráfica' }}</span>
+                  </button>
+
+                  <div class="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+                    <span class="text-xs font-semibold text-gray-500">Total filtrado:</span>
+                    <span class="text-base font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                      {{ fmtSoles(totalConceptosFiltrados()) }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -490,6 +623,89 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
               </div>
             </div>
 
+            <!-- ── PANEL GRÁFICO APEXCHARTS DE EVOLUCIÓN (ETAPA 2) ──────────── -->
+            @if (mostrarGraficoIngresos()) {
+              <div class="p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-900/20 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                      <span>Evolución Temporal: {{ conceptoGraficoActivo() }}</span>
+                    </h4>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      Recaudación diaria continua (días sin movimiento explícitamente en S/ 0.00).
+                    </p>
+                  </div>
+
+                  <!-- Botones rápidos de selección de concepto para graficar -->
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span class="text-gray-400 mr-1">Graficar:</span>
+                    <button (click)="seleccionarConceptoParaGrafico('')" [ngClass]="!filtroConceptoSeleccionado() ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">Todos</button>
+                    <button (click)="seleccionarConceptoParaGrafico('SS.HH 1er PISO')" [ngClass]="filtroConceptoSeleccionado() === 'SS.HH 1er PISO' ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">SS.HH</button>
+                    <button (click)="seleccionarConceptoParaGrafico('Parqueo')" [ngClass]="filtroConceptoSeleccionado() === 'Parqueo' ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">Parqueo</button>
+                    <button (click)="seleccionarConceptoParaGrafico('Alquiler')" [ngClass]="filtroConceptoSeleccionado() === 'Alquiler' ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">Alquiler</button>
+                    <button (click)="seleccionarConceptoParaGrafico('Luz')" [ngClass]="filtroConceptoSeleccionado() === 'Luz' ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">Luz</button>
+                    <button (click)="seleccionarConceptoParaGrafico('Agua')" [ngClass]="filtroConceptoSeleccionado() === 'Agua' ? 'bg-emerald-600 text-white font-semibold' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'" class="px-2 py-0.5 rounded-lg transition">Agua</button>
+                  </div>
+                </div>
+
+                <!-- KPIs del Gráfico: Día Pico, Día Mínimo, Promedio Diario -->
+                @if (metricasGraficoIngresos(); as m) {
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs">
+                    <div>
+                      <p class="text-gray-400">Total en Gráfico:</p>
+                      <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{{ fmtSoles(m.totalSuma) }}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-400">Día Pico (Mayor):</p>
+                      <p class="text-sm font-bold text-gray-800 dark:text-white tabular-nums">
+                        {{ m.diaMax ? m.diaMax.label + ' (' + fmtSoles(m.diaMax.total) + ')' : '—' }}
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-gray-400">Día Mínimo (con cobro):</p>
+                      <p class="text-sm font-bold text-gray-800 dark:text-white tabular-nums">
+                        {{ m.diaMin ? m.diaMin.label + ' (' + fmtSoles(m.diaMin.total) + ')' : '—' }}
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-gray-400">Promedio Diario (calendario):</p>
+                      <p class="text-sm font-bold text-gray-800 dark:text-white tabular-nums">
+                        {{ fmtSoles(m.promDiario) }} / día
+                      </p>
+                    </div>
+                  </div>
+                }
+
+                <!-- Gráfica ApexCharts -->
+                <div class="rounded-xl bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700">
+                  @if (cargandoGrafico()) {
+                    <div class="flex h-64 items-center justify-center gap-2 text-xs text-gray-400">
+                      <span class="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></span>
+                      <span>Generando serie histórica en ApexCharts…</span>
+                    </div>
+                  } @else if (chartIngresosSeries()[0].data.length > 0) {
+                    <apx-chart
+                      [series]="chartIngresosSeries()"
+                      [chart]="chartIngresosConfig"
+                      [xaxis]="chartIngresosXAxis()"
+                      [yaxis]="chartIngresosYAxis"
+                      [dataLabels]="chartDataLabelsFalse"
+                      [colors]="chartIngresosColors"
+                      [grid]="chartGridShared"
+                      [stroke]="chartStrokeSmooth"
+                      [fill]="chartFillGradient"
+                      [tooltip]="chartTooltipCurrency"
+                    ></apx-chart>
+                  } @else {
+                    <div class="flex h-64 items-center justify-center text-xs text-gray-400">
+                      Sin movimientos para el concepto y filtros seleccionados.
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
             <!-- Tabla de Conceptos Agrupados -->
             @if (conceptosFiltrados().length === 0) {
               <div class="p-12 text-center text-sm text-gray-400 dark:text-gray-500 space-y-2">
@@ -499,7 +715,7 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
                 <p>No se encontraron conceptos para los filtros seleccionados.</p>
               </div>
             } @else {
-              <div class="overflow-x-auto">
+              <div class="overflow-x-auto px-5 pb-5">
                 <table class="w-full text-sm">
                   <thead class="bg-gray-50 dark:bg-gray-700/40 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     <tr>
@@ -555,9 +771,16 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
                                 <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
                                   Detalle de Operaciones: {{ c.concepto }} ({{ getDetalleIngresoFiltrado(c.concepto).length }} operaciones)
                                 </h4>
-                                <span class="text-xs font-semibold text-gray-500">
-                                  Subtotal: {{ fmtSoles(calcularSubtotalDetalleIngreso(c.concepto)) }}
-                                </span>
+                                <div class="flex items-center gap-3">
+                                  <button
+                                    (click)="seleccionarConceptoParaGrafico(c.concepto); $event.stopPropagation()"
+                                    class="text-xs text-emerald-600 hover:text-emerald-700 underline font-semibold">
+                                    Ver gráfico de este concepto
+                                  </button>
+                                  <span class="text-xs font-semibold text-gray-500">
+                                    Subtotal: {{ fmtSoles(calcularSubtotalDetalleIngreso(c.concepto)) }}
+                                  </span>
+                                </div>
                               </div>
 
                               @if (cargandoDetalle().has('ing:' + c.concepto)) {
@@ -645,10 +868,10 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
         }
 
         <!-- ═══════════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN 3: ANÁLISIS DE EGRESOS POR CATEGORÍA                     -->
+        <!-- SECCIÓN 3: ANÁLISIS DE EGRESOS + GRÁFICO DE CATEGORÍAS (ETAPA 2)-->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         @if (tabActiva() === 'egresos' || tabActiva() === 'combinado') {
-          <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+          <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden space-y-5">
             <div class="border-b border-orange-100 dark:border-orange-900/40 bg-orange-50/50 dark:bg-orange-950/10 p-5 space-y-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
@@ -658,11 +881,26 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
                   </p>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-gray-500">Total egresos filtrados:</span>
-                  <span class="text-base font-bold text-red-600 dark:text-red-400 tabular-nums">
-                    {{ fmtSoles(totalEgresosFiltrados()) }}
-                  </span>
+                <div class="flex items-center gap-3">
+                  <!-- Botón Ver Gráfica de Egresos -->
+                  <button
+                    (click)="mostrarGraficoEgresos.set(!mostrarGraficoEgresos())"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                    [ngClass]="mostrarGraficoEgresos()
+                      ? 'bg-orange-600 text-white shadow-sm'
+                      : 'border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300 hover:bg-orange-100'">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                    </svg>
+                    <span>{{ mostrarGraficoEgresos() ? 'Ocultar Gráfica' : 'Ver Gráfica de Categorías' }}</span>
+                  </button>
+
+                  <div class="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+                    <span class="text-xs font-semibold text-gray-500">Total egresos:</span>
+                    <span class="text-base font-bold text-red-600 dark:text-red-400 tabular-nums">
+                      {{ fmtSoles(totalEgresosFiltrados()) }}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -700,13 +938,44 @@ type TabVistaReporte = 'ingresos' | 'egresos' | 'combinado';
               </div>
             </div>
 
+            <!-- ── PANEL GRÁFICO APEXCHARTS DE EGRESOS POR CATEGORÍA ────────── -->
+            @if (mostrarGraficoEgresos() && chartEgresosSeries()[0].data.length > 0) {
+              <div class="p-5 border-b border-gray-200 dark:border-gray-700 bg-orange-50/20 dark:bg-orange-950/10 space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <span class="inline-block h-2.5 w-2.5 rounded-full bg-orange-500"></span>
+                      <span>Distribución de Gastos por Categoría (Orden de Mayor a Menor)</span>
+                    </h4>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      Participación porcentual sobre el total de egresos operativos ejecutados en el período.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="rounded-xl bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700">
+                  <apx-chart
+                    [series]="chartEgresosSeries()"
+                    [chart]="chartEgresosConfig"
+                    [xaxis]="chartEgresosXAxis()"
+                    [yaxis]="chartEgresosYAxis"
+                    [plotOptions]="chartEgresosPlotOptions"
+                    [dataLabels]="chartDataLabelsFalse"
+                    [colors]="chartEgresosColors"
+                    [grid]="chartGridShared"
+                    [tooltip]="chartTooltipCurrency"
+                  ></apx-chart>
+                </div>
+              </div>
+            }
+
             <!-- Tabla de Categorías de Gasto -->
             @if (egresosFiltrados().length === 0) {
               <div class="p-12 text-center text-sm text-gray-400 dark:text-gray-500">
                 No se registraron egresos para los filtros seleccionados en este período.
               </div>
             } @else {
-              <div class="overflow-x-auto">
+              <div class="overflow-x-auto px-5 pb-5">
                 <table class="w-full text-sm">
                   <thead class="bg-gray-50 dark:bg-gray-700/40 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                     <tr>
@@ -823,11 +1092,11 @@ export class ReportesComponent implements OnInit {
   protected readonly fmtFechaCorta = fmtFechaCorta;
   protected readonly fmtFechaHora  = fmtFechaHora;
 
-  // Estado del período
+  // Estado del período activo
   readonly filtroPeriodo = signal<FiltroPeriodoReporte>({
     modo: 'mes_anio',
     rangoRapido: 'mes',
-    mes: 10,  // Octubre 2026 por defecto (mes más completo en producción) o mes actual
+    mes: 10,  // Octubre 2026 por defecto (mes más completo en producción)
     anio: 2026,
     fechaDesde: '2026-10-01',
     fechaHasta: '2026-10-31',
@@ -884,10 +1153,32 @@ export class ReportesComponent implements OnInit {
   readonly detallesIngreso = signal<Map<string, DetalleIngresoLinea[]>>(new Map());
   readonly detallesEgreso  = signal<Map<string, DetalleEgresoLinea[]>>(new Map());
 
+  // ── ETAPA 2: ESTADO DE COMPARACIÓN CON PERÍODO ANTERIOR ───────────────────
+  readonly compararConAnterior  = signal<boolean>(false);
+  readonly reporteAnterior      = signal<ReporteResumenV2 | null>(null);
+  readonly cargandoComparacion  = signal<boolean>(false);
+
+  // ── ETAPA 2: CONTROL DE VISUALIZACIÓN DE GRÁFICOS APEXCHARTS ──────────────
+  readonly mostrarGraficoIngresos = signal<boolean>(true);
+  readonly mostrarGraficoEgresos  = signal<boolean>(true);
+  readonly cargandoGrafico        = signal<boolean>(false);
+
   // Período resuelto computado
   readonly periodoActivo = computed<PeriodoResuelto>(() =>
     resolverPeriodoReporte(this.filtroPeriodo()),
   );
+
+  readonly infoPeriodoAnterior = computed<PeriodoAnteriorResultado | null>(() => {
+    const p = this.periodoActivo();
+    return calcularPeriodoAnterior(p.desde, p.hasta);
+  });
+
+  // Detección de período incompleto (ej. el mes actual en curso)
+  readonly esPeriodoIncompleto = computed<boolean>(() => {
+    const p = this.periodoActivo();
+    const hoyLima = getFechaHoyLima();
+    return p.desde <= hoyLima && p.hasta >= hoyLima;
+  });
 
   // Validación de fecha personalizada
   readonly fechaInvalida = computed<boolean>(() => {
@@ -963,6 +1254,154 @@ export class ReportesComponent implements OnInit {
     this.egresosFiltrados().reduce((s, e) => s + e.cantidad, 0),
   );
 
+  // ── ETAPA 2: CÁLCULOS COMPARATIVOS PERÍODO ACTUAL VS ANTERIOR ─────────────
+
+  readonly variacionIngresos = computed(() => {
+    const act = (this.reporte()?.caja?.efectivo ?? 0) + (this.reporte()?.caja?.transferencia ?? 0);
+    const ant = (this.reporteAnterior()?.caja?.efectivo ?? 0) + (this.reporteAnterior()?.caja?.transferencia ?? 0);
+    const dif = Math.round((act - ant) * 100) / 100;
+    const pct = ant > 0 ? ((act - ant) / ant) * 100 : 0;
+    return { actual: act, anterior: ant, diferencia: dif, porcentaje: pct };
+  });
+
+  readonly variacionEgresos = computed(() => {
+    const act = this.reporte()?.caja?.egresos ?? 0;
+    const ant = this.reporteAnterior()?.caja?.egresos ?? 0;
+    const dif = Math.round((act - ant) * 100) / 100;
+    const pct = ant > 0 ? ((act - ant) / ant) * 100 : 0;
+    return { actual: act, anterior: ant, diferencia: dif, porcentaje: pct };
+  });
+
+  readonly variacionSaldo = computed(() => {
+    const act = this.reporte()?.caja?.saldo ?? 0;
+    const ant = this.reporteAnterior()?.caja?.saldo ?? 0;
+    const dif = Math.round((act - ant) * 100) / 100;
+    return { actual: act, anterior: ant, diferencia: dif };
+  });
+
+  // ── ETAPA 2: GENERACIÓN DE SERIES PARA APEXCHARTS ──────────────────────────
+
+  readonly conceptoGraficoActivo = computed<string>(() => {
+    return this.filtroConceptoSeleccionado() || 'Total Ingresos (Consolidado)';
+  });
+
+  // Almacén de líneas activas para graficar
+  private readonly lineasParaGrafico = signal<DetalleIngresoLinea[]>([]);
+
+  readonly serieDiariaIngresos = computed<SerieDiariaResultado>(() => {
+    const p = this.periodoActivo();
+    const lineas = this.lineasParaGrafico();
+    return this.calcularSerieDiaria(p.desde, p.hasta, lineas);
+  });
+
+  readonly metricasGraficoIngresos = computed(() => {
+    return this.serieDiariaIngresos();
+  });
+
+  readonly chartIngresosSeries = computed<ApexAxisChartSeries>(() => [{
+    name: this.conceptoGraficoActivo(),
+    data: this.serieDiariaIngresos().seriesData,
+  }]);
+
+  readonly chartIngresosXAxis = computed<ApexXAxis>(() => ({
+    categories: this.serieDiariaIngresos().categories,
+    axisBorder: { show: false },
+    axisTicks:  { show: false },
+    labels: {
+      rotate: -45,
+      style: { fontFamily: 'Outfit, sans-serif', fontSize: '11px', colors: '#6b7280' },
+    },
+  }));
+
+  // Configuración ApexCharts Ingresos (Área verde esmeralda)
+  readonly chartIngresosConfig: ApexChart = {
+    fontFamily: 'Outfit, sans-serif',
+    type: 'area',
+    height: 280,
+    toolbar: { show: false },
+    animations: { enabled: true, speed: 450 },
+  };
+
+  readonly chartIngresosColors: string[] = ['#059669'];
+
+  readonly chartStrokeSmooth: ApexStroke = {
+    curve: 'smooth',
+    width: 2.5,
+  };
+
+  readonly chartFillGradient: ApexFill = {
+    type: 'gradient',
+    gradient: {
+      shadeIntensity: 1,
+      opacityFrom: 0.45,
+      opacityTo: 0.05,
+      stops: [0, 90, 100],
+    },
+  };
+
+  readonly chartIngresosYAxis: ApexYAxis = {
+    labels: {
+      formatter: (val: number) => `S/ ${val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val.toFixed(0)}`,
+      style: { fontFamily: 'Outfit, sans-serif', fontSize: '11px' },
+    },
+  };
+
+  // ── Configuración ApexCharts Egresos por Categoría (Barras Horizontales) ───
+
+  readonly chartEgresosSeries = computed<ApexAxisChartSeries>(() => [{
+    name: 'Gasto S/',
+    data: this.egresosFiltrados().map(e => e.monto),
+  }]);
+
+  readonly chartEgresosXAxis = computed<ApexXAxis>(() => ({
+    categories: this.egresosFiltrados().map(e => e.categoria),
+    labels: {
+      formatter: (val: string) => `S/ ${Number(val) >= 1000 ? (Number(val) / 1000).toFixed(1) + 'k' : val}`,
+      style: { fontFamily: 'Outfit, sans-serif', fontSize: '11px' },
+    },
+  }));
+
+  readonly chartEgresosConfig: ApexChart = {
+    fontFamily: 'Outfit, sans-serif',
+    type: 'bar',
+    height: 280,
+    toolbar: { show: false },
+    animations: { enabled: true, speed: 450 },
+  };
+
+  readonly chartEgresosColors: string[] = ['#ea580c'];
+
+  readonly chartEgresosPlotOptions: ApexPlotOptions = {
+    bar: {
+      horizontal: true,
+      borderRadius: 4,
+      barHeight: '60%',
+    },
+  };
+
+  readonly chartEgresosYAxis: ApexYAxis = {
+    labels: {
+      style: { fontFamily: 'Outfit, sans-serif', fontSize: '11px' },
+    },
+  };
+
+  // Configuración compartida
+  readonly chartDataLabelsFalse: ApexDataLabels = { enabled: false };
+
+  readonly chartGridShared: ApexGrid = {
+    borderColor: '#f3f4f6',
+    strokeDashArray: 3,
+    yaxis: { lines: { show: true } },
+    xaxis: { lines: { show: false } },
+  };
+
+  readonly chartTooltipCurrency: ApexTooltip = {
+    y: { formatter: (val: number) => fmtSoles(val) },
+    theme: 'light',
+  };
+
+  // ── Inicialización ────────────────────────────────────────────────────────
+
   ngOnInit(): void {
     void this.cargar();
   }
@@ -981,21 +1420,44 @@ export class ReportesComponent implements OnInit {
 
     const p = this.periodoActivo();
     try {
-      // Cargar KPIs de caja y agrupaciones server-side
+      // 1. Cargar KPIs de caja y agrupaciones server-side del período actual
       const r = await this.reportesSvc.cargarResumenPeriodo(p.desde, p.hasta, 'todos');
       this.reporte.set(r);
 
-      // Si había un concepto seleccionado previamente, verificar si aún existe en este período
-      if (this.filtroConceptoSeleccionado()) {
-        const existe = r.por_concepto.some(c => c.concepto === this.filtroConceptoSeleccionado());
-        if (!existe) {
-          this.filtroConceptoSeleccionado.set('');
-        }
+      // 2. Si la comparación está activa, cargar período anterior
+      if (this.compararConAnterior()) {
+        await this.cargarReporteAnterior();
       }
+
+      // 3. Cargar líneas para el gráfico de ingresos
+      await this.actualizarLineasGrafico();
+
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Error al cargar el reporte');
     } finally {
       this.cargando.set(false);
+    }
+  }
+
+  async toggleComparacion(): Promise<void> {
+    const nuevoEstado = !this.compararConAnterior();
+    this.compararConAnterior.set(nuevoEstado);
+    if (nuevoEstado && !this.reporteAnterior()) {
+      await this.cargarReporteAnterior();
+    }
+  }
+
+  private async cargarReporteAnterior(): Promise<void> {
+    const ant = this.infoPeriodoAnterior();
+    if (!ant) return;
+    this.cargandoComparacion.set(true);
+    try {
+      const rAnt = await this.reportesSvc.cargarResumenPeriodo(ant.desde, ant.hasta, 'todos');
+      this.reporteAnterior.set(rAnt);
+    } catch {
+      // En caso de fallo silencioso en comparación, no interrumpir el reporte principal
+    } finally {
+      this.cargandoComparacion.set(false);
     }
   }
 
@@ -1088,6 +1550,7 @@ export class ReportesComponent implements OnInit {
     this.busquedaIngreso.set('');
     this.filtroCategoriaSeleccionada.set('');
     this.busquedaEgreso.set('');
+    this.compararConAnterior.set(false);
     void this.cargar();
   }
 
@@ -1095,8 +1558,9 @@ export class ReportesComponent implements OnInit {
 
   seleccionarFiltroConcepto(conc: string): void {
     this.filtroConceptoSeleccionado.set(conc);
+    void this.actualizarLineasGrafico();
+
     if (conc) {
-      // Auto-expandir el drilldown del concepto seleccionado
       const clave = `ing:${conc}`;
       const set = new Set(this.expandidos());
       set.add(clave);
@@ -1105,6 +1569,11 @@ export class ReportesComponent implements OnInit {
         void this.cargarDetalleIngreso(conc, clave);
       }
     }
+  }
+
+  seleccionarConceptoParaGrafico(conc: string): void {
+    this.seleccionarFiltroConcepto(conc);
+    this.mostrarGraficoIngresos.set(true);
   }
 
   seleccionarFiltroCategoria(cat: string): void {
@@ -1162,6 +1631,11 @@ export class ReportesComponent implements OnInit {
       const map = new Map(this.detallesIngreso());
       map.set(concepto, lineas);
       this.detallesIngreso.set(map);
+
+      // Si este es el concepto que se está graficando, actualizar serie
+      if (this.filtroConceptoSeleccionado() === concepto) {
+        this.lineasParaGrafico.set(lineas);
+      }
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Error al cargar el detalle');
     } finally {
@@ -1190,6 +1664,107 @@ export class ReportesComponent implements OnInit {
     this.cargandoDetalle.set(set);
   }
 
+  // ── ETAPA 2: ACTUALIZACIÓN DE LÍNEAS PARA EL GRÁFICO DE APEXCHARTS ────────
+
+  private async actualizarLineasGrafico(): Promise<void> {
+    const conc = this.filtroConceptoSeleccionado() || null;
+    const p = this.periodoActivo();
+
+    // Si ya lo tenemos en caché de detalles
+    if (conc && this.detallesIngreso().has(conc)) {
+      this.lineasParaGrafico.set(this.detallesIngreso().get(conc) ?? []);
+      return;
+    }
+
+    this.cargandoGrafico.set(true);
+    try {
+      const lineas = await this.reportesSvc.cargarDetalleConceptoPeriodo(p.desde, p.hasta, conc, 'todos');
+      this.lineasParaGrafico.set(lineas);
+      if (conc) {
+        const map = new Map(this.detallesIngreso());
+        map.set(conc, lineas);
+        this.detallesIngreso.set(map);
+      }
+    } catch {
+      this.lineasParaGrafico.set([]);
+    } finally {
+      this.cargandoGrafico.set(false);
+    }
+  }
+
+  // Generador de serie temporal continua con relleno de ceros
+  private calcularSerieDiaria(desde: string, hasta: string, lineas: DetalleIngresoLinea[]): SerieDiariaResultado {
+    const [y1, m1, d1] = desde.split('-').map(Number);
+    const [y2, m2, d2] = hasta.split('-').map(Number);
+    const dt1 = new Date(y1, m1 - 1, d1);
+    const dt2 = new Date(y2, m2 - 1, d2);
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const mapaDias = new Map<string, { label: string; total: number; cantidad: number }>();
+
+    // Generar secuencia continua de días
+    const cur = new Date(dt1);
+    while (cur <= dt2) {
+      const key = `${cur.getFullYear()}-${pad(cur.getMonth() + 1)}-${pad(cur.getDate())}`;
+      const label = `${pad(cur.getDate())}/${pad(cur.getMonth() + 1)}`;
+      mapaDias.set(key, { label, total: 0, cantidad: 0 });
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // Filtrar líneas según origen o método si aplica
+    const orig = this.filtroOrigen();
+    const met = this.filtroMetodoPago();
+
+    for (const l of lineas) {
+      if (orig === 'socios' && l.tipo_pagador !== 'socio') continue;
+      if (orig === 'inquilinos' && l.tipo_pagador !== 'inquilino') continue;
+      if (orig === 'otros' && l.tipo_pagador !== 'interno') continue;
+      if (met !== 'todos' && !l.metodo_pago.toLowerCase().includes(met.toLowerCase())) continue;
+
+      const fechaLima = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date(l.fecha_pago));
+
+      if (mapaDias.has(fechaLima)) {
+        const slot = mapaDias.get(fechaLima)!;
+        slot.total = Math.round((slot.total + Number(l.monto)) * 100) / 100;
+        slot.cantidad += 1;
+      }
+    }
+
+    const dias = Array.from(mapaDias.entries()).map(([fecha, { label, total, cantidad }]) => ({
+      fecha,
+      label,
+      total,
+      cantidad,
+    }));
+
+    const totalSuma = Math.round(dias.reduce((s, d) => s + d.total, 0) * 100) / 100;
+    const diasConMov = dias.filter(d => d.total > 0);
+    let diaMax = null;
+    let diaMin = null;
+    if (diasConMov.length > 0) {
+      diaMax = [...diasConMov].sort((a, b) => b.total - a.total)[0];
+      diaMin = [...diasConMov].sort((a, b) => a.total - b.total)[0];
+    }
+    const promDiario = dias.length > 0 ? Math.round((totalSuma / dias.length) * 100) / 100 : 0;
+
+    return {
+      categories: dias.map(d => d.label),
+      seriesData: dias.map(d => d.total),
+      dias,
+      totalSuma,
+      diaMax,
+      diaMin,
+      promDiario,
+      diasActivos: diasConMov.length,
+      diasTotales: dias.length,
+    };
+  }
+
   // Filtrado reactivo en memoria para el detalle del concepto expandido
   getDetalleIngresoFiltrado(concepto: string): DetalleIngresoLinea[] {
     const lineas = this.detallesIngreso().get(concepto) ?? [];
@@ -1198,15 +1773,11 @@ export class ReportesComponent implements OnInit {
     const q = this.busquedaIngreso().trim().toLowerCase();
 
     return lineas.filter(l => {
-      // Filtro origen
       if (orig === 'socios' && l.tipo_pagador !== 'socio') return false;
       if (orig === 'inquilinos' && l.tipo_pagador !== 'inquilino') return false;
       if (orig === 'otros' && l.tipo_pagador !== 'interno') return false;
-
-      // Filtro método de pago
       if (met !== 'todos' && !l.metodo_pago.toLowerCase().includes(met.toLowerCase())) return false;
 
-      // Buscador texto
       if (q) {
         const matchesPagador = l.pagador.toLowerCase().includes(q);
         const matchesRecibo = l.codigo_transaccion.toLowerCase().includes(q);
@@ -1265,7 +1836,6 @@ export class ReportesComponent implements OnInit {
       const concFiltro = this.filtroConceptoSeleccionado() || null;
       const catFiltro = this.filtroCategoriaSeleccionada() || null;
 
-      // Obtener detalle completo del período consultado
       const [detalleIngresos, detalleEgresos] = await Promise.all([
         this.reportesSvc.cargarDetalleConceptoPeriodo(p.desde, p.hasta, concFiltro, 'todos'),
         this.reportesSvc.cargarDetalleEgresosPeriodo(p.desde, p.hasta, catFiltro),
