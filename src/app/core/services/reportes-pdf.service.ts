@@ -572,11 +572,26 @@ export class ReportesPdfService {
 
     // 8. DETALLE DE MOVIMIENTOS DE INGRESO
     if (datos.movimientosIngreso && datos.movimientosIngreso.length > 0) {
+      const totalRegs = datos.movimientosIngreso.length;
+      const esMuestra = totalRegs > 300;
+      const listaIng = esMuestra ? datos.movimientosIngreso.slice(0, 300) : datos.movimientosIngreso;
+
       content.push({
-        text: `DETALLE DE OPERACIONES DE INGRESO (${datos.movimientosIngreso.length} registros)`,
+        text: esMuestra
+          ? `DETALLE DE OPERACIONES DE INGRESO (Muestra de 300 de ${fmtNum(totalRegs)} registros)`
+          : `DETALLE DE OPERACIONES DE INGRESO (${totalRegs} registros)`,
         style: 'seccionTitulo',
         pageBreak: 'before',
       });
+
+      if (esMuestra) {
+        content.push({
+          text: `ℹ NOTA EJECUTIVA: Mostrando las primeras 300 operaciones para preservar la legibilidad y agilidad del documento PDF para el Consejo de Administración. El detalle completo de los ${fmtNum(totalRegs)} registros se encuentra disponible en la exportación Excel correspondiente.`,
+          style: 'metaTexto',
+          color: C.azulClaro,
+          margin: [0, 0, 0, 4],
+        });
+      }
 
       const mFilas: TableCell[][] = [
         [
@@ -591,7 +606,7 @@ export class ReportesPdfService {
       ];
 
       let sumMovIng = 0;
-      for (const m of datos.movimientosIngreso) {
+      for (const m of listaIng) {
         sumMovIng += m.monto;
         mFilas.push([
           { text: m.fecha ? m.fecha.replace('T', ' ').slice(0, 16) : '-', fontSize: 7 },
@@ -604,11 +619,21 @@ export class ReportesPdfService {
         ]);
       }
 
+      const sumTotalReal = datos.movimientosIngreso.reduce((acc, x) => acc + x.monto, 0);
+
       mFilas.push([
-        { text: 'TOTAL DETALLE INGRESOS', colSpan: 6, bold: true, fontSize: 7, color: C.azul },
+        { text: esMuestra ? 'SUBTOTAL MUESTRA PRESENTADA (300 REGISTROS)' : 'TOTAL DETALLE INGRESOS', colSpan: 6, bold: true, fontSize: 7, color: C.azul },
         {}, {}, {}, {}, {},
         { text: fmtSoles(sumMovIng), alignment: 'right', bold: true, fontSize: 7, color: C.verde },
       ]);
+
+      if (esMuestra) {
+        mFilas.push([
+          { text: `TOTAL CONSOLIDADO DEL PERÍODO (${fmtNum(totalRegs)} REGISTROS EN EXCEL)`, colSpan: 6, bold: true, fontSize: 7, color: C.azul },
+          {}, {}, {}, {}, {},
+          { text: fmtSoles(sumTotalReal), alignment: 'right', bold: true, fontSize: 7, color: C.verde },
+        ]);
+      }
 
       content.push({
         margin: [0, 4, 0, 10],
@@ -624,7 +649,7 @@ export class ReportesPdfService {
           hLineColor: () => C.grisBorde,
           vLineColor: () => C.grisBorde,
           fillColor: (i: number, node: { table: { body: unknown[] } }) =>
-            (i === 0 ? C.grisFondo : i === node.table.body.length - 1 ? C.azulFondo : i % 2 === 0 ? '#FAFAFA' : null),
+            (i === 0 ? C.grisFondo : i >= node.table.body.length - (esMuestra ? 2 : 1) ? C.azulFondo : i % 2 === 0 ? '#FAFAFA' : null),
           paddingTop: () => 2.5,
           paddingBottom: () => 2.5,
           paddingLeft: () => 3,
@@ -635,11 +660,26 @@ export class ReportesPdfService {
 
     // 9. DETALLE DE MOVIMIENTOS DE EGRESO
     if (datos.movimientosEgreso && datos.movimientosEgreso.length > 0) {
+      const totalRegsEg = datos.movimientosEgreso.length;
+      const esMuestraEg = totalRegsEg > 300;
+      const listaEg = esMuestraEg ? datos.movimientosEgreso.slice(0, 300) : datos.movimientosEgreso;
+
       content.push({
-        text: `DETALLE DE OPERACIONES DE EGRESO (${datos.movimientosEgreso.length} registros)`,
+        text: esMuestraEg
+          ? `DETALLE DE OPERACIONES DE EGRESO (Muestra de 300 de ${fmtNum(totalRegsEg)} registros)`
+          : `DETALLE DE OPERACIONES DE EGRESO (${totalRegsEg} registros)`,
         style: 'seccionTitulo',
         pageBreak: datos.movimientosIngreso && datos.movimientosIngreso.length > 0 ? 'before' : undefined,
       });
+
+      if (esMuestraEg) {
+        content.push({
+          text: `ℹ NOTA EJECUTIVA: Mostrando los primeros 300 comprobantes para preservar la agilidad del informe PDF. El detalle completo de los ${fmtNum(totalRegsEg)} egresos se encuentra disponible en la exportación Excel correspondiente.`,
+          style: 'metaTexto',
+          color: C.azulClaro,
+          margin: [0, 0, 0, 4],
+        });
+      }
 
       const eMovFilas: TableCell[][] = [
         [
@@ -653,7 +693,7 @@ export class ReportesPdfService {
       ];
 
       let sumMovEg = 0;
-      for (const g of datos.movimientosEgreso) {
+      for (const g of listaEg) {
         sumMovEg += g.monto;
         eMovFilas.push([
           { text: g.fecha, fontSize: 7 },
@@ -665,11 +705,21 @@ export class ReportesPdfService {
         ]);
       }
 
+      const sumTotalRealEg = datos.movimientosEgreso.reduce((acc, x) => acc + x.monto, 0);
+
       eMovFilas.push([
-        { text: 'TOTAL DETALLE EGRESOS', colSpan: 5, bold: true, fontSize: 7, color: C.azul },
+        { text: esMuestraEg ? 'SUBTOTAL MUESTRA PRESENTADA (300 REGISTROS)' : 'TOTAL DETALLE EGRESOS', colSpan: 5, bold: true, fontSize: 7, color: C.azul },
         {}, {}, {}, {},
         { text: fmtSoles(sumMovEg), alignment: 'right', bold: true, fontSize: 7, color: C.rojo },
       ]);
+
+      if (esMuestraEg) {
+        eMovFilas.push([
+          { text: `TOTAL CONSOLIDADO DEL PERÍODO (${fmtNum(totalRegsEg)} REGISTROS EN EXCEL)`, colSpan: 5, bold: true, fontSize: 7, color: C.azul },
+          {}, {}, {}, {},
+          { text: fmtSoles(sumTotalRealEg), alignment: 'right', bold: true, fontSize: 7, color: C.rojo },
+        ]);
+      }
 
       content.push({
         margin: [0, 4, 0, 10],
@@ -685,7 +735,7 @@ export class ReportesPdfService {
           hLineColor: () => C.grisBorde,
           vLineColor: () => C.grisBorde,
           fillColor: (i: number, node: { table: { body: unknown[] } }) =>
-            (i === 0 ? C.grisFondo : i === node.table.body.length - 1 ? C.rojoFondo : i % 2 === 0 ? '#FAFAFA' : null),
+            (i === 0 ? C.grisFondo : i >= node.table.body.length - (esMuestraEg ? 2 : 1) ? C.rojoFondo : i % 2 === 0 ? '#FAFAFA' : null),
           paddingTop: () => 2.5,
           paddingBottom: () => 2.5,
           paddingLeft: () => 3,
