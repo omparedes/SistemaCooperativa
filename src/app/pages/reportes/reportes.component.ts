@@ -1,7 +1,8 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  ChartComponent,
   NgApexchartsModule,
   ApexAxisChartSeries,
   ApexChart,
@@ -34,6 +35,8 @@ import {
   resolverPeriodoReporte,
 } from '../../core/services/reportes.service';
 import { ExcelExportService } from '../../core/services/excel-export.service';
+import { ReportesPdfService, ReportePdfExportDatos } from '../../core/services/reportes-pdf.service';
+import { ReportesExcelService, ReporteExcelExportDatos } from '../../core/services/reportes-excel.service';
 import { AuthService } from '../../core/services/auth.service';
 
 // ---------------------------------------------------------------------------
@@ -114,10 +117,10 @@ interface SerieDiariaResultado {
             <span>{{ compararConAnterior() ? 'Comparación Activa' : 'Comparar con Anterior' }}</span>
           </button>
 
-          <!-- Botón Exportar a Excel -->
+          <!-- Botón Exportar a Excel (Multipestaña Profesional) -->
           <button
             (click)="exportarExcel()"
-            [disabled]="!reporte() || cargando() || exportando()"
+            [disabled]="!reporte() || cargando() || exportando() || exportandoPdf()"
             class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
             @if (exportando()) {
               <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -132,6 +135,59 @@ interface SerieDiariaResultado {
               <span>Exportar Excel</span>
             }
           </button>
+
+          <!-- Botón Exportar a PDF Institucional (A4 Consejo de Administración) -->
+          <div class="relative inline-block text-left">
+            <div class="inline-flex rounded-xl shadow-sm">
+              <button
+                (click)="exportarPdf('descargar')"
+                [disabled]="!reporte() || cargando() || exportando() || exportandoPdf()"
+                class="inline-flex items-center gap-2 rounded-l-xl bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-40 disabled:cursor-not-allowed">
+                @if (exportandoPdf()) {
+                  <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span>Generando PDF…</span>
+                } @else {
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  <span>Exportar PDF</span>
+                }
+              </button>
+              <button
+                (click)="menuExportarPdfAbierto.set(!menuExportarPdfAbierto())"
+                [disabled]="!reporte() || cargando() || exportando() || exportandoPdf()"
+                class="inline-flex items-center rounded-r-xl bg-blue-800 hover:bg-blue-900 px-2 py-2.5 text-sm font-semibold text-white transition disabled:opacity-40 disabled:cursor-not-allowed border-l border-blue-600">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+            </div>
+
+            @if (menuExportarPdfAbierto()) {
+              <div
+                class="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 py-1.5 z-50 text-xs">
+                <button
+                  (click)="exportarPdf('descargar'); menuExportarPdfAbierto.set(false)"
+                  class="w-full text-left px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                  <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                  <span>Descargar archivo PDF (A4)</span>
+                </button>
+                <button
+                  (click)="exportarPdf('abrir'); menuExportarPdfAbierto.set(false)"
+                  class="w-full text-left px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                  <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  <span>Abrir / Imprimir en nueva pestaña</span>
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </div>
 
@@ -686,6 +742,7 @@ interface SerieDiariaResultado {
                     </div>
                   } @else if (chartIngresosSeries()[0].data.length > 0) {
                     <apx-chart
+                      #chartIngresosRef
                       [series]="chartIngresosSeries()"
                       [chart]="chartIngresosConfig"
                       [xaxis]="chartIngresosXAxis()"
@@ -1084,7 +1141,14 @@ interface SerieDiariaResultado {
 })
 export class ReportesComponent implements OnInit {
   private readonly reportesSvc = inject(ReportesService);
-  private readonly excelSvc    = inject(ExcelExportService);
+  private readonly excelSvc        = inject(ExcelExportService);
+  private readonly reportesPdfSvc  = inject(ReportesPdfService);
+  private readonly reportesExcelSvc = inject(ReportesExcelService);
+
+  @ViewChild('chartIngresosRef') chartIngresosRef?: ChartComponent;
+
+  readonly exportandoPdf = signal<boolean>(false);
+  readonly menuExportarPdfAbierto = signal<boolean>(false);
   protected readonly auth      = inject(AuthService);
 
   // Helpers expuestos al template
@@ -1824,9 +1888,171 @@ export class ReportesComponent implements OnInit {
 
   // ── Exportación a Excel Respetando Filtros ─────────────────────────────────
 
+    /**
+   * Construye el payload común de exportación garantizando equivalencia
+   * financiera al 100% entre pantalla, Excel y PDF.
+   */
+  private construirPayloadExportacion(
+    r: ReporteResumenV2,
+    p: PeriodoResuelto,
+    concFiltro: string | null,
+    catFiltro: string | null,
+    detalleIngresos: DetalleIngresoLinea[],
+    detalleEgresos: DetalleEgresoLinea[],
+    graficoB64: string | null = null,
+  ): ReportePdfExportDatos & ReporteExcelExportDatos {
+    const actIng = r.caja.efectivo + r.caja.transferencia;
+    const actEg = r.caja.egresos;
+    const actSal = r.caja.saldo;
+
+    // Datos de comparación si está activa
+    let compData = null;
+    const ant = this.reporteAnterior();
+    const infoAnt = this.infoPeriodoAnterior();
+    if (this.compararConAnterior() && ant && infoAnt) {
+      const antIng = ant.caja.efectivo + ant.caja.transferencia;
+      const antEg = ant.caja.egresos;
+      const antSal = ant.caja.saldo;
+      compData = {
+        periodoAnteriorEtiqueta: infoAnt.etiqueta,
+        periodoAnteriorDesde: infoAnt.desde,
+        periodoAnteriorHasta: infoAnt.hasta,
+        esIncompleto: this.esPeriodoIncompleto(),
+        ingresos: {
+          actual: actIng,
+          anterior: antIng,
+          diferencia: Math.round((actIng - antIng) * 100) / 100,
+          porcentaje: antIng > 0 ? ((actIng - antIng) / antIng) * 100 : 0,
+        },
+        egresos: {
+          actual: actEg,
+          anterior: antEg,
+          diferencia: Math.round((actEg - antEg) * 100) / 100,
+          porcentaje: antEg > 0 ? ((actEg - antEg) / antEg) * 100 : 0,
+        },
+        saldoNeto: {
+          actual: actSal,
+          anterior: antSal,
+          diferencia: Math.round((actSal - antSal) * 100) / 100,
+          porcentaje: antSal > 0 ? ((actSal - antSal) / antSal) * 100 : 0,
+        },
+      };
+    }
+
+    // Datos de evolución temporal
+    const evo = this.serieDiariaIngresos();
+    let evoData = null;
+    if (evo && evo.diasTotales > 0) {
+      evoData = {
+        conceptoNombre: concFiltro || 'Total General de Ingresos',
+        total: evo.totalSuma,
+        diasTotales: evo.diasTotales,
+        diasConCobro: evo.diasActivos,
+        diasCero: Math.max(0, evo.diasTotales - evo.diasActivos),
+        promedioDiario: evo.promDiario,
+        diaPico: {
+          fecha: evo.diaMax?.label || evo.diaMax?.fecha || '-',
+          monto: evo.diaMax?.total || 0,
+        },
+        diaMinimo: {
+          fecha: evo.diaMin?.label || evo.diaMin?.fecha || '-',
+          monto: evo.diaMin?.total || 0,
+        },
+        serie: evo.dias.map(d => ({
+          fecha: d.fecha,
+          dia: d.label,
+          monto: d.total,
+          cantidad: d.cantidad,
+        })),
+      };
+    }
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const ahora = new Date();
+    const fechaEmision = `${ahora.getFullYear()}-${pad(ahora.getMonth() + 1)}-${pad(ahora.getDate())} ${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+
+    return {
+      titulo: 'CENTRAL DE REPORTES — INFORME FINANCIERO Y CONTROL DE CAJA',
+      subtitulo: 'COOPERATIVA DE SERVICIOS ESPECIALES — RUC: 20100000000',
+      institucion: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO LTDA.',
+      ruc: '20100000000',
+      periodoEtiqueta: p.etiqueta,
+      periodoDesde: p.desde,
+      periodoHasta: p.hasta,
+      generadoEn: fechaEmision,
+      usuario: 'Administración ERP',
+
+      filtroConcepto: concFiltro,
+      filtroCategoria: catFiltro,
+      filtroTipoPagador: this.filtroOrigen(),
+      filtroMetodoPago: this.filtroMetodoPago(),
+      vistaActiva: this.tabActiva(),
+
+      resumenCaja: {
+        totalIngresos: actIng,
+        efectivo: r.caja.efectivo,
+        transferencia: r.caja.transferencia,
+        ingresosInternos: r.caja.ingresos_internos,
+        recaudacionTarjeta: r.caja.recaudacion_tarjeta,
+        egresos: actEg,
+        saldoNeto: actSal,
+        countRecibos: r.caja.count_recibos,
+        countInternos: r.caja.count_internos,
+        countAnulados: r.caja.count_anulados,
+      },
+
+      comparacion: compData,
+      evolucionTemporal: evoData,
+
+      conceptos: this.conceptosFiltrados().map(c => ({
+        concepto: c.concepto,
+        cantidad: c.cantidad,
+        monto: c.monto,
+        montoSocios: c.monto_socios,
+        montoInquilinos: c.monto_inquilinos,
+        montoOtros: Math.round((c.monto - c.monto_socios - c.monto_inquilinos) * 100) / 100,
+        porcentaje: this.pctConcepto(c),
+      })),
+
+      categoriasEgreso: this.egresosFiltrados().map(e => ({
+        categoria: e.categoria,
+        cantidad: e.cantidad,
+        monto: e.monto,
+        porcentaje: this.pctEgreso(e),
+      })),
+
+      movimientosIngreso: detalleIngresos.map(l => ({
+        fecha: l.fecha_pago,
+        recibo: l.codigo_transaccion,
+        concepto: l.concepto,
+        pagador: l.pagador,
+        tipoPagador: l.tipo_pagador,
+        puesto: l.codigo_puesto,
+        periodo: l.periodo,
+        metodoPago: l.metodo_pago,
+        monto: l.monto,
+        cajero: l.cajero,
+      })),
+
+      movimientosEgreso: detalleEgresos.map(g => ({
+        fecha: g.fecha,
+        categoria: g.categoria,
+        comprobante: g.comprobante_ref ?? '',
+        responsable: g.responsable ?? '',
+        descripcion: g.descripcion ?? '',
+        monto: g.monto,
+      })),
+
+      graficoBase64: graficoB64,
+    };
+  }
+
+  /**
+   * Exporta a Excel profesional con libro multipestaña (Etapa 3)
+   */
   async exportarExcel(): Promise<void> {
     const r = this.reporte();
-    if (!r || this.exportando()) return;
+    if (!r || this.exportando() || this.exportandoPdf()) return;
 
     this.exportando.set(true);
     this.error.set(null);
@@ -1841,70 +2067,61 @@ export class ReportesComponent implements OnInit {
         this.reportesSvc.cargarDetalleEgresosPeriodo(p.desde, p.hasta, catFiltro),
       ]);
 
-      const hojaResumen = [
-        { Indicador: 'Institución',                 Valor: 'COOPERATIVA DE SERVICIOS ESPECIALES PRIMERO DE MAYO' },
-        { Indicador: 'Reporte',                     Valor: 'Central de Reportes - Análisis Financiero' },
-        { Indicador: 'Período Consultado',          Valor: `${p.etiqueta} (${p.desde} al ${p.hasta})` },
-        { Indicador: 'Filtro Concepto',             Valor: concFiltro || 'Todos los conceptos' },
-        { Indicador: 'Filtro Categoría Egresos',    Valor: catFiltro || 'Todas las categorías' },
-        { Indicador: 'Caja — Ingresos Totales',     Valor: r.caja.efectivo + r.caja.transferencia },
-        { Indicador: 'Caja — Efectivo',             Valor: r.caja.efectivo },
-        { Indicador: 'Caja — Transferencia / QR',   Valor: r.caja.transferencia },
-        { Indicador: 'Caja — Ingresos internos',    Valor: r.caja.ingresos_internos },
-        { Indicador: 'Caja — Recaudación tarjeta',  Valor: r.caja.recaudacion_tarjeta },
-        { Indicador: 'Caja — Egresos (gastos)',     Valor: r.caja.egresos },
-        { Indicador: 'Caja — Saldo neto',           Valor: r.caja.saldo },
-        { Indicador: 'Recibos válidos emitidos',    Valor: r.caja.count_recibos },
-        { Indicador: 'Operaciones Caja Rápida',     Valor: r.caja.count_internos },
-        { Indicador: 'Recibos anulados (excluidos)', Valor: r.caja.count_anulados },
-      ];
-
-      const hojaConceptos = this.conceptosFiltrados().map(c => ({
-        Concepto:               c.concepto,
-        'Cobros / Operaciones': c.cantidad,
-        'Monto Total S/':       c.monto,
-        'Socios S/':            c.monto_socios,
-        'Inquilinos S/':        c.monto_inquilinos,
-        'Otros S/':             Math.round((c.monto - c.monto_socios - c.monto_inquilinos) * 100) / 100,
-        '% del Total':          `${this.pctConcepto(c).toFixed(1)}%`,
-      }));
-
-      const hojaDetalleIngresos = detalleIngresos.map(l => ({
-        Fecha:         l.fecha_pago,
-        'N° Recibo':   l.codigo_transaccion,
-        Concepto:      l.concepto,
-        Pagador:       l.pagador,
-        Tipo:          l.tipo_pagador,
-        Puesto:        l.codigo_puesto,
-        Período:       l.periodo,
-        Método:        l.metodo_pago,
-        'Monto S/':    l.monto,
-        Cajero:        l.cajero,
-      }));
-
-      const hojaEgresos = detalleEgresos.map(g => ({
-        Fecha:         g.fecha,
-        Categoría:     g.categoria,
-        Comprobante:   g.comprobante_ref ?? '',
-        Responsable:   g.responsable ?? '',
-        Detalle:       g.descripcion ?? '',
-        'Monto S/':    g.monto,
-      }));
-
-      const sufijo = concFiltro ? `_${concFiltro.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
-      await this.excelSvc.exportar(
-        `reporte_financiero_${p.desde}_a_${p.hasta}${sufijo}.xlsx`,
-        [
-          { nombre: 'Resumen Financiero',    filas: hojaResumen },
-          { nombre: 'Por Concepto',          filas: hojaConceptos },
-          { nombre: 'Detalle Ingresos',      filas: hojaDetalleIngresos },
-          { nombre: 'Egresos por Categoría', filas: hojaEgresos },
-        ],
-      );
-    } catch (e: unknown) {
-      this.error.set(e instanceof Error ? e.message : 'Error al exportar a Excel');
+      const payload = this.construirPayloadExportacion(r, p, concFiltro, catFiltro, detalleIngresos, detalleEgresos);
+      await this.reportesExcelSvc.exportarLibroFinanciero(payload);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.error.set(`Error al exportar a Excel: ${msg}`);
     } finally {
       this.exportando.set(false);
+    }
+  }
+
+  /**
+   * Exporta a PDF institucional A4 para el Consejo de Administración (Etapa 3)
+   */
+  async exportarPdf(modo: 'descargar' | 'abrir' = 'descargar'): Promise<void> {
+    const r = this.reporte();
+    if (!r || this.exportando() || this.exportandoPdf()) return;
+
+    this.exportandoPdf.set(true);
+    this.error.set(null);
+    const p = this.periodoActivo();
+
+    try {
+      const concFiltro = this.filtroConceptoSeleccionado() || null;
+      const catFiltro = this.filtroCategoriaSeleccionada() || null;
+
+      const [detalleIngresos, detalleEgresos] = await Promise.all([
+        this.reportesSvc.cargarDetalleConceptoPeriodo(p.desde, p.hasta, concFiltro, 'todos'),
+        this.reportesSvc.cargarDetalleEgresosPeriodo(p.desde, p.hasta, catFiltro),
+      ]);
+
+      // Captura de imagen base64 de ApexCharts si está disponible
+      let graficoB64: string | null = null;
+      try {
+        if (this.chartIngresosRef) {
+          const res = await this.chartIngresosRef.dataURI();
+          if (res && 'imgURI' in res && typeof res.imgURI === 'string') {
+            graficoB64 = res.imgURI;
+          }
+        }
+      } catch {
+        // Fallback elegante sin distorsión
+      }
+
+      const payload = this.construirPayloadExportacion(r, p, concFiltro, catFiltro, detalleIngresos, detalleEgresos, graficoB64);
+
+      if (modo === 'abrir') {
+        await this.reportesPdfSvc.generarYAbrir(payload);
+      } else {
+        await this.reportesPdfSvc.descargar(payload);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.error.set(`Error al generar el reporte PDF: ${msg}`);
+    } finally {
+      this.exportandoPdf.set(false);
     }
   }
 }
