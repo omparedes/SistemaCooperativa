@@ -176,7 +176,8 @@ export class ReportesExcelService {
 
     if (datos.conceptos && datos.conceptos.length > 0) {
       aoaResumen.push(['']);
-      aoaResumen.push(['DESGLOSE POR CONCEPTO DE RECAUDACIÓN']);
+      aoaResumen.push(['DESGLOSE POR CONCEPTO DE RECAUDACIÓN (DEVENGADO Y COBRANZAS)']);
+      aoaResumen.push(['Nota: Incluye cobranzas en efectivo, transferencias bancarias y amortizaciones con saldo a favor existente en cuenta corriente.']);
       aoaResumen.push(['Concepto', 'N° Cobros', 'Monto Total (S/)', 'Socios (S/)', 'Inquilinos (S/)', 'Otros (S/)', '% Participación']);
       for (const c of datos.conceptos) {
         aoaResumen.push([

@@ -441,7 +441,12 @@ export class ReportesPdfService {
 
     // 6. DESGLOSE POR CONCEPTO DE INGRESOS
     if (datos.conceptos && datos.conceptos.length > 0 && datos.vistaActiva !== 'egresos') {
-      content.push({ text: 'DESGLOSE DE INGRESOS POR CONCEPTO', style: 'seccionTitulo' });
+      content.push({ text: 'DESGLOSE DE INGRESOS POR CONCEPTO (DEVENGADO Y COBRANZAS)', style: 'seccionTitulo' });
+      content.push({
+        text: 'Nota: Comprende los cargos amortizados en el período (cobros en efectivo, banco y aplicaciones con saldo a favor existente en cuenta corriente).',
+        style: 'metaTexto',
+        margin: [0, 0, 0, 4],
+      });
       const cFilas: TableCell[][] = [
         [
           { text: 'Concepto de Recaudación', style: 'thCol' },

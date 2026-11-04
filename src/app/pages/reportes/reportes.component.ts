@@ -590,7 +590,7 @@ interface SerieDiariaResultado {
                 <div>
                   <h3 class="text-base font-bold text-gray-900 dark:text-white">Ingresos por Concepto</h3>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Filtra por concepto, origen o método de pago para auditar y graficar las operaciones correspondientes.
+                    Desglose devengado por concepto. Los cobros cubiertos con saldo a favor se distinguen en el método de pago sin alterar el flujo de caja nuevo.
                   </p>
                 </div>
 
