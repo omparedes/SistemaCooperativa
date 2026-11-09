@@ -62,6 +62,7 @@ export class AppSidebarComponent implements OnInit, OnDestroy {
       subItems: [
         { name: 'Gestión Financiera',   path: '/cuenta-corriente', pro: false },
         { name: 'Gestión de Ingresos',  path: '/cuenta-corriente/gestion-ingresos', pro: false },
+        { name: 'Gestión de Tarjeta',   path: '/cuenta-corriente/gestion-tarjeta', pro: false },
       ]
     },
     {
