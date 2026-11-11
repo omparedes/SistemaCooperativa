@@ -120,6 +120,13 @@ export const routes: Routes = [
             .then(m => m.EstadosCuentaReporteComponent),
         title: 'Estados de Cuenta | Cooperativa Primero de Mayo',
       },
+      {
+        path: 'reportes/contable',
+        loadComponent: () =>
+          import('./pages/reportes/reporte-contable/reporte-contable.component')
+            .then(m => m.ReporteContableComponent),
+        title: 'Reporte Contable | Cooperativa Primero de Mayo',
+      },
       // ── Configuración (solo Administrador) ──────────────────────────────
       {
         path: 'configuracion/tarifas',
