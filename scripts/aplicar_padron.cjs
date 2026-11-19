@@ -5,9 +5,30 @@
  */
 'use strict';
 const fs   = require('fs');
+const path = require('path');
 const http = require('https');
 
-const ACCESS_TOKEN = 'sbp_79ceb3fff5213a0938192b5a91432061ace78db9';
+function loadAccessToken() {
+  if (process.env.SUPABASE_ACCESS_TOKEN && process.env.SUPABASE_ACCESS_TOKEN.trim()) {
+    return process.env.SUPABASE_ACCESS_TOKEN.trim();
+  }
+  const envPath = path.resolve(__dirname, '..', '.env');
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*SUPABASE_ACCESS_TOKEN\s*=\s*(.+?)\s*$/);
+      if (m) {
+        const val = m[1].replace(/^(['"])(.*)\1$/, '$2').trim();
+        if (val) return val;
+      }
+    }
+  }
+  throw new Error(
+    'Falta la variable de entorno SUPABASE_ACCESS_TOKEN (ni en el entorno ni en .env). ' +
+    'Defínela antes de ejecutar este script.'
+  );
+}
+
+const ACCESS_TOKEN = loadAccessToken();
 const PROJECT_REF  = 'sucnpjawtpattgkatqqn';
 const URL = `/v1/projects/${PROJECT_REF}/database/query`;
 
