@@ -4,7 +4,7 @@
 
 An enterprise-grade ERP and financial management system built for municipal markets and cooperative associations to manage retail spaces, utilities distribution, membership accounts, and cash desks.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-success?style=for-the-badge&logo=vercel)](https://sistema-cooperativa-ochre.vercel.app)
+![Hosting](https://img.shields.io/badge/Cloudflare%20Pages-Production-F38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 [![Angular](https://img.shields.io/badge/Angular-20-DD0031?style=for-the-badge&logo=angular)](https://angular.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind--v4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
@@ -17,7 +17,7 @@ A specialized management platform designed for the Primero de Mayo Cooperative M
 
 ```mermaid
 graph TD
-    A[Public Portal / consultations] -->|DNI / Puesto Search| B[Edge Routing / Vercel]
+    A[Public Portal / consultations] -->|DNI / Puesto Search| B[Edge Routing / Cloudflare Pages]
     C[Admin Panel / Angular 20] -->|HTTPS / JWT Auth| B
     B -->|PostGREST API / SSL| D[(Supabase Postgres)]
     D -->|Row-Level Security Policies| E[Tables & Views]
