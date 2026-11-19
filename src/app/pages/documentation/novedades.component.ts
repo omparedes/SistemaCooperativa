@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { APP_VERSION_DATA, ReleaseNote } from '../../core/config/version.config';
 
@@ -8,7 +8,7 @@ type VistaNovedades = 'admin' | 'tecnica';
 @Component({
   selector: 'app-novedades',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <div class="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
 

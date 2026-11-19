@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import {
   EstadoCuentaDeudaItem,
@@ -84,7 +84,7 @@ export interface MovimientoLedger {
 @Component({
   selector: 'app-estados-cuenta-reporte',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="mx-auto max-w-7xl p-4 md:p-6 space-y-6">
 

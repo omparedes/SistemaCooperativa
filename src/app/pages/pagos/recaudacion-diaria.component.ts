@@ -31,52 +31,68 @@ interface Recaudacion {
         <div class="text-xl font-bold">S/ {{ totalRecaudado.toFixed(2) }}</div>
       </div>
     </div>
-
+  
     <div class="bg-white p-4 rounded shadow max-w-lg">
       <label class="block text-sm font-medium text-gray-700">Buscar Socio</label>
       <input type="text" [(ngModel)]="termino" (input)="filtrar()" placeholder="Nombre, Apellido o Tienda"
-             class="mt-1 block w-full border rounded px-3 py-2 mb-3" />
-
-      <div class="max-h-40 overflow-auto mb-3 border rounded">
-        <button *ngFor="let s of sociosFiltrados" (click)="seleccionar(s)" class="w-full text-left px-3 py-2 hover:bg-gray-50">
-          {{ s.nombres }} {{ s.apellidos }} <span class="text-sm text-gray-400">({{ s.socio_id }})</span>
-        </button>
-        <div *ngIf="sociosFiltrados.length === 0" class="p-3 text-gray-500">No hay resultados.</div>
-      </div>
-
-      <div *ngIf="socioSeleccionado" class="mb-3">
-        <p><strong>Socio seleccionado:</strong> {{ socioSeleccionado.nombres }} {{ socioSeleccionado.apellidos }}</p>
-      </div>
-
-      <label class="block text-sm font-medium text-gray-700">Monto (S/)</label>
-      <input type="number" [(ngModel)]="monto" class="mt-1 block w-full border rounded px-3 py-2 mb-3" />
-
-      <div class="flex space-x-2">
-        <button (click)="registrar()" class="px-4 py-2 bg-blue-600 text-white rounded">Registrar Pago Diario</button>
-        <button (click)="guardarCambios()" *ngIf="editando" class="px-4 py-2 bg-yellow-500 text-white rounded">Guardar</button>
-        <button (click)="cancelarEdicion()" *ngIf="editando" class="px-4 py-2 bg-gray-300 text-gray-800 rounded">Cancelar</button>
-      </div>
-
-      <div *ngIf="mensaje" class="mt-4 p-3 bg-green-50 text-green-700 rounded">{{ mensaje }}</div>
-    </div>
-
-    <div class="mt-6 max-w-2xl">
-      <h3 class="text-lg font-medium mb-2">Recaudaciones Registradas</h3>
-      <div *ngIf="recaudaciones.length === 0" class="text-gray-500">No se han registrado recaudaciones.</div>
-      <ul class="space-y-2">
-        <li *ngFor="let r of recaudaciones" class="flex items-center justify-between p-3 border rounded">
-          <div>
-            <div class="font-medium">{{ r.socio_nombre }} <span class="text-sm text-gray-400">({{ r.socio_id }})</span></div>
-            <div class="text-sm text-gray-500">{{ r.fecha | date:'dd/MM/yyyy HH:mm' }} — S/ {{ r.monto.toFixed(2) }}</div>
+        class="mt-1 block w-full border rounded px-3 py-2 mb-3" />
+  
+        <div class="max-h-40 overflow-auto mb-3 border rounded">
+          @for (s of sociosFiltrados; track s) {
+            <button (click)="seleccionar(s)" class="w-full text-left px-3 py-2 hover:bg-gray-50">
+              {{ s.nombres }} {{ s.apellidos }} <span class="text-sm text-gray-400">({{ s.socio_id }})</span>
+            </button>
+          }
+          @if (sociosFiltrados.length === 0) {
+            <div class="p-3 text-gray-500">No hay resultados.</div>
+          }
+        </div>
+  
+        @if (socioSeleccionado) {
+          <div class="mb-3">
+            <p><strong>Socio seleccionado:</strong> {{ socioSeleccionado.nombres }} {{ socioSeleccionado.apellidos }}</p>
           </div>
-          <div class="flex items-center space-x-2">
-            <button (click)="editar(r)" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded">Editar</button>
-            <button (click)="eliminar(r.id)" class="px-3 py-1 bg-red-100 text-red-800 rounded">Eliminar</button>
-          </div>
-        </li>
-      </ul>
+        }
+  
+        <label class="block text-sm font-medium text-gray-700">Monto (S/)</label>
+        <input type="number" [(ngModel)]="monto" class="mt-1 block w-full border rounded px-3 py-2 mb-3" />
+  
+        <div class="flex space-x-2">
+          <button (click)="registrar()" class="px-4 py-2 bg-blue-600 text-white rounded">Registrar Pago Diario</button>
+          @if (editando) {
+            <button (click)="guardarCambios()" class="px-4 py-2 bg-yellow-500 text-white rounded">Guardar</button>
+          }
+          @if (editando) {
+            <button (click)="cancelarEdicion()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded">Cancelar</button>
+          }
+        </div>
+  
+        @if (mensaje) {
+          <div class="mt-4 p-3 bg-green-50 text-green-700 rounded">{{ mensaje }}</div>
+        }
+      </div>
+  
+      <div class="mt-6 max-w-2xl">
+        <h3 class="text-lg font-medium mb-2">Recaudaciones Registradas</h3>
+        @if (recaudaciones.length === 0) {
+          <div class="text-gray-500">No se han registrado recaudaciones.</div>
+        }
+        <ul class="space-y-2">
+          @for (r of recaudaciones; track r) {
+            <li class="flex items-center justify-between p-3 border rounded">
+              <div>
+                <div class="font-medium">{{ r.socio_nombre }} <span class="text-sm text-gray-400">({{ r.socio_id }})</span></div>
+                <div class="text-sm text-gray-500">{{ r.fecha | date:'dd/MM/yyyy HH:mm' }} — S/ {{ r.monto.toFixed(2) }}</div>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button (click)="editar(r)" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded">Editar</button>
+                <button (click)="eliminar(r.id)" class="px-3 py-1 bg-red-100 text-red-800 rounded">Eliminar</button>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
     </div>
-  </div>
   `
 })
 export class RecaudacionDiariaComponent implements OnInit {
