@@ -14,7 +14,7 @@
     <!-- app header start -->
     <app-header/>
     <!-- app header end -->
-    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+    <main class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
       @if (sidebarService.chunkErrorUrl()) {
         <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 shadow-xs dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-200">
           <div class="flex items-center gap-2.5">
@@ -63,6 +63,6 @@
         </div>
       }
       <router-outlet></router-outlet>
-    </div>
+    </main>
   </div>
 </div>

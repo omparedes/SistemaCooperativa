@@ -4,7 +4,6 @@ import { LoginComponent } from './pages/auth-pages/login/login.component';
 import { NotFoundComponent } from './pages/other-page/not-found/not-found.component';
 import { AppLayoutComponent } from './shared/layout/app-layout/app-layout.component';
 import { SignInComponent } from './pages/auth-pages/sign-in/sign-in.component';
-import { SignUpComponent } from './pages/auth-pages/sign-up/sign-up.component';
 import { DocumentationComponent } from './pages/documentation/documentation.component';
 
 export const routes: Routes = [
@@ -332,11 +331,6 @@ export const routes: Routes = [
     component: SignInComponent,
     canActivate: [noAuthGuard],
     title: 'Iniciar sesión | Cooperativa Primero de Mayo',
-  },
-  {
-    path: 'signup',
-    component: SignUpComponent,
-    title: 'Registrar | TailAdmin'
   },
   // ── Portal público (sin auth) ────────────────────────────────────────────
   {
