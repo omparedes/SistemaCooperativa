@@ -25,7 +25,7 @@ ERP web administrativo para la **Cooperativa Primero de Mayo** (mercado), basado
 | PDF | `pdfmake` (tickets térmicos 80mm y A4; diseño dinámico desde `configuracion_recibos`) |
 | Excel | `xlsx` (SheetJS) **solo vía `import()` dinámico** en `ExcelExportService` — nunca importarlo estático |
 | Backend | **Supabase** (PostgreSQL + Auth + Triggers + RPCs `SECURITY DEFINER` + RLS) |
-| Hosting | **Vercel** (CI/CD desde `main`) · cuidar el **Free Tier** (egress y storage) |
+| Hosting | **Cloudflare Pages** (CI/CD desde `main` → `dist/ng-tailadmin/browser`) · cuidar el **Free Tier** de Supabase (egress y storage) |
 
 ---
 

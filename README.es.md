@@ -4,7 +4,7 @@
 
 Un sistema ERP y gestión financiera de grado empresarial diseñado para mercados municipales y asociaciones cooperativas para la gestión de locales comerciales, distribución de servicios básicos, cuentas de socios y control de cajas diarias.
 
-[![Live Demo](https://img.shields.io/badge/demo-en--vivo-success?style=for-the-badge&logo=vercel)](https://sistema-cooperativa-ochre.vercel.app)
+![Hosting](https://img.shields.io/badge/Cloudflare%20Pages-Producci%C3%B3n-F38020?style=for-the-badge&logo=cloudflarepages&logoColor=white)
 [![Angular](https://img.shields.io/badge/Angular-20-DD0031?style=for-the-badge&logo=angular)](https://angular.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-Base--de--Datos-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind--v4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
@@ -17,7 +17,7 @@ Una plataforma de gestión especializada diseñada para la Cooperativa del Merca
 
 ```mermaid
 graph TD
-    A[Portal Público / Consultas] -->|Búsqueda DNI / Puesto| B[Enrutamiento Edge / Vercel]
+    A[Portal Público / Consultas] -->|Búsqueda DNI / Puesto| B[Enrutamiento Edge / Cloudflare Pages]
     C[Panel Admin / Angular 20] -->|HTTPS / JWT Auth| B
     B -->|API PostGREST / SSL| D[(Supabase Postgres)]
     D -->|Políticas Row-Level Security| E[Tablas y Vistas]
