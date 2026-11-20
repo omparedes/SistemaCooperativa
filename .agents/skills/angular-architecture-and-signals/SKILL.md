@@ -1,14 +1,14 @@
 ---
 name: angular-architecture-and-signals
-description: "Asegura la adherencia a Angular 20 Standalone Components, Tailwind CSS v4 y manejo de estado reactivo mediante Signals."
+description: "Asegura la adherencia a Angular 22 Standalone Components, ChangeDetectionStrategy.Eager, Tailwind CSS v4 y manejo de estado reactivo mediante Signals."
 metadata:
   author: Antigravity
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
-# Arquitectura Angular 20 y Patrones de UI
+# Arquitectura Angular 22 y Patrones de UI
 
-Este manual asegura la coherencia visual, de rendimiento y mantenibilidad del frontend basado en Angular standalone y Tailwind CSS v4.
+Este manual asegura la coherencia visual, de rendimiento y mantenibilidad del frontend basado en Angular 22.3 (Standalone Components, `ChangeDetectionStrategy.Eager`, Zone.js) y Tailwind CSS v4.
 
 ## Directivas de Frontend
 

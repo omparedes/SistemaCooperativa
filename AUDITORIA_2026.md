@@ -1,7 +1,8 @@
 # AUDITORÍA FUNCIONAL 2026 — SistemaCooperativa
 
-> **Fecha:** 2026-07-07 · **Auditor:** Claude Code (rol: Arquitecto/Inspector, solo lectura)
-> **Alcance:** 9 módulos funcionales + capa de datos (migraciones 00001–00086).
+> **Fecha de corte histórico:** `2026-07-07` · **Auditor:** Claude Code (rol: Arquitecto/Inspector, solo lectura)
+> **Alcance histórico:** 9 módulos funcionales + capa de datos (migraciones `00001`–`00086`).
+> **Nota de vigencia (`2026-11-19`):** Documento histórico congelado a la fecha de corte. Varios hallazgos fueron atendidos posteriormente (p. ej. `FOR UPDATE` en `rpc_procesar_pago` / `anular_pago` en `00097`, auditoría y edición/baja en `beneficios_socios` en `00098`, gestión de ingresos en `00096`, gestión de tarjeta en `00100`, Central de Reportes con ApexCharts en `ea24a87`). Para el estado vivo consultar [CLAUDE.md](CLAUDE.md), [ARCHITECTURE.md](ARCHITECTURE.md) y [TODO.md](TODO.md).
 > **Método:** lectura directa de componentes, servicios, RPCs y políticas RLS. Ningún archivo de código fue modificado durante esta auditoría.
 
 ## Resumen Ejecutivo

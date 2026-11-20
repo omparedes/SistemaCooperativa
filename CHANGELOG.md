@@ -5,6 +5,27 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [Sin publicar] — Cambios integrados en `main` posteriores a v2.5.0
+
+> *Nota de versionado:* Esta sección recopila los hitos ya integrados en `main` (y validados en producción cuando aplica) después del tag `v2.5.0`, manteniéndose el identificador de versión visible en `2.5.0` hasta una futura decisión de publicación.
+
+### Funcionalidades de Producto e Informes
+- **Reporte Contable (`/reportes/contable`):** Módulo independiente de auditoría y conciliación de ingresos contra la Central de Reportes (`ReporteContableService`, `ReporteContableExcelService`), con clasificación documental (`REGISTRADO`, `SIN REGISTRAR`, `POR VALIDAR`, `NO APLICA`), exportación Excel de **9 hojas** (`00_RESUMEN` a `08_DOCUMENTOS_PENDIENTES`), modo de muestra anonimizada, restricción de exportación DNI para roles `Administrador` y `Caja`, y 8 pruebas unitarias (`cabccec`).
+- **Gestión de Tarjeta (`/cuenta-corriente/gestion-tarjeta`):** Edición y anulación lógica de recaudaciones semanales por tarjeta mediante RPCs `rpc_editar_recaudacion_abono` y `rpc_anular_recaudacion_abono` (`00100`), con bloqueo pesimista `FOR UPDATE`, control de concurrencia optimista (`p_updated_at`), ajuste atómico de `saldo_a_favor`, bloqueo si el saldo ya fue consumido y registro en `audit_logs` (`154c2c2`).
+- **Modernización de la Central de Reportes (Etapas 1–3):** Filtros rediseñados, análisis gráfico de evolución y comparativa entre períodos con **ApexCharts**, exportaciones Excel de 4 hojas (`ReportesExcelService`), PDF institucional A4 con gráfico incrustado (`ReportesPdfService`) y notas aclaratorias entre criterio devengado y flujo de caja (`ea24a87`).
+- **Recibos Duales A4 y Tickets Térmicos 80mm:** Soporte calibrado para impresora térmica Epson TM-T20IV-L (escala 100%, márgenes y logo monocromo) junto al formato A4 y configuración visual (`/configuracion/recibos`) (`a28a361`, `08090e9`).
+
+### Rendimiento, Arquitectura y Modernización Técnica
+- **Migración Angular 20 → 21 → 22 (`22.3.0`):** Actualización de `@angular/*` y `@angular/build` a `22.3.0`, TypeScript a `6.0.3`, `ng-apexcharts` a `2.1.0`, conservación de `Zone.js` y Karma/Jasmine, y adopción explícita de `ChangeDetectionStrategy.Eager` en 72 archivos (`fc6e5cb`, `fa4bce2`).
+- **Optimización de Rendimiento y Navegación (Fases 1–3):** Desacople de `cargarPerfil` fuera de `onAuthStateChange` (`54f9187`), escucha optimizada `NavigationEnd` en sidebar y banner de recuperación no destructiva ante `ChunkLoadError` (`718c736`), desacople de historial en fichas individuales (`22be613`), retiro de script global duplicado de ApexCharts (`a0e8543`), optimización SQL set-based de cálculo masivo de deudas (`00099` + script de reversión en `supabase/rollback/`) y suite automatizada de 7 specs en `validacion-fases-1-2.spec.ts` (`2e13db3`, `43dcded`, `235c8be`).
+
+### Seguridad, Accesibilidad e Infraestructura
+- **Cloudflare Pages y Cabeceras HTTP:** Eliminación de artefactos heredados de Vercel (`b1b5454`), configuración de Build System v3 con `NODE_VERSION=22.23.4` y cabeceras HTTP de seguridad (`X-Frame-Options: DENY`, `Content-Security-Policy: frame-ancestors 'none'`, `Permissions-Policy`) en `public/_headers` (`e4c1703`).
+- **Accesibilidad y Cierre de Registro Público:** Retiro de ruta pública `/signup`, `<html lang="es">`, contenedor semántico `<main>` en `AppLayoutComponent` y atributos `aria-label`/`aria-pressed`/`aria-hidden` en controles de contraseña (`5f282a1`).
+- **Higiene de Scripts:** Retiro de credenciales históricas en scripts heredados (`c5faf42`).
+
+---
+
 ## [2.5.0] - 2026-11-02
 ### Resumen Ejecutivo
 Consolidación de la auditoría operativa y financiera del ERP: habilitación de edición y eliminación segura de Dietas y Provisión Social, cobro de recibos mensuales 100% cubiertos con saldo a favor sin dinero físico, y nuevo esquema de Arqueo de Caja Diario en 3 bloques.
@@ -18,7 +39,7 @@ Consolidación de la auditoría operativa y financiera del ERP: habilitación de
 ### Nivel Técnico (Desarrollo y Auditoría)
 - **Backend (Supabase / PostgreSQL):**
   - Migración `00098`: Columnas `updated_at`/`updated_by` en `beneficios_socios`, políticas RLS reforzadas a rol `Administrador` y RPCs transaccionales `rpc_editar_beneficio_socio` y `rpc_eliminar_beneficio_socio` con bloqueo `FOR UPDATE`.
-  - Migración `00097`: Soporte para `p_monto_recibido = 0` y `metodo_pago = 'Saldo a Favor'` en `rpc_registrar_pago_completo`.
+  - Migración `00097`: Soporte para `p_monto_total = 0` (`S/ 0.00` de efectivo) y `metodo_pago = 'Saldo a Favor'` en `rpc_procesar_pago`, más bloqueo `FOR UPDATE` en `rpc_procesar_pago` y `anular_pago`.
 - **Frontend (Angular 20):**
   - Componente `socio-detail.component.ts`: Modales reactivos de edición y confirmación de baja lógica con signals.
   - Componente `arqueo-caja.component.ts`: Exclusión de anulados y matriz consolidada de 3 bloques.
@@ -54,7 +75,7 @@ Implementación de los módulos de Tesorería Bancaria y Estados de Cuenta Conso
 
 ### Nivel Técnico
 - Migración `00094`: Función trigger `tg_actualizar_saldo_banco()` para actualización atómica de saldos en `bancos_cuentas`.
-- Migración `00095`: Procedimiento almacenado `rpc_reporte_estados_cuenta`.
+- Migración `00095`: Procedimiento almacenado `rpc_reporte_resumen_deudas` (`00095_reporte_estados_cuenta.sql`).
 - Integración de librería `xlsx` (SheetJS) con carga dinámica vía `import()`.
 - **Commits:** `c4410fd`, `1bbb067`.
 
@@ -70,7 +91,7 @@ Implementación del Padrón Electoral para Asambleas Generales y Central de Repo
 - **Acceso Móvil:** Adaptación del portal de consultas para teléfonos y tabletas.
 
 ### Nivel Técnico
-- Migraciones `00085` a `00088`: RPCs `rpc_reportes_drilldown` y `rpc_padron_electoral`.
+- Migraciones `00085` a `00088`: RPCs de Central de Reportes (`rpc_reporte_resumen`, `rpc_reporte_detalle_concepto`, `rpc_reporte_detalle_egresos` en `00085`) y `rpc_asambleas_padron` (`00088`).
 - Vistas móviles optimizadas en `consultas.component.ts`.
 - **Commits:** `a01e083`, `ea297f5`, `feff237`.
 

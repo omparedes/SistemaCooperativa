@@ -2,7 +2,7 @@
 **Sistema ERP — Mercado Cooperativo Primero de Mayo**  
 **Fecha:** 15 de Octubre de 2026  
 **Documento:** `docs/plans/PLAN_MEJORA_ARQUEO_CAJA.md`  
-**Estado:** Propuesta Técnica — Fase de Planificación (Solo Lectura, Esperando Aprobación)
+**Estado:** Plan Técnico Histórico — **Implementado e integrado en `main`** (commit `ede8fff`, incluido en `v2.5.0`; actualización posterior de Angular 20 → 22.3.0 en `fa4bce2`).
 
 ---
 

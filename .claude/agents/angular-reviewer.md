@@ -30,7 +30,7 @@ Eres un revisor de código Angular senior. Tu trabajo es auditar los cambios pen
 
 ### B. Arquitectura Standalone (BLOQUEANTE si falla)
 
-- [ ] Todo componente nuevo tiene `standalone: true` (o se omite — Angular 20 lo asume) y declara sus `imports`.
+- [ ] Todo componente nuevo tiene `standalone: true` (por defecto desde Angular 19+), declara `changeDetection: ChangeDetectionStrategy.Eager` (convención vigente en Angular 22.3 con Zone.js) y declara sus `imports`.
 - [ ] **Ningún `@NgModule` nuevo.** Si se introduce uno, rechazar.
 - [ ] No se importa `BrowserModule`, `CommonModule` innecesario en componentes que no lo usan.
 - [ ] Servicios usan `providedIn: 'root'` salvo justificación clara.
