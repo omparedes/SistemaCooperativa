@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { IngresoInternoItem } from '../../../core/services/gestion-ingresos.service';
 
@@ -6,6 +6,7 @@ import { IngresoInternoItem } from '../../../core/services/gestion-ingresos.serv
   selector: 'app-ingreso-detalle-modal',
   standalone: true,
   imports: [DatePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div class="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800 dark:border dark:border-gray-700 animate-in fade-in zoom-in-95 duration-150">

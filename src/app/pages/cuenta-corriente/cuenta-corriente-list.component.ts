@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CuentaCorrienteService } from './cuenta-corriente.service';
 import { PersonaResumen, TipoPersona } from './cuenta-corriente.model';
@@ -14,6 +14,7 @@ function formatSoles(n: number): string {
   selector: 'app-cuenta-corriente-list',
   standalone: true,
   imports: [RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-7xl p-4 md:p-6">
 

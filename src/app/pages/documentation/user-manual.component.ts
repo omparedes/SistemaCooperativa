@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { APP_VERSION_DATA } from '../../core/config/version.config';
 
@@ -6,6 +6,7 @@ import { APP_VERSION_DATA } from '../../core/config/version.config';
     selector: 'app-user-manual',
     standalone: true,
     imports: [],
+    changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './user-manual.component.html',
 })
 export class UserManualComponent {

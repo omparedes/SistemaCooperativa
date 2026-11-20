@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { FacturacionService } from '../../core/services/facturacion.service';
@@ -21,6 +21,7 @@ interface ResultadoGeneracion {
   selector: 'app-facturacion-almacenes',
   standalone: true,
   imports: [FormsModule, DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-2xl p-4 md:p-6 2xl:p-8">
 

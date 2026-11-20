@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, Input, OnChanges, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, Input, OnChanges, Output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import {
@@ -12,6 +12,7 @@ import {
   selector: 'app-movimiento-form',
   standalone: true,
   imports: [FormsModule, NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       (click)="cancel.emit()">

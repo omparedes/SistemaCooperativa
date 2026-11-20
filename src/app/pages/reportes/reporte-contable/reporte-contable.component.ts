@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -58,6 +58,7 @@ function calcularRangoMes(anio: number, mes: number): { desde: string; hasta: st
   selector: 'app-reporte-contable',
   standalone: true,
   imports: [FormsModule, RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-4 sm:p-6 max-w-[1600px] mx-auto space-y-6">
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SlicePipe } from '@angular/common';
 import { createClient } from '@supabase/supabase-js';
@@ -21,6 +21,7 @@ const ROLES: TipoRol[] = ['Administrador', 'Caja', 'Asistente'];
   selector: 'app-usuarios',
   standalone: true,
   imports: [FormsModule, SlicePipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-6 max-w-5xl mx-auto">
 

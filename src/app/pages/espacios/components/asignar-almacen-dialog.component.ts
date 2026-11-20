@@ -1,5 +1,6 @@
 import {
   Component, inject, input, OnInit, output, signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +18,7 @@ interface PersonaOpcion {
   selector: 'app-asignar-almacen-dialog',
   standalone: true,
   imports: [NgClass, FormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
 <!-- Backdrop -->
 <div class="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 flex items-center justify-center p-4">

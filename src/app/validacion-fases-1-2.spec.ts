@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, withNavigationErrorHandler } from '@angular/router';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { SUPABASE_CLIENT } from './core/services/supabase.client';
 import { AuthService } from './core/services/auth.service';
 import { SidebarService } from './core/services/sidebar.service';
@@ -17,7 +17,8 @@ import { PdfGeneratorService, ReciboDatos } from './core/services/pdf-generator.
 import { ConfiguracionRecibos } from './core/services/configuracion-recibos.service';
 import { resumirPagoConSaldo } from './pages/pagos/pago.model';
 
-@Component({ standalone: true, template: '<p>Dummy Route</p>' })
+@Component({ standalone: true, changeDetection: ChangeDetectionStrategy.Eager,
+ template: '<p>Dummy Route</p>' })
 class DummyRouteComponent {}
 
 const CFG_MOCK: ConfiguracionRecibos = {

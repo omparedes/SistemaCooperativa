@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -16,6 +16,7 @@ import { UserDropdownComponent } from '../../components/header/user-dropdown/use
     NotificationDropdownComponent,
     UserDropdownComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './app-header.component.html',
 })
 export class AppHeaderComponent {

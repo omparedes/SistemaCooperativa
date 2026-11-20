@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { PdfGeneratorService } from '../../core/services/pdf-generator.service';
@@ -48,6 +48,7 @@ function fmtFechaCorta(yyyymmdd: string): string {
   selector: 'app-arqueo-caja',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6 2xl:p-8">
 

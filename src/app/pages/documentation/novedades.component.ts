@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { APP_VERSION_DATA, ReleaseNote } from '../../core/config/version.config';
@@ -9,6 +9,7 @@ type VistaNovedades = 'admin' | 'tecnica';
   selector: 'app-novedades',
   standalone: true,
   imports: [RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
 

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass, DecimalPipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { GirosService, Giro } from '../../core/services/giros.service';
@@ -269,6 +269,7 @@ import { FormsModule } from '@angular/forms';
       </div>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: `
     @keyframes slideIn {
       from { transform: translateX(100%); }

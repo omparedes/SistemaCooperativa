@@ -1,4 +1,4 @@
-import { afterNextRender, Component, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, ElementRef, inject, OnInit, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { AsambleasService, PadronElectoral, SocioElectoral, VeredictoElectoral } from './asambleas.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
@@ -27,6 +27,7 @@ function hoyISO(): string {
   selector: 'app-asambleas',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-3xl p-4 md:p-6">
 

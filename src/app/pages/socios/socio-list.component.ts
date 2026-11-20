@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { SociosService } from '../../core/services/socios.service';
@@ -12,6 +12,7 @@ type Tab = 'socios' | 'inquilinos';
   selector: 'app-socio-list',
   standalone: true,
   imports: [NgClass, DatePipe, DecimalPipe, RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-6 max-w-7xl mx-auto">
       <header class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -203,7 +204,7 @@ type Tab = 'socios' | 'inquilinos';
                       {{ totalAlquiler(i) ? (totalAlquiler(i) | number:'1.2-2') : '—' }}
                     </td>
                     <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap">
-                      {{ i.puesto ? (i.puesto.fecha_inicio_arriendo | date:'dd/MM/yyyy') : (i.almacenes?.[0]?.fecha_inicio | date:'dd/MM/yyyy') || '—' }}
+                      {{ i.puesto ? (i.puesto.fecha_inicio_arriendo | date:'dd/MM/yyyy') : ($safeNavigationMigration(i.almacenes?.[0]?.fecha_inicio) | date:'dd/MM/yyyy') || '—' }}
                     </td>
                     <td class="px-4 py-3 text-right">
                       <a [routerLink]="['/inquilinos', i.id]"

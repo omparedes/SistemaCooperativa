@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -50,6 +50,7 @@ type RangoRapido = 'hoy' | 'mes' | 'semana' | 'personalizado';
   selector: 'app-movimientos-bancarios-reporte',
   standalone: true,
   imports: [NgClass, FormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6">
 
