@@ -13,6 +13,46 @@ Plataforma de gestión especializada desarrollada para la **Cooperativa del Merc
 
 ---
 
+## 🚀 Proyecto en producción | DEMO pública disponible
+
+Este repositorio respalda una aplicación real en producción (`https://sistema.mercadoprimerodemayo.com`) junto con una versión demostrativa pública y completamente aislada (**`SIGCOOP-DEMO-RC2`**) desplegada de forma independiente en Cloudflare Pages:
+
+*   **DEMO pública sin credenciales:** **[https://sigcoop-demo.pages.dev/](https://sigcoop-demo.pages.dev/)**
+*   **Aislamiento total de producción:** La DEMO ejecuta un motor financiero simulado en memoria (`DemoDatabaseStore` + cliente Supabase simulado) con datos 100 % sintéticos e identidad de cooperativa ficticia, sin conexiones ni lecturas hacia el proyecto Supabase de producción.
+*   **Exploración interactiva:** Permite alternar entre los perfiles **`Administrador DEMO`** y **`Operador de Caja DEMO`**, recorrer una guía comercial interactiva y restaurar los datos ficticios de sesión en cualquier momento.
+*   **Stack de la versión DEMO:** Angular `22.3.0`, TypeScript `6.0.3`, Tailwind CSS v4 y Cloudflare Pages (proyecto independiente `sigcoop-demo`).
+
+### 🌐 Probar la demostración
+
+Puedes ingresar directamente al entorno interactivo desde el navegador, sin registro previo ni contraseñas:
+
+> **[Abrir SIGCOOP DEMO en vivo →](https://sigcoop-demo.pages.dev/)**
+
+### 👨‍💻 Desarrollo y responsabilidad técnica
+
+El proyecto ha sido concebido, dirigido y ejecutado bajo la responsabilidad integral del autor del repositorio (**[Oscar Paredes](https://github.com/omparedes)**), abarcando el levantamiento de requisitos operativos en campo, análisis funcional del negocio cooperativo, diseño del esquema relacional y RPCs en PostgreSQL, arquitectura frontend, implementación, pruebas funcionales, validación con usuarios reales y puesta en producción, utilizando herramientas e inteligencia artificial como soporte técnico durante el proceso de ingeniería.
+
+### 📸 Vista previa del sistema
+
+Todas las capturas siguientes corresponden a vistas reales obtenidas directamente desde la DEMO pública ([`sigcoop-demo.pages.dev`](https://sigcoop-demo.pages.dev/)) con datos sintéticos:
+
+#### 1. Dashboard Gerencial y KPIs financieros
+Resumen ejecutivo con filtros por origen de información (*Socios*, *Inquilinos*, *Otros*), indicadores de recaudación, deuda total, morosidad y gráfico interactivo en ApexCharts.
+
+![Dashboard Gerencial SIGCOOP DEMO](./docs/assets/demo/dashboard-demo.webp)
+
+#### 2. Wizard de Registro de Pagos y Caja
+Flujo operativo en 3 pasos (*Búsqueda → Distribución → Confirmación*) mostrando pagador ficticio, desglose de cuotas pendientes y opciones de cobro total o parcial.
+
+![Registro de Pagos SIGCOOP DEMO](./docs/assets/demo/registro-pagos-demo.webp)
+
+#### 3. Reporte Contable y Conciliación de Ingresos
+Auditoría detallada por comprobante con filtros por período/origen/documento, tarjetas de conciliación (*Dinero Nuevo*, *Saldo a Favor*, *Total Aplicado*), modo de muestra anonimizada y exportación a Excel.
+
+![Reporte Contable SIGCOOP DEMO](./docs/assets/demo/reporte-contable-demo.webp)
+
+---
+
 ## 🏗️ Vista General de la Arquitectura
 
 ```mermaid

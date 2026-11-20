@@ -13,6 +13,46 @@ A specialized management platform designed for the **Cooperativa del Mercado Pri
 
 ---
 
+## 🚀 Live Demo & Production Project
+
+This repository backs both a live production ERP (`https://sistema.mercadoprimerodemayo.com`) and a standalone, public commercial demonstration (**`SIGCOOP-DEMO-RC2`**) hosted separately on Cloudflare Pages:
+
+*   **Public Live DEMO (no credentials required):** **[https://sigcoop-demo.pages.dev/](https://sigcoop-demo.pages.dev/)**
+*   **Strict Production Isolation:** The DEMO runs an in-memory simulated financial engine (`DemoDatabaseStore` + mocked Supabase client) over 100% synthetic data and a fictional cooperative profile, with zero connections to the production Supabase database.
+*   **Interactive Role Exploration:** Visitors can switch instantly between **`Administrador DEMO`** and **`Operador de Caja DEMO`**, launch the guided commercial tour, and reset session demo data at any time.
+*   **DEMO Release Stack:** Angular `22.3.0`, TypeScript `6.0.3`, Tailwind CSS v4, hosted on an independent Cloudflare Pages project (`sigcoop-demo`).
+
+### 🌐 Try the Live Demo
+
+Access the interactive application directly in your browser without registration or sign-in:
+
+> **[Launch Live SIGCOOP DEMO →](https://sigcoop-demo.pages.dev/)**
+
+### 👨‍💻 Development & Technical Ownership
+
+This system was architected, delivered, and taken to production under the end-to-end engineering ownership of the repository author (**[Oscar Paredes](https://github.com/omparedes)**), covering domain discovery, business requirements analysis, PostgreSQL/RLS/RPC schema design, frontend architecture, implementation, automated and functional testing, user validation, and production deployment, using AI coding agents as technical support tools throughout the engineering workflow.
+
+### 📸 Product Preview
+
+All screenshots below were captured directly from the live public DEMO ([`sigcoop-demo.pages.dev`](https://sigcoop-demo.pages.dev/)) displaying synthetic data only:
+
+#### 1. Executive Dashboard & Financial KPIs
+Executive overview with origin segmentation (*Socios*, *Inquilinos*, *Otros*), monthly collection KPIs, pending debt tracking, delinquency metrics, and ApexCharts revenue trends.
+
+![SIGCOOP DEMO Executive Dashboard](./docs/assets/demo/dashboard-demo.webp)
+
+#### 2. 3-Step Payment POS & Cashier Wizard
+Operational 3-step cashier workflow (*Search → Distribution → Confirmation*) showing a fictional payer profile, pending dues breakdown, and full or partial settlement actions.
+
+![SIGCOOP DEMO Payment Registration Wizard](./docs/assets/demo/registro-pagos-demo.webp)
+
+#### 3. Accounting Reconciliation Report
+Receipt-level financial audit panel featuring period/origin/document filters, reconciliation KPI cards (*New Cash/Bank Inflow*, *Credit Applied*, *Concept Totals*), anonymized sample toggle, and Excel export.
+
+![SIGCOOP DEMO Accounting Report](./docs/assets/demo/reporte-contable-demo.webp)
+
+---
+
 ## 🏗️ Architecture & Flow Overview
 
 ```mermaid
