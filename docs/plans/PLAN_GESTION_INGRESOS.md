@@ -2,7 +2,7 @@
 **Sistema ERP — Mercado Cooperativo Primero de Mayo**
 **Fecha:** 14 de Octubre de 2026  
 **Documento:** `docs/plans/PLAN_GESTION_INGRESOS.md`  
-**Estado:** Propuesta Técnica Ajustada (Fase 1: Auditoría y Planificación — Versión 2.0 con Seguridad y Auditoría Reforzada)
+**Estado:** Plan Técnico Histórico — **Implementado e integrado en `main`** (commit `4c5d302`, migración `00096_gestion_ingresos_seguridad_auditoria.sql`; actualización posterior de Angular 20 → 22.3.0 en `fa4bce2`).
 
 ---
 

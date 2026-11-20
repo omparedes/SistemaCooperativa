@@ -1,8 +1,8 @@
 # Plan de Implementación — Auditoría Narrativa (Timeline ERP)
 
-> **Estado: APROBADO Y EJECUTADO** (2026-07-07). Decisiones del cliente: triggers en las
+> **Estado: APROBADO, EJECUTADO E INTEGRADO EN `main`** (`2026-07-07`, migración `00086`). Decisiones del cliente: triggers en las
 > 3 tablas nuevas, motivo opcional en padrón, timeline sin límite de antigüedad.
-> Pendiente del lado del cliente: `supabase db push` (migración 00086).
+> **Nota de estado (`2026-11-19`):** Plan histórico completado; la línea original inferior de pendiente (`supabase db push`) quedó superada tras la integración en producción.
 > Fecha: 2026-07-07 · Autor: Claude Code
 > (El plan anterior — Central de Reportes v2 — fue ejecutado y aplicado el 2026-07-07.)
 
