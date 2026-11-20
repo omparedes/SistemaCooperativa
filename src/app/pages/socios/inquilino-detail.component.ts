@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -30,6 +30,7 @@ const MOTIVOS_ANULACION = [
   selector: 'app-inquilino-detail',
   standalone: true,
   imports: [NgClass, DatePipe, DecimalPipe, RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-6 max-w-7xl mx-auto">
       <a routerLink="/socios"

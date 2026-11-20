@@ -1,4 +1,4 @@
-import { afterNextRender, Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, OnInit, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PagosService } from '../../core/services/pagos.service';
 import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
@@ -24,6 +24,7 @@ function formatSoles(n: number): string {
   selector: 'app-pago-wizard',
   standalone: true,
   imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-3xl p-4 md:p-6">
 

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RecaudacionService } from './recaudacion.service';
 import { AbonoLog, ResultadoRecaudacion, SocioTarjeta } from './recaudacion.model';
 
@@ -21,6 +21,7 @@ function formatFecha(s: string): string {
   selector: 'app-recaudacion',
   standalone: true,
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-5xl p-4 md:p-6">
 

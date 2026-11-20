@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, computed, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectorRef, computed, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -23,6 +23,7 @@ type NavItem = {
     SafeHtmlPipe,
     SidebarWidgetComponent
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './app-sidebar.component.html',
 })
 export class AppSidebarComponent implements OnInit, OnDestroy {

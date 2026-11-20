@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { DashboardService } from '../../core/services/dashboard.service';
 
@@ -20,6 +20,7 @@ const CIRC = 2 * Math.PI * 52;
   selector: 'app-dashboard-ejecutivo',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     @if (dashService.ejecutivo(); as ej) {
       <div class="mt-6">

@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, signal } from '@angular/core';
+import { Component, inject, Input, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { BeneficiosService, BeneficioSocioAgrupado, TipoBeneficio } from '../../core/services/beneficios.service';
@@ -7,6 +7,7 @@ import { BeneficiosService, BeneficioSocioAgrupado, TipoBeneficio } from '../../
   selector: 'app-beneficios-reporte',
   standalone: true,
   imports: [NgClass, DatePipe, DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6">
       <!-- Encabezado -->

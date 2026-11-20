@@ -1,4 +1,4 @@
-import { computed, Component, inject } from '@angular/core';
+import { computed, Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DropdownComponent } from '../../ui/dropdown/dropdown.component';
@@ -50,6 +50,7 @@ const TIPO_CONFIG: Record<TipoNotificacion, TipoConfig> = {
 @Component({
   selector: 'app-notification-dropdown',
   templateUrl: './notification-dropdown.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, RouterModule, DropdownComponent],
 })
 export class NotificationDropdownComponent {

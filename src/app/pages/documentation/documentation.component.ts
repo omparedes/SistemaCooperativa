@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { APP_VERSION_DATA } from '../../core/config/version.config';
 
@@ -6,6 +6,7 @@ import { APP_VERSION_DATA } from '../../core/config/version.config';
     selector: 'app-documentation',
     standalone: true,
     imports: [],
+    changeDetection: ChangeDetectionStrategy.Eager,
     templateUrl: './documentation.component.html',
 })
 export class DocumentationComponent {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -82,6 +82,7 @@ interface SerieDiariaResultado {
   selector: 'app-reportes',
   standalone: true,
   imports: [NgClass, FormsModule, NgApexchartsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-2xl p-4 md:p-6 lg:p-8 space-y-6">
 

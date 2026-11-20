@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   NgApexchartsModule,
@@ -25,6 +25,7 @@ function fmtSoles(n: number): string {
   selector: 'app-dashboard',
   standalone: true,
   imports: [RouterLink, NgApexchartsModule, DashboardEjecutivoComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6 2xl:p-10">
 

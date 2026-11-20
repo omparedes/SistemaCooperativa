@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { SafeHtmlPipe } from '../../shared/pipe/safe-html.pipe';
 import {
@@ -25,6 +25,7 @@ const ICONO_GENERICO = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" view
   selector: 'app-ingresos-internos',
   standalone: true,
   imports: [NgClass, SafeHtmlPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-4xl p-4 md:p-6 2xl:p-8">
 

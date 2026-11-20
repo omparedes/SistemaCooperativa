@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
@@ -13,6 +13,7 @@ import {
   selector: 'app-espacio-drawer',
   standalone: true,
   imports: [NgClass, DatePipe, DecimalPipe, RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
 <!-- Backdrop -->
 <div

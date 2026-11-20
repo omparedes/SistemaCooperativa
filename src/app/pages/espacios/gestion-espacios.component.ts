@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { EspaciosService } from './espacios.service';
@@ -20,6 +20,7 @@ type FiltroTipo = 'todos' | 'Regular' | 'Pequeño' | 'Almacen';
     TransferirPuestoDialogComponent,
     AsignarAlmacenDialogComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
 <div class="p-6 max-w-7xl mx-auto">
 

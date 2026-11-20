@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { AppSidebarComponent } from '../app-sidebar/app-sidebar.component';
@@ -16,6 +16,7 @@ import { APP_VERSION_DATA } from '../../../core/config/version.config';
     AppSidebarComponent,
     BackdropComponent
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './app-layout.component.html',
 })
 export class AppLayoutComponent implements OnInit {

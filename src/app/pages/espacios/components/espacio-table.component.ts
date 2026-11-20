@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import {
   EspacioOcupacion,
@@ -16,6 +16,7 @@ export interface ToggleServicioEvent {
   selector: 'app-espacio-table',
   standalone: true,
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
 

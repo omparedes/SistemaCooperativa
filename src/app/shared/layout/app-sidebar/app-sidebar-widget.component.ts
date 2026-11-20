@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { APP_VERSION_DATA } from '../../../core/config/version.config';
 
@@ -6,6 +6,7 @@ import { APP_VERSION_DATA } from '../../../core/config/version.config';
   selector: 'app-sidebar-widget',
   standalone: true,
   imports: [RouterModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto mb-8 w-full max-w-60 rounded-2xl bg-gray-50 p-4 text-center border border-gray-200/60 dark:bg-white/[0.03] dark:border-gray-800">
       <div class="flex items-center justify-center gap-1.5 mb-1.5">

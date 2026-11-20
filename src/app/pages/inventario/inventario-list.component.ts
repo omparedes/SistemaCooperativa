@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -38,6 +38,7 @@ const productoInputVacio = (): ProductoInput => ({
   selector: 'app-inventario-list',
   standalone: true,
   imports: [NgClass, FormsModule, MovimientoFormComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="mx-auto max-w-screen-xl p-4 md:p-6">
 

@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { AuditoriaItem, GestionTarjetaService, RecaudacionTarjetaItem } from '../../../core/services/gestion-tarjeta.service';
 
@@ -6,6 +6,7 @@ import { AuditoriaItem, GestionTarjetaService, RecaudacionTarjetaItem } from '..
   selector: 'app-tarjeta-detalle-modal',
   standalone: true,
   imports: [CommonModule, DatePipe, DecimalPipe],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div class="relative w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800 dark:border dark:border-gray-700 animate-in fade-in zoom-in-95 duration-150">

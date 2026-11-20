@@ -1,4 +1,4 @@
-import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, signal, viewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ConsultasPublicasService } from '../../core/services/consultas-publicas.service';
 import { PdfGeneratorService, ReciboDatos, FormatoImpresion } from '../../core/services/pdf-generator.service';
 import { mensajeAmigable } from '../../shared/utils/errores';
@@ -15,6 +15,7 @@ const MESES: ReadonlyArray<string> = [
   selector: 'app-consultas',
   standalone: true,
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
 

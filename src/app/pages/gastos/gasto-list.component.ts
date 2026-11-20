@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GastosService } from '../../core/services/gastos.service';
@@ -9,6 +9,7 @@ import { Gasto, GastoInput } from './gasto.model';
   selector: 'app-gasto-list',
   standalone: true,
   imports: [FormsModule, DatePipe, GastoFormComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="p-6 max-w-7xl mx-auto">
 
